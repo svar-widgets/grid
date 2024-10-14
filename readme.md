@@ -21,6 +21,11 @@
 
 SVAR DataGrid is an advanced Svelte component that enhances standard data tables, enabling you to create high-performance, feature-rich data grids that efficiently handle large data sets. Fully customizable, it supports inline editing with a variety of cell editors to meet diverse project requirements.
 
+<div align="center">
+  <img src="https://cdn.svar.dev/public/react-grid.png" alt="SVAR Svelte DataGrid - Screenshot" width="700">
+</div>
+
+
 ### :sparkles: Key Features
 
 - High performance (virtual scrolling and dynamic loading)
