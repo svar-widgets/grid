@@ -95,3 +95,8 @@ To run the test:
     ```sh
     yarn test:cypress
     ```
+
+### :speech_balloon: Need Help?
+
+[Post an Issue](https://github.com/svar-widgets/grid/issues/) or use our [community forum](https://forum.svar.dev). 
+
