@@ -1,4 +1,4 @@
-### :star: SVAR Grid for Svelte
+## SVAR Svelte DataGrid 
 
 SVAR Grid provides ready to use control for tabular data management
 
