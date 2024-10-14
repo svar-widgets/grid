@@ -1,4 +1,8 @@
+<div align="center">
+	
 # SVAR Svelte DataGrid | Data Table
+
+</div>
 
 <div align="center">
 
