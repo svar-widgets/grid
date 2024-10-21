@@ -1,6 +1,6 @@
 {
 	"name": "wx-grid-store",
-	"version": "1.3.1",
+	"version": "1.3.2",
 	"type": "module",
 	"main": "dist/index.js",
 	"module": "dist/index.js",

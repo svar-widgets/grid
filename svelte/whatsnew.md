@@ -1,4 +1,4 @@
-### 1.3.1
+### 1.3.2
 
 -   [fix] editors in tree mode are not applied correctly
 -   [fix] ts definitions are not precise
