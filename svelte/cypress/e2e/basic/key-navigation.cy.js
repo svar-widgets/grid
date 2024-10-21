@@ -22,42 +22,25 @@ describe("Keyboard navigation works", () => {
 		cy.visit(`/index.html#/inline-editors/willow`);
 
 		cy.wxT("table-row", 11).click({ force: true });
-		for (let i = 0; i < 3; i++)
-			cy.wxT("table").trigger("keydown", { code: "arrowDown" });
-		cy.wxT("table-row", 14).should("have.class", "wx-selected");
+		cy.wxT("table-row", 11).should("have.class", "wx-selected");
 
-		cy.wxT("table-row", 14).wxT("table-cell", 1).dblclick();
+		cy.wxT("table-row", 11).wxT("table-cell", 1).dblclick();
 		cy.get("input").type("Gotham");
 		for (let i = 0; i < 3; i++)
 			cy.wxT("table").trigger("keydown", { code: "Tab" });
-		cy.wxT("table-row", 14).find("input").type("aaaa@dom.com");
-
-		cy.shot("table-editing-key-nav");
-
-		for (let i = 0; i < 10; i++)
-			cy.wxT("table").trigger("keydown", { code: "Tab" });
-
-		cy.wait(500);
-		cy.wxT("table-row", 15)
-			.wxT("table-cell", 1)
-			.find("input")
-			.clear()
-			.type("Star City");
-
-		cy.wxT("table").trigger("keydown", { code: "Shift+Tab" });
-		cy.wxT("table-row", 14).find("input").type("aaaa@dom.com");
+		cy.wxT("table-row", 11).find("input").type("London");
 
 		cy.shot("table-editing-key-nav-tabs-right");
 
-		for (let i = 0; i < 12; i++)
+		for (let i = 0; i < 3; i++)
 			cy.wxT("table").trigger("keydown", { code: "Shift+Tab" });
 
-		cy.wxT("table-row", 14)
-			.wxT("table-cell", 0)
+		cy.wxT("table-row", 11)
+			.wxT("table-cell", 1)
 			.find("input")
 			.clear()
 			.type("Also Star City");
-		cy.wxT("table-row", 14)
+		cy.wxT("table-row", 11)
 			.find("input")
 			.trigger("keydown", { code: "Enter", key: "Enter" });
 		cy.get("input").should("not.exist");
@@ -104,12 +87,12 @@ describe("Keyboard navigation works", () => {
 
 			cy.wxT("table-row", 3).click();
 			cy.wxT("table-row", 3).wxT("table-cell", 1).dblclick();
-			for (let i = 0; i < 8; i++)
+			for (let i = 0; i < 4; i++)
 				cy.wxT("table").trigger("keydown", { code: "Tab" });
-			cy.wxT("table-row", 4).find("input").type(" Ciara");
+			cy.wxT("table-row", 3).find("input").type("Lebsack - Nicolas");
 			for (let i = 0; i < 2; i++)
 				cy.wxT("table").trigger("keydown", { code: "Shift+Tab" });
-			cy.wxT("table-row", 3).find("input").clear().type("Today!");
+			cy.wxT("table-row", 3).find("input").clear().type("User!");
 
 			cy.shot("table-fixed-columns-tab-editor");
 

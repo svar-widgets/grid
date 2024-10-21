@@ -42,7 +42,11 @@
 		const { requestData } = ev.detail;
 		const { row } = requestData;
 
-		helpers.showNotice({ text: `Request data: ${row.start} - ${row.end}` });
+		if (row.start)
+			//mute notice for 1st request for testing purposes
+			helpers.showNotice({
+				text: `Request data: ${row.start} - ${row.end}`,
+			});
 		if (row) data = rawData.slice(row.start, row.end);
 	}
 </script>

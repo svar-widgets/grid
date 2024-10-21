@@ -1,20 +1,53 @@
-### SVAR Grid for Svelte
+<div align="center">
+	
+# SVAR Svelte DataGrid | Data Table
 
-SVAR Grid provides ready to use control for tabular data management
+</div>
 
-### Useful Links
+<div align="center">
 
--   [Documentation](https://docs.svar.dev/svelte/grid/overview)
--   [How to start guide](https://docs.svar.dev/svelte/grid/getting_started/)
--   [Demos](https://docs.svar.dev/svelte/grid/samples/#/base/willow)
+[Website](https://svar.dev/svelte/datagrid/) • [Getting Started](https://docs.svar.dev/svelte/grid/getting_started/) • [Demos](https://docs.svar.dev/svelte/grid/samples/#/base/willow)
 
-### License
+</div>
 
-SVAR Grid for Svelte is available under MIT license.
+<div align="center">
 
-### How to Use
+[![npm](https://img.shields.io/npm/v/wx-svelte-grid.svg)](https://www.npmjs.com/package/wx-svelte-grid)
+[![License](https://img.shields.io/github/license/svar-widgets/grid)](https://github.com/svar-widgets/grid/blob/main/license.txt)
+[![npm downloads](https://img.shields.io/npm/dm/wx-svelte-grid.svg)](https://www.npmjs.com/package/wx-svelte-grid)
+[![Last Commit](https://img.shields.io/github/last-commit/svar-widgets/grid)](https://github.com/svar-widgets/grid)
 
-To use the widget, simply import the package and include the component in your Svelte file:
+</div>
+
+
+[SVAR DataGrid](https://svar.dev/svelte/datagrid/) is an advanced Svelte component that enhances standard data tables, enabling you to create high-performance, feature-rich data grids that efficiently handle large data sets. Fully customizable, it supports inline editing with a variety of cell editors to meet diverse project requirements.
+
+<div align="center">
+  <img src="https://cdn.svar.dev/public/react-grid.png" alt="SVAR Svelte DataGrid - Screenshot" width="700">
+</div>
+
+
+# :sparkles: Key Features
+
+- High performance (virtual scrolling and dynamic loading)
+- In-cell editing with different cell editors (datepicker, combo, select, rich select, etc.)
+- Sorting by multiple columns
+- Responsive design to adapt to different screen/container sizes
+- Multiple row selection
+- Fixed columns
+- Expandable/collapsible columns
+- Customizable tooltips for grid cells
+- Context menu
+- Tree-like structure
+- Paging
+- Export to CSV
+- Keyboard navigation
+- RestDataProvider for easy backend data binding
+- Dark and light skins
+
+# :hammer_and_wrench: How to Use
+
+To use SVAR DataGrid, simply import the package and include the component in your Svelte file:
 
 ```svelte
 <script>
@@ -47,15 +80,16 @@ To use the widget, simply import the package and include the component in your S
 
 <Grid {data} {columns} />
 ```
+For further instructions, see the detailed [how-to-start guide](https://docs.svar.dev/svelte/grid/getting_started). 
 
-### How to Modify
+### :computer: How to Modify
 
 Typically, you don't need to modify the code. However, if you wish to do so, follow these steps:
 
 1. Run `yarn` to install dependencies. Note that this project is a monorepo using `yarn` workspaces, so npm will not work
 2. Start the project in development mode with `yarn start`
 
-### Run Tests
+### :white_check_mark: Run Tests
 
 To run the test:
 
@@ -67,3 +101,8 @@ To run the test:
     ```sh
     yarn test:cypress
     ```
+
+### :speech_balloon: Need Help?
+
+Join our [community forum](https://forum.svar.dev) to get help or post feature requests. 
+

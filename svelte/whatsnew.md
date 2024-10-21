@@ -1,5 +1,12 @@
+### 1.3.1
+
+-   [fix] editors in tree mode are not applied correctly
+-   [fix] ts definitions are not precise
+-   [deps] uses core@1.3.1
+
 ### 1.3.0
 
+-   [update] more convenient way of using the built-in and external ContextMenu
 -   [deps] uses core@1.3.0
 
 ### 1.2.4

@@ -1,5 +1,6 @@
+import type { TID, IEventBus, IPublicWritable } from "wx-lib-state";
 import type { IDataMethodsConfig } from "./DataStore";
-import type { TID } from "wx-lib-state";
+import type DataStore from "./DataStore";
 
 export type Value = string | number | Date;
 export type DataHash = { [key: string]: Value };
@@ -29,7 +30,6 @@ export interface IDataConfig {
 export interface IData {
 	data: IRow[];
 	flatData: IRow[];
-
 	selected: TID;
 	selectedRows: TID[];
 	sizes: ISizeConfig;
@@ -47,6 +47,23 @@ export interface IData {
 	};
 }
 
+export interface IApi {
+	exec: (action: keyof TMethodsConfig, params: any) => Promise<any>;
+	on: (action: keyof TMethodsConfig, callback: (config: any) => any) => void;
+	intercept: (
+		action: keyof TMethodsConfig,
+		callback: (config: any) => any
+	) => void;
+	getState: () => IData;
+	getReactiveState: () => {
+		[Key in keyof IData]: IPublicWritable<IData[Key]>;
+	};
+	setNext: (ev: IEventBus<TMethodsConfig>) => void;
+	getStores: () => { data: DataStore };
+	getRow: (row: TID) => IRow;
+	getColumn: (column: TID) => IColumn;
+}
+
 export interface IDataHash<T> {
 	[key: string]: T;
 }
@@ -55,8 +72,8 @@ export interface IColumn {
 	id: string;
 	width: number;
 	flexgrow?: number;
-	$sort?: TSortConfig;
 	sort?: boolean;
+	$sort?: TSortConfig;
 	left?: number;
 	editor?: string | { type: string; config?: any };
 	setter?: ValueSetter;

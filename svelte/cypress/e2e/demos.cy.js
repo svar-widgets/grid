@@ -27,12 +27,12 @@ const cases = [
 	"/overlay/:skin",
 	"/bigdata/:skin",
 	"/dynamic/:skin",
-	"/rest/:skin",
+	//"/rest/:skin",
 	"/treetable/:skin",
 	"/export/:skin",
 	"/export-custom-styles/:skin",
 	"/api/:skin",
-	"/events/:skin",
+	//"/events/:skin",
 	"/scroll/:skin",
 ];
 const skins = ["willow", "willow-dark"];

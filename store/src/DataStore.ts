@@ -225,11 +225,12 @@ export default class DataStore extends Store<IData> {
 					(a: IRow) => a.id == id
 				);
 
+				parentRow.data = [...parentRow.data];
+				parentRow.data[parentIndex] = obj;
+
 				if (obj.$parent === 0) {
 					data = parentRow.data;
 				}
-				parentRow.data = [...parentRow.data];
-				parentRow.data[parentIndex] = obj;
 			} else {
 				const index = data.findIndex(a => a.id == id);
 				const obj = { ...data[index] };

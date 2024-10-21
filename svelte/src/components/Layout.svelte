@@ -287,7 +287,7 @@
 		"toggle-row": id => {
 			const row = store.getRow(id);
 			dispatch("action", {
-				action: row.open ? "close-row" : "open-row",
+				action: row.open !== false ? "close-row" : "open-row",
 				data: {
 					id,
 				},

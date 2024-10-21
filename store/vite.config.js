@@ -49,9 +49,9 @@ export default function ({ mode }) {
 		config.plugins.push(dts({ outDir: resolve(__dirname, "dist/types") }));
 	} else {
 		config.plugins.push(dts({ outDir: resolve(__dirname, "dist/types") }));
-		if (mode !== "development") {
-			config.plugins.push(minify);
-		}
+	}
+	if (mode !== "development") {
+		config.plugins.push(minify);
 	}
 
 	return defineConfig(config);
