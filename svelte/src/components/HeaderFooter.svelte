@@ -1,14 +1,18 @@
 <script>
+	import { getContext } from "svelte";
 	import HeaderCell from "./HeaderCell.svelte";
 	import FooterCell from "./FooterCell.svelte";
 
 	export let deltaLeft;
 	export let contentWidth;
-	export let rowHeights;
 	export let columns;
 	export let type = "header";
 
 	export let columnStyle;
+
+	const api = getContext("grid-store");
+	const { _sizes: sizes } = api.getReactiveState();
+	$: rowHeights = $sizes[`${type}RowHeights`];
 
 	let renderedHeader = [];
 	$: {
@@ -58,7 +62,6 @@
 						column={getColumn(cell.id)}
 						row={i}
 						lastRow={isLast(cell, i)}
-						on:action
 					/>
 				{:else}
 					<FooterCell

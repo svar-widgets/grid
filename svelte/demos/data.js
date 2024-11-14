@@ -697,6 +697,32 @@ export function getData() {
 		},
 	];
 
+	const treeFixedColumns = [
+		{
+			id: "lastName",
+			header: "Last Name",
+			footer: "Last Name",
+			width: 400,
+			treetoggle: true,
+			editor: "text",
+			sort: true,
+		},
+		{
+			id: "firstName",
+			header: "First Name",
+			footer: "First Name",
+			width: 150,
+			sort: true,
+		},
+		{
+			id: "city",
+			header: "City",
+			footer: "City",
+			width: 100,
+			sort: true,
+		},
+	];
+
 	const columns = allColumns.slice(0, 5);
 	const data = allData.slice(10);
 
@@ -908,6 +934,7 @@ export function getData() {
 		allColumns,
 		flexibleColumns,
 		treeColumns,
+		treeFixedColumns,
 		countries,
 		columnsSpans,
 		collapsibleColumns,

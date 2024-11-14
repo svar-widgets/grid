@@ -1,6 +1,6 @@
 {
 	"name": "wx-site-svelte-grid",
-	"version": "1.3.2",
+	"version": "1.3.3",
 	"type": "module",
 	"scripts": {
 		"build": "vite build",
@@ -9,7 +9,7 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"wx-svelte-grid": "1.3.2",
+		"wx-svelte-grid": "1.3.3",
 		"wx-svelte-core": "*"
 	}
 }

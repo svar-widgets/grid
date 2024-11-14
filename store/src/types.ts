@@ -25,6 +25,7 @@ export interface IDataConfig {
 	filter?: (obj: any) => boolean;
 	tree?: boolean;
 	scroll?: null;
+	editor?: TEditorConfig;
 }
 
 export interface IData {

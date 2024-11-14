@@ -599,7 +599,13 @@ export default class DataStore extends Store<IData> {
 
 		if (state.tree) this._branches = { 0: { data: state.data } };
 
-		this._router.init({ sort: [], filter: null, scroll: null, ...state });
+		this._router.init({
+			sort: [],
+			filter: null,
+			scroll: null,
+			editor: null,
+			...state,
+		});
 	}
 
 	setState(state: Partial<IData>, ctx?: TDataConfig) {
@@ -906,7 +912,7 @@ export interface IDataMethodsConfig {
 		value: string | number | Date;
 	};
 	["add-row"]: {
-		id: TID;
+		id?: TID;
 		before?: TID;
 		after?: TID;
 		row: IRow;

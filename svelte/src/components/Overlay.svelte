@@ -1,6 +1,8 @@
 <script>
+	import { getContext } from "svelte";
 	export let overlay;
 
+	const api = getContext("grid-store");
 	function isComponent(prop) {
 		return typeof prop === "function";
 	}
@@ -8,7 +10,10 @@
 
 <div class="wx-overlay">
 	{#if isComponent(overlay)}
-		<svelte:component this={overlay} on:action />
+		<svelte:component
+			this={overlay}
+			on:action={({ detail }) => api.exec(detail.action, detail.data)}
+		/>
 	{:else}{overlay}{/if}
 </div>
 

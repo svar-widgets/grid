@@ -1,5 +1,5 @@
 <script>
-	import { createEventDispatcher, afterUpdate } from "svelte";
+	import { afterUpdate, getContext } from "svelte";
 	import { onresize } from "../helpers/actions/onresize";
 	import { delegateClick, locateAttr, clickOutside } from "wx-lib-dom";
 	import { hotkeys } from "wx-grid-store";
@@ -10,12 +10,8 @@
 	import Overlay from "./Overlay.svelte";
 	import Editor from "./inlineEditors/Editor.svelte";
 
-	const dispatch = createEventDispatcher();
-
 	const SCROLLSIZE = getScrollSize();
 
-	export let store;
-	export let api;
 	export let header;
 	export let footer;
 	export let overlay;
@@ -27,6 +23,8 @@
 	export let cellStyle;
 	export let autoRowHeight;
 
+	const api = getContext("grid-store");
+
 	const {
 		dynamic,
 		flatData: data,
@@ -37,7 +35,7 @@
 		editor,
 		filter,
 		scroll,
-	} = store.getReactive();
+	} = api.getReactiveState();
 
 	$: defaultRowHeight = $_sizes.rowHeight;
 	let clientWidth = 0,
@@ -161,7 +159,7 @@
 		if (start != requestData.row.start || end != requestData.row.end) {
 			requestData = { row: { start, end } };
 			if ($dynamic) {
-				dispatch("data-request", { requestData });
+				api.exec("data-request", { requestData });
 			}
 		}
 	}
@@ -272,26 +270,18 @@
 	const bodyClickHandlers = {
 		dblclick: (id, ev) => {
 			const data = { id, column: locateAttr(ev, "data-col-id") };
-			dispatch("action", { action: "open-editor", data });
+			api.exec("open-editor", data);
 		},
 		click: (id, ev) => {
 			if (select === false) return;
 
 			const toggle = multiselect && ev.ctrlKey;
 			const range = multiselect && ev.shiftKey;
-			dispatch("action", {
-				action: "select-row",
-				data: { id, toggle, range },
-			});
+			api.exec("select-row", { id, toggle, range });
 		},
 		"toggle-row": id => {
-			const row = store.getRow(id);
-			dispatch("action", {
-				action: row.open !== false ? "close-row" : "open-row",
-				data: {
-					id,
-				},
-			});
+			const row = api.getRow(id);
+			api.exec(row.open !== false ? "close-row" : "open-row", { id });
 		},
 		"ignore-click": () => {
 			return false;
@@ -420,10 +410,8 @@
 					<HeaderFooter
 						{contentWidth}
 						deltaLeft={deltaLeftH}
-						rowHeights={$_sizes.headerRowHeights}
 						columns={renderColumnsH}
 						{columnStyle}
-						on:action
 					/>
 				</div>
 			{/if}
@@ -434,7 +422,7 @@
 				use:delegateClick={bodyClickHandlers}
 			>
 				{#if overlay}
-					<Overlay {overlay} on:action />
+					<Overlay {overlay} />
 				{/if}
 				<div
 					bind:this={dataEl}
@@ -456,7 +444,7 @@
 								{#if col.collapsed}
 									<div class="wx-cell wx-collapsed" />
 								{:else if $editor?.id === row.id && $editor.column == col.id}
-									<Editor editor={$editor} {col} on:action />
+									<Editor {col} />
 								{:else if col.cell}
 									<svelte:component
 										this={col.cell}
@@ -465,7 +453,11 @@
 										{col}
 										{columnStyle}
 										{cellStyle}
-										on:action
+										on:action={({ detail }) =>
+											api.exec(
+												detail.action,
+												detail.data
+											)}
 									/>
 								{:else}
 									<Cell
@@ -473,7 +465,6 @@
 										{col}
 										{columnStyle}
 										{cellStyle}
-										on:action
 									/>
 								{/if}
 							{/each}
@@ -486,10 +477,8 @@
 					type={"footer"}
 					{contentWidth}
 					deltaLeft={deltaLeftF}
-					rowHeights={$_sizes.footerRowHeights}
 					columns={renderColumnsF}
 					{columnStyle}
-					on:action
 				/>
 			{/if}
 		</div>

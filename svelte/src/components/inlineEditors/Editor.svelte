@@ -1,36 +1,24 @@
 <script>
-	import { createEventDispatcher } from "svelte";
+	import { getContext } from "svelte";
 	import { getStyle } from "../../helpers/columnWidth";
 	import { clickOutside } from "wx-lib-dom";
-
 	import { editors } from "./editors";
 
 	export let col;
-	export let editor;
 
-	const dispatch = createEventDispatcher();
+	const api = getContext("grid-store");
+	const { editor } = api.getReactiveState();
 
 	function save() {
-		dispatch("action", {
-			action: "close-editor",
-			data: { ignore: false },
-		});
+		api.exec("close-editor", { ignore: false });
 	}
 
 	function cancel() {
-		dispatch("action", {
-			action: "close-editor",
-			data: { ignore: true },
-		});
+		api.exec("close-editor", { ignore: true });
 	}
 
 	function updateValue(value) {
-		dispatch("action", {
-			action: "editor",
-			data: {
-				value,
-			},
-		});
+		api.exec("editor", { value });
 	}
 
 	let style;
@@ -45,9 +33,9 @@
 >
 	<svelte:component
 		this={editors[col.editor.type]}
-		{editor}
+		editor={$editor}
 		actions={{ save, cancel, updateValue }}
-		on:action
+		on:action={({ detail }) => api.exec(detail.action, detail.data)}
 	/>
 </div>
 

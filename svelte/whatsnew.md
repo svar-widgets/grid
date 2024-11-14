@@ -1,3 +1,9 @@
+### 1.3.3
+
+-   [fix] treetable data is not fully shown in some cases
+-   [fix] too narrow column width if autowidth is set
+-   [fix] typos in type definitions
+
 ### 1.3.2
 
 -   [fix] editors in tree mode are not applied correctly

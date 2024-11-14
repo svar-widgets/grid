@@ -17,11 +17,13 @@ export function getExcelData(state: Partial<IData>, options: IExportOptions) {
 	let rowSizes: IExportRowSize[] = [];
 
 	const cols = state._columns;
-	const data = state.data;
+	const data = state.flatData;
 	const sizes = state._sizes;
 
-	for (let c = 0; c < cols.length; c++)
-		colSizes.push({ width: cols[c].width || sizes.colWidth });
+	for (const c of cols)
+		colSizes.push({
+			width: c.flexgrow ? sizes.colWidth : c.width,
+		});
 
 	let rIndex = 0;
 

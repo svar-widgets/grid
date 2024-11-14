@@ -1,5 +1,5 @@
 <script>
-	import { createEventDispatcher } from "svelte";
+	import { getContext } from "svelte";
 	import { resize } from "../helpers/actions/resize";
 	import { getCssName, getStyle } from "../helpers/columnWidth";
 
@@ -9,7 +9,8 @@
 	export let lastRow;
 	export let columnStyle;
 
-	const dispatch = createEventDispatcher();
+	const api = getContext("grid-store");
+
 	let start;
 
 	function down(node) {
@@ -17,23 +18,17 @@
 	}
 
 	function move(dx) {
-		dispatch("action", {
-			action: "resize-column",
-			data: { id: cell.id, width: Math.max(1, start + dx) },
+		api.exec("resize-column", {
+			id: cell.id,
+			width: Math.max(1, start + dx),
 		});
 	}
 
 	function sort(ev) {
-		dispatch("action", {
-			action: "sort-rows",
-			data: { key: cell.id, add: ev.ctrlKey },
-		});
+		api.exec("sort-rows", { key: cell.id, add: ev.ctrlKey });
 	}
 	function collapse() {
-		dispatch("action", {
-			action: "collapse-column",
-			data: { id: cell.id, row },
-		});
+		api.exec("collapse-column", { id: cell.id, row });
 	}
 
 	let style;

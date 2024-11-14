@@ -1,6 +1,6 @@
 <script>
 	// svelte core
-	import { createEventDispatcher, getContext } from "svelte";
+	import { createEventDispatcher, getContext, setContext } from "svelte";
 	import { writable } from "svelte/store";
 	const dispatch = createEventDispatcher();
 
@@ -31,7 +31,6 @@
 	export let header = true;
 	export let footer = false;
 	export let dynamic = null;
-	export let editor = null;
 	export let filter = null;
 	export let overlay = null;
 	export let autoRowHeight = false;
@@ -72,7 +71,6 @@
 	$: {
 		dataStore.init({
 			data,
-			editor,
 			columns,
 			split,
 			sizes,
@@ -95,10 +93,6 @@
 	let lastInRoute = new EventBusRouter(dispatch);
 	firstInRoute.setNext(lastInRoute);
 
-	const actions = ev => {
-		firstInRoute.exec(ev.detail.action, ev.detail.data);
-	};
-
 	// public API
 	export const api = {
 		// state
@@ -117,12 +111,17 @@
 		getRow: id => dataStore.getRow(id),
 		getColumn: id => dataStore.getColumn(id),
 	};
+
+	// common API available in components
+	setContext("grid-store", {
+		getReactiveState: dataStore.getReactive.bind(dataStore),
+		exec: firstInRoute.exec.bind(firstInRoute),
+		getRow: dataStore.getRow.bind(dataStore),
+	});
 </script>
 
 <Locale words={en} optional={true}>
 	<Layout
-		store={dataStore}
-		{api}
 		{header}
 		{footer}
 		{overlay}
@@ -132,7 +131,5 @@
 		{select}
 		{multiselect}
 		{autoRowHeight}
-		on:action={actions}
-		on:data-request
 	/>
 </Locale>

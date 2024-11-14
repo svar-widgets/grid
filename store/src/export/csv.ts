@@ -9,7 +9,7 @@ export function getCsvData(state: Partial<IData>, options: IExportOptions) {
 	const colSep = options.cols || "\t";
 
 	const cols = state._columns;
-	const data = state.data;
+	const data = state.flatData;
 
 	if (options.header !== false && cols[0].header)
 		csv = addCsvHeader("header", cols, csv, colSep, rowSep);
