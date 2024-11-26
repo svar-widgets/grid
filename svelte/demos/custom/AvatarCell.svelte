@@ -1,10 +1,7 @@
 <script>
 	import { Cell } from "../../src";
 
-	export let row;
-	export let col;
-	export let columnStyle;
-	export let cellStyle;
+	let { row, col, columnStyle, cellStyle } = $props();
 </script>
 
 <Cell {row} {col} {columnStyle} {cellStyle}>

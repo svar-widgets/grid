@@ -3,31 +3,28 @@
 
 	import { SuggestDropdown } from "wx-svelte-core";
 
-	export let actions;
-	export let editor;
+	let { actions, editor, children } = $props();
 
-	let template;
+	let template = $state();
 
 	if (editor.config && editor.config.template) {
 		template = editor.config.template;
 	}
 
-	let text = editor.renderedValue;
-	let filterOptions = editor.options;
+	let text = $state(editor.renderedValue);
+	let filterOptions = $state(editor.options);
 
-	function updateValue({ detail }) {
-		const value = detail.id;
-
-		actions.updateValue(value);
+	function updateValue({ id }) {
+		actions.updateValue(id);
 		actions.save();
 	}
 
 	let navigate;
-	let keydown;
+	let keydown = $state();
 
 	function ready(ev) {
-		navigate = ev.detail.navigate;
-		keydown = ev.detail.keydown;
+		navigate = ev.navigate;
+		keydown = ev.keydown;
 		navigate(index());
 	}
 
@@ -42,30 +39,29 @@
 		else navigate(null);
 	}
 
-	let node;
+	let node = $state();
 	onMount(() => {
 		node.focus();
 	});
 
 	const index = () => filterOptions.findIndex(a => a.id === editor.value);
+
+	const children_render = $derived(children);
 </script>
 
 <input
 	class="wx-input"
 	bind:this={node}
 	bind:value={text}
-	on:input={input}
-	on:keydown={e => keydown(e, index())}
+	oninput={input}
+	onkeydown={e => keydown(e, index())}
 />
-<SuggestDropdown
-	let:option
-	items={filterOptions}
-	on:ready={ready}
-	on:select={updateValue}
->
-	<slot {option}>
-		{#if template}{template(option)}{:else}{option.name}{/if}
-	</slot>
+<SuggestDropdown items={filterOptions} onready={ready} onselect={updateValue}>
+	{#snippet children({ option })}
+		{#if children_render}{@render children_render({
+				option,
+			})}{:else if template}{template(option)}{:else}{option.name}{/if}
+	{/snippet}
 </SuggestDropdown>
 
 <style>

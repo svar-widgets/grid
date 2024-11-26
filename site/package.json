@@ -1,15 +1,15 @@
 {
 	"name": "wx-site-svelte-grid",
-	"version": "1.3.3",
+	"version": "2.0.0-beta-2",
 	"type": "module",
 	"scripts": {
 		"build": "vite build",
-		"lint": "yarn eslint ./src --ext .svelte,.ts,.js",
+		"lint": "yarn eslint ./src",
 		"start": "yarn vite --open"
 	},
 	"license": "MIT",
 	"dependencies": {
-		"wx-svelte-grid": "1.3.3",
-		"wx-svelte-core": "*"
+		"wx-svelte-grid": "2.0.0-beta-2",
+		"wx-svelte-core": "2.0.0-beta-2"
 	}
 }

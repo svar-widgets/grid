@@ -2,13 +2,22 @@
 	import { getStyle } from "../helpers/columnWidth";
 	import { getRenderValue } from "wx-grid-store";
 
-	export let row;
-	export let col;
-	export let cellStyle = null;
-	export let columnStyle = null;
+	/**
+	 * @typedef {Object} Props
+	 * @property {any} row
+	 * @property {any} col
+	 * @property {any} [cellStyle]
+	 * @property {any} [columnStyle]
+	 * @property {import('svelte').Snippet} [children]
+	 */
 
-	let style, css;
-	$: style = getStyle(col.width, col.flexgrow, col.fixed, col.left);
+	/** @type {Props} */
+	let { row, col, cellStyle = null, columnStyle = null, children } = $props();
+
+	let style = $derived(
+			getStyle(col.width, col.flexgrow, col.fixed, col.left)
+		),
+		css = $derived(buildCellCss(columnStyle, cellStyle));
 
 	function buildCellCss(columnStyle, cellStyle) {
 		let css = "wx-cell";
@@ -17,7 +26,6 @@
 		return css;
 	}
 	// params are needed for css update
-	$: css = buildCellCss(columnStyle, cellStyle);
 </script>
 
 <div
@@ -29,20 +37,24 @@
 >
 	{#if col.treetoggle}
 		<div class="wx-tree-cell">
-			<span style="margin-left:{row.$level * 28}px;" />
+			<span style="margin-left:{row.$level * 28}px;"></span>
 			{#if row.$count}
 				<i
 					data-action="toggle-row"
 					class="wx-table-tree-toggle wxi-menu-{row.open !== false
 						? 'down'
 						: 'right'}"
-				/>
+				></i>
 			{/if}
-			<slot>{getRenderValue(row, col)}</slot>
+			{#if children}{@render children()}{:else}{getRenderValue(
+					row,
+					col
+				)}{/if}
 		</div>
-	{:else}
-		<slot>{getRenderValue(row, col)}</slot>
-	{/if}
+	{:else if children}{@render children()}{:else}{getRenderValue(
+			row,
+			col
+		)}{/if}
 </div>
 
 <style>

@@ -8,16 +8,16 @@
 
 	const helpers = getContext("wx-helpers");
 
-	let tbl, selected;
-	$: {
-		if (tbl) {
-			const rState = tbl.getReactiveState();
-			selected = rState.selected;
+	let tbl = $state(),
+		selected = $state();
 
-			tbl.intercept("select-row", data => {
-				if (data.id == 1) return false;
-			});
-		}
+	function init(tbl) {
+		const rState = tbl.getReactiveState();
+		selected = rState.selected;
+
+		tbl.intercept("select-row", data => {
+			if (data.id == 1) return false;
+		});
 	}
 
 	function addRow() {
@@ -30,21 +30,22 @@
 		}
 	}
 	function onSelectRow(ev) {
-		helpers.showNotice({ text: ev.detail.id, type: "info" });
+		helpers.showNotice({ text: ev.id, type: "info" });
 	}
 </script>
 
 <div style="padding: 20px;">
 	<p>
-		<Button click={addRow} type="primary">Add row</Button>
-		<Button click={deleteRow}>Delete row</Button>
+		<Button onclick={addRow} type="primary">Add row</Button>
+		<Button onclick={deleteRow}>Delete row</Button>
 	</p>
 	<div style="max-width: 800px;">
 		<Grid
 			data={data.slice(0, 3)}
 			{columns}
-			bind:api={tbl}
-			on:select-row={onSelectRow}
+			{init}
+			bind:this={tbl}
+			onselectrow={onSelectRow}
 		/>
 	</div>
 	<div class="status">Selected: {$selected || "none"}</div>

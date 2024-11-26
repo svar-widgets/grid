@@ -15,7 +15,7 @@
 		{ id: "companyName", header: "Company", flexgrow: 1 },
 	];
 
-	let table;
+	let table = $state();
 	function init(api) {
 		table = api;
 	}
@@ -35,7 +35,7 @@
 
 	const helpers = getContext("wx-helpers");
 	const handleClicks = ev => {
-		const option = ev.detail.action;
+		const option = ev.action;
 		if (option) {
 			const id = table.getState().selected;
 			switch (option.id) {
@@ -73,7 +73,7 @@
 				<ContextMenu
 					{options}
 					resolver={getItem}
-					on:click={handleClicks}
+					onclick={handleClicks}
 					api={table}
 					at={"point"}
 				>

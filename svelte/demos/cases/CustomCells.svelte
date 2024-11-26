@@ -17,7 +17,7 @@
 	];
 
 	function action(action, ev) {
-		const { value, row, column } = ev.detail;
+		const { value, row, column } = ev;
 		const event = `event: ${action}\n`;
 		const val = `value: ${value}\n`;
 		const r = `row ID: ${row}\n`;
@@ -41,8 +41,8 @@
 					css = "vcentercontrol";
 				return css;
 			}}
-			on:custom-combo={ev => action("combo", ev)}
-			on:custom-check={ev => action("checkbox", ev)}
+			oncustomcombo={ev => action("combo", ev)}
+			oncustomcheck={ev => action("checkbox", ev)}
 		/>
 	</div>
 </div>

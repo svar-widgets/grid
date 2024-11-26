@@ -5,7 +5,7 @@
 
 	const { treeData, treeColumns } = getData();
 
-	let api;
+	let api = $state();
 
 	function openAll() {
 		api.exec("open-row", { id: 0, nested: true });
@@ -18,12 +18,12 @@
 
 <div style="padding: 20px;">
 	<div class="toolbar">
-		<Button type="primary" click={() => openAll()}>Open all</Button>
-		<Button type="primary" click={() => closeAll()}>Close all</Button>
+		<Button type="primary" onclick={() => openAll()}>Open all</Button>
+		<Button type="primary" onclick={() => closeAll()}>Close all</Button>
 	</div>
 	<div>
 		<Grid
-			bind:api
+			bind:this={api}
 			tree={true}
 			data={treeData}
 			columns={treeColumns}

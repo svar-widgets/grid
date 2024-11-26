@@ -7,26 +7,10 @@
 
 	const { data, columns } = getData();
 
-	let api;
-	let cols;
-	let options = {};
-	let fields = [];
-	$: {
-		if (api) {
-			fields = [];
-			cols = api.getReactiveState().columns;
-			$cols.forEach(col => {
-				if (col.id !== "id") {
-					options[col.id] = getOptions(data, col.id);
-					fields.push({
-						id: col.id,
-						name: getLabel(col),
-						type: "text",
-					});
-				}
-			});
-		}
-	}
+	let api = $state();
+	let cols = $state();
+	let options = $state({});
+	let fields = $state([]);
 
 	function getLabel(col) {
 		if (col.header) {
@@ -43,11 +27,26 @@
 		return col.id;
 	}
 
-	let filteredData = data;
+	let filteredData = $state(data);
 
 	function applyFilter(value) {
 		const filter = createArrayFilter(value);
 		filteredData = filter(data);
+	}
+
+	function init(api) {
+		fields = [];
+		cols = api.getReactiveState().columns;
+		$cols.forEach(col => {
+			if (col.id !== "id") {
+				options[col.id] = getOptions(data, col.id);
+				fields.push({
+					id: col.id,
+					name: getLabel(col),
+					type: "text",
+				});
+			}
+		});
 	}
 </script>
 
@@ -60,10 +59,10 @@
 						type={"simple"}
 						{fields}
 						{options}
-						on:change={ev => applyFilter(ev.detail.value)}
+						onchange={ev => applyFilter(ev.value)}
 					/>
 				</div>
-				<Grid data={filteredData} {columns} bind:api />
+				<Grid data={filteredData} {columns} bind:this={api} {init} />
 			</div>
 		</div>
 	</Locale>

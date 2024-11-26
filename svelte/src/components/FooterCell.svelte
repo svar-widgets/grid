@@ -1,21 +1,19 @@
 <script>
 	import { getStyle, getCssName } from "../helpers/columnWidth";
 
-	export let cell;
-	export let column;
-	export let columnStyle;
+	let { cell, column, columnStyle } = $props();
 
-	let style;
-	$: style = getStyle(
-		cell.width,
-		cell.flexgrow,
-		column.fixed,
-		column.left,
-		cell.height
+	let style = $derived(
+		getStyle(
+			cell.width,
+			cell.flexgrow,
+			column.fixed,
+			column.left,
+			cell.height
+		)
 	);
 
-	let css = "";
-	$: css = getCssName(column, cell, columnStyle);
+	let css = $derived(getCssName(column, cell, columnStyle));
 </script>
 
 <div class="wx-cell {css} {cell.css || ''}" {style}>

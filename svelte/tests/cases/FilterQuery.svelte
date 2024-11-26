@@ -8,33 +8,17 @@
 
 	const { data, columns } = getData();
 
-	let filteredData = data;
+	let filteredData = $state(data);
 
 	function applyFilter(value) {
 		const filter = createArrayFilter(value);
 		filteredData = filter(data);
 	}
 
-	let options = {};
-	let fields = [];
-	let cols;
-	let api;
-	$: {
-		if (api) {
-			fields = [];
-			cols = api.getReactiveState().columns;
-			$cols.forEach(col => {
-				if (col.id !== "id") {
-					options[col.id] = getOptions(data, col.id);
-					fields.push({
-						id: col.id,
-						name: getLabel(col),
-						type: "text",
-					});
-				}
-			});
-		}
-	}
+	let options = $state({});
+	let fields = $state([]);
+	let cols = $state();
+	let api = $state();
 
 	function getLabel(col) {
 		if (col.header) {
@@ -50,6 +34,21 @@
 		}
 		return col.id;
 	}
+
+	function init(api) {
+		fields = [];
+		cols = api.getReactiveState().columns;
+		$cols.forEach(col => {
+			if (col.id !== "id") {
+				options[col.id] = getOptions(data, col.id);
+				fields.push({
+					id: col.id,
+					name: getLabel(col),
+					type: "text",
+				});
+			}
+		});
+	}
 </script>
 
 <Material>
@@ -60,10 +59,10 @@
 					{fields}
 					{options}
 					type={"line"}
-					on:change={ev => applyFilter(ev.detail.value)}
+					onchange={ev => applyFilter(ev.value)}
 				/>
 
-				<Grid data={filteredData} {columns} bind:api />
+				<Grid data={filteredData} {columns} bind:this={api} {init} />
 			</div>
 		</div>
 	</Locale>

@@ -31,7 +31,6 @@ export interface IDataConfig {
 export interface IData {
 	data: IRow[];
 	flatData: IRow[];
-	selected: TID;
 	selectedRows: TID[];
 	sizes: ISizeConfig;
 	_sizes: IRenderSizes;
@@ -210,10 +209,7 @@ export interface IExportOptions {
 	styles?: TExportStyles;
 }
 
-const header = "header";
-const footer = "footer";
-
-export type TColumnType = typeof header | typeof footer;
+export type TColumnType = "header" | "footer";
 
 export type TSortValue = string | number;
 export type TSortObject = any;

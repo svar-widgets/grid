@@ -6,7 +6,7 @@
 	import { en as enCore, cn as cnCore } from "wx-core-locales";
 
 	const { allData: data, countries, users } = getData();
-	let table;
+	let table = $state();
 	function init(api) {
 		table = api;
 	}
@@ -45,7 +45,7 @@
 		},
 	];
 
-	let language = "en";
+	let language = $state("en");
 </script>
 
 <div class="demo">

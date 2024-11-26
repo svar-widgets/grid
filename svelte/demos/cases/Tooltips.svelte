@@ -33,22 +33,22 @@
 		{ id: "date", tooltip: obj => obj.date?.toDateString() },
 	];
 
-	let api;
-	let api1;
+	let api = $state();
+	let api1 = $state();
 </script>
 
 <div style="padding: 20px;">
 	<h4>Default text tooltips for specific columns</h4>
 	<div>
 		<Tooltip {api}>
-			<Grid {data} columns={columnsTooltip} bind:api />
+			<Grid {data} columns={columnsTooltip} bind:this={api} />
 		</Tooltip>
 	</div>
 
 	<h4>Custom tooltips</h4>
 	<div>
 		<Tooltip content={CustomTooltip} api={api1}>
-			<Grid {data} {columns} bind:api={api1} />
+			<Grid {data} {columns} bind:this={api1} />
 		</Tooltip>
 	</div>
 </div>

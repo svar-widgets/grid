@@ -1,15 +1,11 @@
 <script>
 	import { onMount } from "svelte";
 
-	export let actions;
-	export let editor;
+	let { actions, editor } = $props();
 
-	let value = "";
+	let value = $state(editor.value || "");
 
-	const reset = e => (value = e.value);
-	$: reset(editor);
-
-	let node;
+	let node = $state();
 	onMount(() => node.focus());
 
 	function updateValue() {
@@ -24,8 +20,8 @@
 
 <input
 	class="wx-text"
-	on:input={updateValue}
-	on:keydown={closeAndSave}
+	oninput={updateValue}
+	onkeydown={closeAndSave}
 	bind:this={node}
 	type="text"
 	{value}

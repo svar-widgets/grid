@@ -26,9 +26,9 @@
 			editor: "text",
 		},
 	];
-	let data = [];
+	let data = $state([]);
 	const provider = new RestDataProvider(
-		"https://master--table-go--dev.webix.io/films",
+		"https://master--svar-grid-go--dev.webix.io/films",
 		obj => {
 			obj.year = obj.year * 1;
 			obj.votes = obj.votes * 1;
@@ -36,7 +36,7 @@
 	);
 	provider.getData().then(v => (data = v));
 
-	let api;
+	let api = $state();
 	const deleteRow = () => {
 		const id = api.getState().selected;
 		if (id) {
@@ -55,9 +55,9 @@
 
 <div style="padding: 20px; height: 600px;">
 	<div style="padding-bottom: 10px;">
-		<Button click={addRow} type="primary">Add row</Button>
-		<Button click={deleteRow}>Delete row</Button>
+		<Button onclick={addRow} type="primary">Add row</Button>
+		<Button onclick={deleteRow}>Delete row</Button>
 	</div>
 
-	<Grid {data} {columns} bind:api {init} />
+	<Grid {data} {columns} bind:this={api} {init} />
 </div>

@@ -186,7 +186,7 @@ export default class DataStore extends Store<IData> {
 			inBus.exec("select-row", { id: row.id });
 		});
 		inBus.on("delete-row", (ev: IDataMethodsConfig["delete-row"]) => {
-			const { data, selected, selectedRows } = this.getState();
+			const { data, selectedRows } = this.getState();
 			const { id } = ev;
 
 			const update: Partial<IData> = {
@@ -194,10 +194,6 @@ export default class DataStore extends Store<IData> {
 			};
 			if (this.isSelected(id)) {
 				update.selectedRows = selectedRows.filter(a => a !== id);
-				if (selected == id)
-					update.selected =
-						update.selectedRows[update.selectedRows.length - 1] ||
-						null;
 			}
 
 			this.setState(update);
@@ -260,14 +256,16 @@ export default class DataStore extends Store<IData> {
 				show,
 				column,
 			}: IDataMethodsConfig["select-row"]) => {
-				let { selected, selectedRows } = this.getState();
+				let { selectedRows } = this.getState();
+
+				if (!selectedRows.length) range = toggle = false;
 
 				if (range) {
 					const { data } = this.getState();
 
-					if (!selected) selected = id;
-
-					let sindex = data.findIndex(a => a.id == selected);
+					let sindex = data.findIndex(
+						a => a.id == selectedRows[selectedRows.length - 1]
+					);
 					let eindex = data.findIndex(a => a.id == id);
 					if (sindex > eindex) [sindex, eindex] = [eindex, sindex];
 
@@ -275,19 +273,16 @@ export default class DataStore extends Store<IData> {
 						if (selectedRows.indexOf(a.id) === -1)
 							selectedRows.push(a.id);
 					});
-					selected = id;
 				} else if (toggle && this.isSelected(id)) {
 					if (mode === true) return;
 					selectedRows = selectedRows.filter(a => a !== id);
-					selected = selectedRows[selectedRows.length - 1] || null;
 				} else {
-					selected = id;
 					if (toggle) {
 						if (mode === false) return;
 						selectedRows.push(id);
 					} else selectedRows = [id];
 				}
-				this.setState({ selected, selectedRows });
+				this.setState({ selectedRows });
 
 				if (show) this.in.exec("scroll", { row: id, column });
 			}
@@ -528,9 +523,9 @@ export default class DataStore extends Store<IData> {
 					break;
 				}
 				case "f2": {
-					const { editor, selected } = this.getState();
-					if (!editor && selected) {
-						this.in.exec("open-editor", { id: selected });
+					const { editor, selectedRows } = this.getState();
+					if (!editor && selectedRows.length) {
+						this.in.exec("open-editor", { id: selectedRows[0] });
 					}
 					break;
 				}
@@ -807,7 +802,11 @@ export default class DataStore extends Store<IData> {
 							width += curCell.width || sizes.colWidth;
 						}
 					}
-					flexgrow ? (row.flexgrow = flexgrow) : (row.width = width);
+					if (flexgrow) {
+						row.flexgrow = flexgrow;
+					} else {
+						row.width = width;
+					}
 				}
 			} else {
 				row.width = col.width;

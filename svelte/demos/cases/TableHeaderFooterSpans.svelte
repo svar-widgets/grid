@@ -4,13 +4,13 @@
 
 	const { data, columnsSpans } = getData();
 
-	let api;
+	let api = $state();
 </script>
 
 <div class="demo" style="padding: 20px;">
 	<div>
 		<HeaderMenu {api}>
-			<Grid {data} columns={columnsSpans} footer={true} bind:api />
+			<Grid {data} columns={columnsSpans} footer={true} bind:this={api} />
 		</HeaderMenu>
 	</div>
 </div>

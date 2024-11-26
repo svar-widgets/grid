@@ -2,14 +2,9 @@
 	import { Cell } from "wx-svelte-grid";
 	import { getData } from "./data";
 
-	export let row;
-	export let col;
-	export let columnStyle;
-	export let cellStyle;
+	let { row, col, columnStyle, cellStyle } = $props();
 
 	const tagsData = getData().tags;
-
-	$: tags = getTags(tagsData, row[col.id]);
 
 	function getTags(data, value) {
 		const result = [];
@@ -22,6 +17,7 @@
 
 		return result;
 	}
+	let tags = $derived(getTags(tagsData, row[col.id]));
 </script>
 
 <Cell {row} {col} {columnStyle} {cellStyle}>

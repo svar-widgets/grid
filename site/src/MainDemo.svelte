@@ -2,9 +2,9 @@
 	import ThemeSelect from "./ThemeSelect.svelte";
 	import Component from "./Component.svelte";
 
-	export let skin;
+	let { skin = $bindable() } = $props();
 	function selectSkin(ev) {
-		skin = ev.detail.selected.id;
+		skin = ev.selected.id;
 	}
 </script>
 
@@ -12,7 +12,7 @@
 	<div class="toolbar">
 		<div class="control">
 			<span>Theme</span>
-			<ThemeSelect bind:value={skin} on:select={selectSkin} />
+			<ThemeSelect bind:value={skin} onselect={selectSkin} />
 		</div>
 	</div>
 	<div class="bottom">

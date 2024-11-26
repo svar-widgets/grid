@@ -6,7 +6,7 @@
 	const data = repeatData(1000);
 	const columns = repeatColumns(100);
 
-	let api;
+	let api = $state();
 	function doScroll(row, column) {
 		api.exec("scroll", { row, column });
 	}
@@ -16,10 +16,10 @@
 	<div
 		style="padding-bottom: 20px; display:flex; flex-direction: columns; gap: 20px;"
 	>
-		<Button type="primary" click={() => doScroll(data[999].id)}>
+		<Button type="primary" onclick={() => doScroll(data[999].id)}>
 			Scroll to the last row
 		</Button>
-		<Button type="primary" click={() => doScroll(null, columns[99].id)}>
+		<Button type="primary" onclick={() => doScroll(null, columns[99].id)}>
 			Scroll to the last column
 		</Button>
 		<Button
@@ -30,6 +30,6 @@
 		</Button>
 	</div>
 	<div style="width: 1000px; height: 600px;">
-		<Grid bind:api {data} {columns} split={{ left: 1 }} />
+		<Grid bind:this={api} {data} {columns} split={{ left: 1 }} />
 	</div>
 </div>

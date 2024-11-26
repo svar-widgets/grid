@@ -1,18 +1,13 @@
 <script>
 	import { Checkbox } from "wx-svelte-core";
 	import { Cell } from "wx-svelte-grid";
-	import { afterUpdate } from "svelte";
 
-	export let row;
-	export let col;
-	export let columnStyle;
-	export let cellStyle;
-	export let api;
+	let { row, col, columnStyle, cellStyle, api } = $props();
 
 	const { selectedRows, data } = api.getReactiveState();
 
-	let parentData;
-	afterUpdate(() => {
+	let parentData = $state();
+	$effect(() => {
 		if (parentData) {
 			const everyChildSelected = parentData.data.every(
 				d => $selectedRows.indexOf(d.id) !== -1
@@ -27,7 +22,7 @@
 	});
 
 	function onChange(ev) {
-		const { value } = ev.detail;
+		const { value } = ev;
 		const parent = row.$parent;
 
 		api.exec("select-row", {
@@ -53,7 +48,7 @@
 <Cell {row} {col} {columnStyle} {cellStyle}>
 	<div data-action="ignore-click">
 		<Checkbox
-			on:change={onChange}
+			onchange={onChange}
 			value={$selectedRows.indexOf(row.id) !== -1}
 		/>
 	</div>

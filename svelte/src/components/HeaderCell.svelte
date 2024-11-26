@@ -3,11 +3,7 @@
 	import { resize } from "../helpers/actions/resize";
 	import { getCssName, getStyle } from "../helpers/columnWidth";
 
-	export let cell;
-	export let column;
-	export let row;
-	export let lastRow;
-	export let columnStyle;
+	let { cell, column, row, lastRow, columnStyle } = $props();
 
 	const api = getContext("grid-store");
 
@@ -27,29 +23,31 @@
 	function sort(ev) {
 		api.exec("sort-rows", { key: cell.id, add: ev.ctrlKey });
 	}
-	function collapse() {
+	function collapse(ev) {
+		if (ev) ev.stopPropagation();
 		api.exec("collapse-column", { id: cell.id, row });
 	}
 
-	let style;
-	$: style = getStyle(
-		cell.width,
-		cell.flexgrow,
-		column.fixed,
-		column.left,
-		cell.height
+	let style = $derived(
+		getStyle(
+			cell.width,
+			cell.flexgrow,
+			column.fixed,
+			column.left,
+			cell.height
+		)
 	);
 
-	let css = "";
-	$: css = getCssName(column, cell, columnStyle);
+	const css = $derived(getCssName(column, cell, columnStyle));
 </script>
 
 {#if cell.collapsed && column.collapsed}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="wx-cell {css} {cell.css || ''} wx-collapsed"
 		{style}
-		on:click|stopPropagation={collapse}
+		onclick={collapse}
 		data-header-id={column.id}
 	>
 		<div class="wx-text">{cell.text || ""}</div>
@@ -61,21 +59,23 @@
 		data-header-id={column.id}
 	>
 		{#if cell.collapsible}
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<div class="wx-collapse" on:click|stopPropagation={collapse}>
-				<i class="wxi-angle-{cell.collapsed ? 'down' : 'right'}" />
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div class="wx-collapse" onclick={collapse}>
+				<i class="wxi-angle-{cell.collapsed ? 'down' : 'right'}"></i>
 			</div>
 		{/if}
 
 		<div class="wx-text">{cell.text || ""}</div>
 
 		{#if column.resize && lastRow}
-			<div class="wx-grip" use:resize={{ down, move }} />
+			<div class="wx-grip" use:resize={{ down, move }}></div>
 		{/if}
 
 		{#if column.sort}
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<div class="wx-sort" on:click={sort}>
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div class="wx-sort" onclick={sort}>
 				{#if column.$sort && lastRow}
 					{#if column.$sort.index > 0}
 						<div class="wx-order">{column.$sort.index}</div>
@@ -84,7 +84,7 @@
 						class="wxi-arrow-{column.$sort.order === 'asc'
 							? 'up'
 							: 'down'}"
-					/>
+					></i>
 				{/if}
 			</div>
 		{/if}

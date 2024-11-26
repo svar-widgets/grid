@@ -1,14 +1,13 @@
 <script>
-	import { afterUpdate } from "svelte";
 	import { getRenderValue } from "wx-grid-store";
 
-	export let content = null;
-	export let api;
+	let { content: Content = null, api, children } = $props();
 
-	let tooltipData, tooltipNode, tooltipCoords;
-	let targetCoords;
-	let area, areaCoords;
-	let pos;
+	let area;
+	let tooltipNode = $state();
+	let areaCoords = $state();
+	let tooltipData = $state();
+	let pos = $state();
 
 	function findAttribute(node) {
 		while (node) {
@@ -24,9 +23,10 @@
 		}
 		return { id: null, col: null, target: null };
 	}
-	afterUpdate(() => {
+
+	$effect(() => {
 		if (tooltipNode) {
-			tooltipCoords = tooltipNode.getBoundingClientRect();
+			let tooltipCoords = tooltipNode.getBoundingClientRect();
 			if (tooltipCoords.right >= areaCoords.right) {
 				pos.left = areaCoords.width - tooltipCoords.width - 5;
 			}
@@ -35,6 +35,7 @@
 			}
 		}
 	});
+
 	let timer;
 	const TIMEOUT = 300;
 	const debounce = code => {
@@ -56,7 +57,7 @@
 				tooltipData = getTooltipData(id);
 				text = getTooltipText(col);
 			}
-			targetCoords = target.getBoundingClientRect();
+			let targetCoords = target.getBoundingClientRect();
 			areaCoords = area.getBoundingClientRect();
 			const top = targetCoords.top + targetCoords.height - areaCoords.top;
 			const left = e.clientX - areaCoords.left;
@@ -74,19 +75,20 @@
 	}
 </script>
 
-<div class="wx-area" bind:this={area} on:mousemove={move}>
-	{#if pos && pos.col.tooltip !== false && (content || pos.text)}
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="wx-area" bind:this={area} onmousemove={move}>
+	{#if pos && pos.col.tooltip !== false && (Content || pos.text)}
 		<div
 			class="tooltip"
 			bind:this={tooltipNode}
 			style="top:{pos.top}px;left:{pos.left}px"
 		>
-			{#if content}
-				<svelte:component this={content} data={tooltipData} />
+			{#if Content}
+				<Content data={tooltipData} />
 			{:else}{pos.text}{/if}
 		</div>
 	{/if}
-	<slot />
+	{@render children()}
 </div>
 
 <style>

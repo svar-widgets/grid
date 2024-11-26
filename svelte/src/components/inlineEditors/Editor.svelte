@@ -4,7 +4,7 @@
 	import { clickOutside } from "wx-lib-dom";
 	import { editors } from "./editors";
 
-	export let col;
+	let { col } = $props();
 
 	const api = getContext("grid-store");
 	const { editor } = api.getReactiveState();
@@ -21,8 +21,11 @@
 		api.exec("editor", { value });
 	}
 
-	let style;
-	$: style = getStyle(col.width, col.flexgrow, col.fixed, col.left);
+	let style = $derived(
+		getStyle(col.width, col.flexgrow, col.fixed, col.left)
+	);
+
+	const SvelteComponent = $derived(editors[col.editor.type]);
 </script>
 
 <div
@@ -31,11 +34,10 @@
 	class:wx-shadow={col.fixed === -1}
 	use:clickOutside={save}
 >
-	<svelte:component
-		this={editors[col.editor.type]}
+	<SvelteComponent
 		editor={$editor}
 		actions={{ save, cancel, updateValue }}
-		on:action={({ detail }) => api.exec(detail.action, detail.data)}
+		onaction={({ action, data }) => api.exec(action, data)}
 	/>
 </div>
 

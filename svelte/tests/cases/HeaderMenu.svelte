@@ -13,7 +13,7 @@
 		{ id: "companyName", header: "Company", flexgrow: 1 },
 	];
 
-	let api;
+	let api = $state();
 </script>
 
 <Material>
@@ -24,7 +24,7 @@
 					columns={{ city: true, firstName: true, id: true }}
 					{api}
 				>
-					<Grid {data} {columns} bind:api />
+					<Grid {data} {columns} bind:this={api} />
 				</HeaderMenu>
 			</div>
 		</div>

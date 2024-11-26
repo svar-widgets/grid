@@ -2,7 +2,7 @@
 	import { Grid, defaultMenuOptions } from "../../src";
 	import { ActionMenu } from "wx-svelte-menu";
 
-	let api;
+	let api = $state();
 
 	import { getData } from "../data";
 	const { data } = getData();
@@ -28,7 +28,7 @@
 	const helpers = getContext("wx-helpers");
 
 	function action(action, ev) {
-		const { row, column } = ev.detail;
+		const { row, column } = ev;
 		const event = `Event: ${action}\n`;
 		const r = `Row ID: ${row}\n`;
 		const c = `Col ID: ${column}\n`;
@@ -37,7 +37,7 @@
 	}
 
 	const handleClicks = ev => {
-		const option = ev.detail.action;
+		const option = ev.action;
 		if (option) {
 			const id = api.getState().selected;
 			switch (option.id) {
@@ -69,16 +69,16 @@
 			at={"point"}
 			dataKey={"actionId"}
 			options={defaultMenuOptions}
-			on:click={handleClicks}
+			onclick={handleClicks}
 		>
 			<Grid
-				bind:api
+				bind:this={api}
 				cellStyle={(row, col) =>
 					col.id == "city" ? "button_cell" : ""}
 				{data}
 				{columns}
-				on:custom-button={ev => action("button", ev)}
-				on:custom-icon={ev => action("icon", ev)}
+				oncustombutton={ev => action("button", ev)}
+				oncustomicon={ev => action("icon", ev)}
 			/>
 		</ActionMenu>
 	</div>

@@ -5,11 +5,9 @@
 
 	const { columns, data } = getData();
 
-	let showOverlay = true;
+	let showOverlay = $state(true);
 
-	function showData({ detail }) {
-		const show = detail.show;
-
+	function showData({ show }) {
 		if (show) showOverlay = false;
 	}
 </script>
@@ -31,7 +29,7 @@
 			{columns}
 			overlay={showOverlay ? Overlay : null}
 			footer={true}
-			on:overlay-button-click={showData}
+			onoverlaybuttonclick={showData}
 		/>
 	</div>
 </div>

@@ -9,12 +9,12 @@
 
 	const { columns } = getBackend();
 	const helpers = getContext("wx-helpers");
-	let blockSelect = false;
+	let blockSelect = $state(false);
 	let kapi;
 
-	let data = [];
+	let data = $state([]);
 	const provider = new RestDataProvider(
-		"https://master--table-go--dev.webix.io/films",
+		"https://master--svar-grid-go--dev.webix.io/films",
 		o => o
 	);
 	provider.getData().then(v => (data = v));
@@ -69,17 +69,17 @@
 		<Field label="Prevent selection after adding">
 			<Switch bind:value={blockSelect} />
 		</Field>
-		<Button click={addRow} type="primary">Add row</Button>
-		<Button click={deleteRow}>Delete row</Button>
+		<Button onclick={addRow} type="primary">Add row</Button>
+		<Button onclick={deleteRow}>Delete row</Button>
 		<hr />
 
 		<Grid
 			{init}
 			{data}
 			{columns}
-			on:select-row={log("[select] handler")}
-			on:add-row={log("[add] handler")}
-			on:delete-row={log("[delete] handler")}
+			onselectrow={log("[select] handler")}
+			onaddrow={log("[add] handler")}
+			ondeleterow={log("[delete] handler")}
 		/>
 	</div>
 </div>

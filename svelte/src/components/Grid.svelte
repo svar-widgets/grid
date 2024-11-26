@@ -1,8 +1,7 @@
 <script>
 	// svelte core
-	import { createEventDispatcher, getContext, setContext } from "svelte";
+	import { getContext, setContext } from "svelte";
 	import { writable } from "svelte/store";
-	const dispatch = createEventDispatcher();
 
 	// core widgets lib
 	import { Locale } from "wx-svelte-core";
@@ -15,66 +14,113 @@
 	// ui
 	import Layout from "./Layout.svelte";
 
-	// incoming parameters
-	export let data = [];
-	export let columns = [];
-
-	export let rowStyle = null;
-	export let columnStyle = null;
-	export let cellStyle = null;
-
-	export let selected = null;
-	export let selectedRows = [];
-	export let select = true;
-	export let multiselect = false;
-
-	export let header = true;
-	export let footer = false;
-	export let dynamic = null;
-	export let filter = null;
-	export let overlay = null;
-	export let autoRowHeight = false;
-	export let sizes = {};
-	export let split = { left: 0 };
-
-	export let tree = false;
-	export let autoConfig = false;
-
-	export let init = null;
-
-	// auto config columns
-	$: if (autoConfig && !columns.length && data.length) {
-		const test = data[0];
-
-		for (let key in test)
-			if (key != "id" && key[0] != "$") {
-				let col = {
-					id: key,
-					header: key[0].toUpperCase() + key.substr(1),
-				};
-
-				if (typeof autoConfig === "object")
-					col = { ...col, ...autoConfig };
-				columns.push(col);
-			}
-	}
-	//sync selection props
-	$: {
-		if (selectedRows.length) selected = selectedRows[0];
-		else if (selected) selectedRows.push(selected);
-	}
-
-	$: _skin = getContext("wx-theme");
+	let {
+		data = [],
+		columns = [],
+		rowStyle = null,
+		columnStyle = null,
+		cellStyle = null,
+		selectedRows = [],
+		select = true,
+		multiselect = false,
+		header = true,
+		footer = false,
+		dynamic = null,
+		editor = null,
+		filter = null,
+		overlay = null,
+		autoRowHeight = false,
+		sizes = {},
+		split = { left: 0 },
+		tree = false,
+		autoConfig = false,
+		init = null,
+		...restProps
+	} = $props();
 
 	// init stores
 	const dataStore = new DataStore(writable);
-	$: {
+
+	// define event route
+	let firstInRoute = dataStore.in;
+
+	const dash = /-/g;
+	let lastInRoute = new EventBusRouter((a, b) => {
+		const name = "on" + a.replace(dash, "");
+		if (restProps[name]) {
+			restProps[name](b);
+		}
+	});
+	firstInRoute.setNext(lastInRoute);
+
+	// public API
+	export const // state
+		getState = dataStore.getState.bind(dataStore),
+		getReactiveState = dataStore.getReactive.bind(dataStore),
+		getStores = () => ({ data: dataStore }),
+		// events
+		exec = firstInRoute.exec,
+		setNext = ev => (lastInRoute = lastInRoute.setNext(ev)),
+		intercept = firstInRoute.intercept.bind(firstInRoute),
+		on = firstInRoute.on.bind(firstInRoute),
+		detach = firstInRoute.detach.bind(firstInRoute),
+		// extra api
+		getRow = id => dataStore.getRow(id),
+		getColumn = id => dataStore.getColumn(id);
+
+	const api = {
+		exec,
+		setNext,
+		intercept,
+		on,
+		detach,
+		getRow,
+		getColumn,
+		getState,
+		getReactiveState,
+		getStores,
+	};
+
+	// common API available in components
+	setContext("grid-store", {
+		getState: dataStore.getState.bind(dataStore),
+		getReactiveState: dataStore.getReactive.bind(dataStore),
+		exec: firstInRoute.exec.bind(firstInRoute),
+		getRow: dataStore.getRow.bind(dataStore),
+	});
+	// auto config columns
+	const finalColumns = $derived.by(() => {
+		let res = columns;
+		if (autoConfig && !res.length && data.length) {
+			const test = data[0];
+
+			for (let key in test) {
+				if (key != "id" && key[0] != "$") {
+					let col = {
+						id: key,
+						header: key[0].toUpperCase() + key.substr(1),
+					};
+
+					if (typeof autoConfig === "object")
+						col = { ...col, ...autoConfig };
+					columns.push(col);
+				}
+			}
+		}
+
+		return columns;
+	});
+
+	let _skin = $derived(getContext("wx-theme"));
+
+	let init_once = true;
+	const reinitStore = () => {
 		dataStore.init({
 			data,
-			columns,
+			editor,
+			columns: finalColumns,
 			split,
 			sizes,
-			selected,
 			selectedRows,
 			dynamic,
 			filter,
@@ -82,42 +128,14 @@
 			_skin,
 		});
 
-		if (init) {
+		if (init_once && init) {
 			init(api);
-			init = null;
+			init_once = false;
 		}
-	}
-
-	// define event route
-	let firstInRoute = dataStore.in;
-	let lastInRoute = new EventBusRouter(dispatch);
-	firstInRoute.setNext(lastInRoute);
-
-	// public API
-	export const api = {
-		// state
-		getState: dataStore.getState.bind(dataStore),
-		getReactiveState: dataStore.getReactive.bind(dataStore),
-		getStores: () => ({ data: dataStore }),
-
-		// events
-		exec: firstInRoute.exec,
-		setNext: ev => (lastInRoute = lastInRoute.setNext(ev)),
-		intercept: firstInRoute.intercept.bind(firstInRoute),
-		on: firstInRoute.on.bind(firstInRoute),
-		detach: firstInRoute.detach.bind(firstInRoute),
-
-		// extra api
-		getRow: id => dataStore.getRow(id),
-		getColumn: id => dataStore.getColumn(id),
 	};
 
-	// common API available in components
-	setContext("grid-store", {
-		getReactiveState: dataStore.getReactive.bind(dataStore),
-		exec: firstInRoute.exec.bind(firstInRoute),
-		getRow: dataStore.getRow.bind(dataStore),
-	});
+	reinitStore();
+	$effect(reinitStore);
 </script>
 
 <Locale words={en} optional={true}>

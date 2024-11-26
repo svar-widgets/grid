@@ -1,10 +1,10 @@
 <script>
-	export let data;
+	let { data } = $props();
 </script>
 
 <div class="status {data.type}">
 	<div class="status-wrapper">
-		<div class="dot" />
+		<div class="dot"></div>
 		<span class="name">{data.name}</span>
 	</div>
 </div>

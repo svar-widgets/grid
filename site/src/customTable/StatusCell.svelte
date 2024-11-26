@@ -3,14 +3,11 @@
 	import StatusStub from "./StatusStub.svelte";
 	import { getData } from "./data";
 
-	export let row;
-	export let col;
-	export let columnStyle;
-	export let cellStyle;
+	let { row, col, columnStyle, cellStyle } = $props();
 
 	const statuses = getData().statuses;
 
-	$: status = statuses.find(st => st.id === row[col.id]);
+	let status = $derived(statuses.find(st => st.id === row[col.id]));
 </script>
 
 <Cell {row} {col} {columnStyle} {cellStyle}>

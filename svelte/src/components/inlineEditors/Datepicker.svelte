@@ -3,21 +3,14 @@
 
 	import { Calendar, Dropdown } from "wx-svelte-core";
 
-	export let actions;
-	export let editor;
+	let { actions, editor } = $props();
 
-	let value = editor.value || new Date();
+	let value = $state(editor.value || new Date());
 
-	let template;
-	let cell;
+	let template = $derived(editor?.config?.template);
+	let cell = $derived(editor?.config?.cell);
 
-	$: if (editor.config) {
-		({ template, cell } = editor.config);
-	}
-
-	function updateValue({ detail }) {
-		const value = detail.value;
-
+	function updateValue({ value }) {
 		actions.updateValue(value);
 		actions.save();
 	}
@@ -29,16 +22,18 @@
 	});
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="wx-value" on:click={actions.cancel()}>
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="wx-value" onclick={actions.cancel()}>
 	{#if template}
 		{template(value)}
 	{:else if cell}
-		<svelte:component this={cell} data={value} on:action />
+		{@const SvelteComponent = cell}
+		<SvelteComponent data={value} onaction />
 	{:else}<span class="wx-text">{editor.renderedValue}</span>{/if}
 </div>
 <Dropdown width={"auto"}>
-	<Calendar bind:value on:change={updateValue} />
+	<Calendar bind:value onchange={updateValue} />
 </Dropdown>
 
 <style>

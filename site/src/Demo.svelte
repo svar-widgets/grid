@@ -2,7 +2,7 @@
 	import { Globals, Willow, WillowDark, Locale } from "wx-svelte-core";
 	import MainDemo from "./MainDemo.svelte";
 
-	let skin = "willow";
+	let skin = $state("willow");
 </script>
 
 <Willow />

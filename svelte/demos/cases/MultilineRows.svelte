@@ -13,16 +13,16 @@
 		}
 	}
 
-	let api;
+	let api = $state();
 </script>
 
 <div class="bar">
-	<Button click={addRow} type="primary">Add row</Button>
-	<Button click={deleteRow}>Delete Row</Button>
+	<Button onclick={addRow} type="primary">Add row</Button>
+	<Button onclick={deleteRow}>Delete Row</Button>
 </div>
 <div class="demo">
 	<Grid
-		bind:api
+		bind:this={api}
 		autoRowHeight
 		data={repeatData(60)}
 		columns={repeatColumns(15).map(c => ({

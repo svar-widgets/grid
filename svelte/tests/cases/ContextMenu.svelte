@@ -13,7 +13,7 @@
 		{ id: "companyName", header: "Company", flexgrow: 1 },
 	];
 
-	let table;
+	let table = $state();
 	function init(api) {
 		table = api;
 	}

@@ -1,5 +1,5 @@
 <script>
-	import { afterUpdate, getContext } from "svelte";
+	import { getContext } from "svelte";
 	import { onresize } from "../helpers/actions/onresize";
 	import { delegateClick, locateAttr, clickOutside } from "wx-lib-dom";
 	import { hotkeys } from "wx-grid-store";
@@ -12,23 +12,25 @@
 
 	const SCROLLSIZE = getScrollSize();
 
-	export let header;
-	export let footer;
-	export let overlay;
-	export let select;
-	export let multiselect;
+	let {
+		header,
+		footer,
+		overlay,
+		select,
+		multiselect,
 
-	export let rowStyle;
-	export let columnStyle;
-	export let cellStyle;
-	export let autoRowHeight;
+		rowStyle,
+		columnStyle,
+		cellStyle,
+		autoRowHeight,
+	} = $props();
 
 	const api = getContext("grid-store");
 
 	const {
 		dynamic,
-		flatData: data,
 		_columns,
+		flatData: data,
 		split,
 		_sizes,
 		selectedRows,
@@ -37,101 +39,159 @@
 		scroll,
 	} = api.getReactiveState();
 
-	$: defaultRowHeight = $_sizes.rowHeight;
-	let clientWidth = 0,
-		clientHeight = 0,
-		fullHeight;
-	$: {
+	const defaultRowHeight = $derived($_sizes.rowHeight);
+	let clientWidth = $state(0),
+		clientHeight = $state(0);
+
+	const fullHeight = $derived.by(() => {
 		const count = $dynamic ? $dynamic.rowsCount : $data.length;
 		const base = count * defaultRowHeight;
 		if (autoRowHeight) {
-			fullHeight =
+			return (
 				renderedHeight +
-				deltaTop +
-				(count - renderEnd) * defaultRowHeight;
+				renderRows.d +
+				(count - renderEnd) * defaultRowHeight
+			);
 		} else {
-			fullHeight = base;
+			return base;
 		}
-	}
+	});
+	// $inspect(fullHeight, "fullHeight");
 
 	// mark split columns
-	let leftColumns = [],
-		centerColumns = [],
-		leftWidth = 0;
-	$: {
-		leftColumns = $_columns.slice(0, $split.left).filter(c => !c.hidden);
-		leftWidth = 0;
-		leftColumns.forEach(a => {
+	const leftColumns = $derived.by(() => {
+		const columns = $_columns
+			.slice(0, $split.left)
+			.filter(c => !c.hidden)
+			.map(a => ({ ...a }));
+		let width = 0; // columns.reduce((acc, col) => acc + col.width, 0);
+		columns.forEach(a => {
 			a.fixed = 1;
-			a.left = leftWidth;
-			leftWidth += a.width;
+			a.left = width;
+			width += a.width;
 		});
+		return { columns, width };
+	});
+	// $inspect(leftColumns, "leftColumns");
 
-		if (leftColumns.length) leftColumns[leftColumns.length - 1].fixed = -1;
-
-		centerColumns = $_columns.slice($split.left).filter(c => !c.hidden);
-		centerColumns.forEach(a => {
+	const centerColumns = $derived.by(() => {
+		const center = $_columns.slice($split.left).filter(c => !c.hidden);
+		center.forEach(a => {
 			a.fixed = 0;
 		});
-	}
+		return center;
+	});
 
-	// get full width
-	let hasAny, fullWidth;
-	$: {
-		hasAny = false;
-		fullWidth = 0;
-		$_columns.forEach(col => {
-			if (!col.hidden) {
-				if (col.flexgrow) {
-					hasAny = hasAny || col.flexgrow;
-				}
-				fullWidth += col.width;
+	const EXTRACOLUMNS = 1;
+	const renderColumns = $derived.by(() => {
+		let data, header, footer;
+
+		// get visible columns
+		const left = scrollLeft;
+		const right = scrollLeft + clientWidth;
+
+		let start = 0;
+		let end = 0;
+		let sum = 0;
+
+		let d = 0;
+		centerColumns.forEach((col, index) => {
+			if (left > sum) {
+				start = index;
+				d = sum;
 			}
+			sum = sum + col.width;
+
+			if (right > sum) end = index + EXTRACOLUMNS;
 		});
-		contentWidth = fullWidth;
-	}
+
+		// include visible header/footer spans
+		const headerPos = getHeaderPosition(start, d, "header");
+		const footerPos = getHeaderPosition(start, d, "footer");
+
+		const dh = headerPos.delta;
+		const csH = headerPos.index;
+
+		const df = footerPos.delta;
+		const csF = footerPos.index;
+
+		if (hasAny && fullWidth > clientWidth) {
+			data = header = footer = [...leftColumns.columns, ...centerColumns];
+		} else {
+			data = [
+				...leftColumns.columns,
+				...centerColumns.slice(start, end + 1),
+			];
+			header = [
+				...leftColumns.columns,
+				...centerColumns.slice(csH, end + 1),
+			];
+			footer = [
+				...leftColumns.columns,
+				...centerColumns.slice(csF, end + 1),
+			];
+		}
+
+		return { data, header, footer, d, df, dh };
+	});
+	// $inspect(renderColumns, "renderColumns");
+
+	const hasAny = $derived.by(() => {
+		return $_columns.some(col => !col.hidden && col.flexgrow);
+	});
+
+	const fullWidth = $derived(
+		$_columns.reduce((acc, col) => {
+			if (!col.hidden) {
+				acc += col.width;
+			}
+			return acc;
+		}, 0)
+	);
+	// $inspect(fullWidth, "fullWidth");
+
+	const contentWidth = $derived(
+		hasAny && fullWidth <= clientWidth
+			? clientWidth - (hasVScroll ? SCROLLSIZE : 0)
+			: fullWidth
+	);
+	// $inspect(contentWidth, "contentWidth");
+
+	const hasVScroll = $derived(
+		clientWidth && clientHeight ? fullHeight > clientHeight : false
+	);
+	const hasHScroll = $derived(
+		clientWidth && clientHeight ? fullWidth > clientWidth : false
+	);
 
 	// set global width
-	let globalWidth,
-		contentWidth,
-		hasVScroll = false,
-		hasHScroll = false;
-
-	$: hasVScroll =
-		clientWidth && clientHeight ? fullHeight > clientHeight : false;
-	$: hasHScroll =
-		clientWidth && clientHeight ? fullWidth > clientWidth : false;
-	$: {
-		if (hasAny && fullWidth <= clientWidth) {
-			// we have flexible columns
-			// ignoring fullWidth as it doesn't include flex columns and has no meaning in this context
-			globalWidth = contentWidth = clientWidth;
-			contentWidth -= hasVScroll ? SCROLLSIZE : 0;
-		} else {
-			// we have a fixed width
-			if (contentWidth < clientWidth)
-				globalWidth = fullWidth + (hasVScroll ? SCROLLSIZE : 0);
-			else globalWidth = -1;
-		}
-	}
+	// if we have flexible columns
+	// then ignore the fullWidth as it doesn't include flex columns and has no meaning in this context
+	const globalWidth = $derived(
+		hasAny && fullWidth <= clientWidth
+			? clientWidth
+			: contentWidth < clientWidth
+				? fullWidth + (hasVScroll ? SCROLLSIZE : 0)
+				: -1
+	);
+	// $inspect(globalWidth, "globalWidth");
 
 	// hom many rows visible
-	let visibleRows, visibleRowsHeight;
-	$: {
-		visibleRowsHeight =
-			clientHeight -
+	const visibleRowsHeight = $derived(
+		clientHeight -
 			(header ? $_sizes.headerHeight : 0) -
 			(footer ? $_sizes.footerHeight : 0) -
-			(hasHScroll ? SCROLLSIZE : 0);
-		visibleRows = Math.ceil(visibleRowsHeight / defaultRowHeight) + 1;
-	}
+			(hasHScroll ? SCROLLSIZE : 0)
+	);
+	const visibleRows = $derived(
+		Math.ceil(visibleRowsHeight / defaultRowHeight) + 1
+	);
 
 	// request data if necessary
 	const EXTRAROWS = 2;
-	let requestData = { row: { start: 0, end: 0 } },
-		deltaTop = 0;
-	$: {
-		let start = 0;
+	const renderRows = $derived.by(() => {
+		let start = 0,
+			deltaTop = 0;
 		if (autoRowHeight) {
 			let st = scrollTop;
 			while (st > 0) {
@@ -156,98 +216,38 @@
 			start + visibleRows + EXTRAROWS
 		);
 
-		if (start != requestData.row.start || end != requestData.row.end) {
-			requestData = { row: { start, end } };
-			if ($dynamic) {
-				api.exec("data-request", { requestData });
-			}
+		return { d: deltaTop, start, end };
+	});
+
+	let lastCall = {};
+	$effect(() => {
+		if (
+			$dynamic &&
+			(lastCall.start !== renderRows.start ||
+				lastCall.end !== renderRows.end)
+		) {
+			const { start, end } = renderRows;
+			lastCall = { start, end };
+			api.exec("data-request", { row: { start, end } });
 		}
-	}
+	});
 
 	// get visible rows
-	let renderRows = [];
-	let renderStart = 0;
-	let renderEnd = 0;
-	$: {
-		if ($dynamic) renderRows = $data;
+	const dataRows = $derived.by(() => {
+		if ($dynamic) return $data;
 		else {
 			let rows = $data;
 			if ($filter) {
 				rows = rows.filter($filter);
 			}
-			renderRows = rows.slice(requestData.row.start, requestData.row.end);
+			return rows.slice(renderRows.start, renderRows.end);
 		}
+	});
+	let renderStart = $derived(renderRows.start);
+	let renderEnd = $state();
 
-		renderStart = requestData?.row.start;
-	}
-
-	// get visible columns
-	const EXTRACOLUMNS = 1;
-	let renderColumns = [],
-		renderColumnsH = [],
-		renderColumnsF = [],
-		deltaLeft = 0,
-		deltaLeftH = 0,
-		deltaLeftF = 0;
-	let cs, csH, csF, ce;
-	$: {
-		const left = scrollLeft;
-		const right = scrollLeft + clientWidth;
-
-		let start = 0;
-		let end = 0;
-		let sum = 0;
-
-		deltaLeft = deltaLeftH = deltaLeftF = 0;
-
-		centerColumns.forEach((col, index) => {
-			if (left > sum) {
-				start = index;
-				deltaLeft = deltaLeftH = deltaLeftF = sum;
-			}
-			sum = sum + col.width;
-
-			if (right > sum) end = index + EXTRACOLUMNS;
-		});
-
-		// include visible header/footer spans
-		const headerPos = getHeaderPosition(start, deltaLeft, "header");
-		const footerPos = getHeaderPosition(start, deltaLeft, "footer");
-
-		deltaLeftH = headerPos.delta;
-		csH = headerPos.index;
-
-		deltaLeftF = footerPos.delta;
-		csF = footerPos.index;
-
-		cs = start;
-		ce = end;
-	}
-
-	$: {
-		if (hasAny && fullWidth > clientWidth) {
-			renderColumns =
-				renderColumnsH =
-				renderColumnsF =
-					[...leftColumns, ...centerColumns];
-		} else {
-			renderColumns = [
-				...leftColumns,
-				...centerColumns.slice(cs, ce + 1),
-			];
-			renderColumnsH = [
-				...leftColumns,
-				...centerColumns.slice(csH, ce + 1),
-			];
-			renderColumnsF = [
-				...leftColumns,
-				...centerColumns.slice(csF, ce + 1),
-			];
-		}
-	}
-
-	let scrollLeft = 0,
-		scrollTop = 0;
+	let scrollLeft = $state(0),
+		scrollTop = $state(0);
 	function onScroll(ev) {
 		scrollTop = ev.target.scrollTop;
 		scrollLeft = ev.target.scrollLeft;
@@ -330,7 +330,7 @@
 		return width;
 	}
 
-	$: style = globalWidth ? `width:${globalWidth}px;` : "";
+	const style = $derived(globalWidth ? `width:${globalWidth}px;` : "");
 
 	let dataEl;
 	let rowHeights = [];
@@ -348,21 +348,18 @@
 		renderEnd = re;
 	}
 
-	if (autoRowHeight)
-		afterUpdate(() => {
-			adjustHeight();
-		});
-
-	let focusNode;
+	let focusNode, editorWasActivated;
 	const resetFocus = e => {
-		if (!e && focusNode) {
+		if (e) editorWasActivated = true;
+		if (!e && focusNode && editorWasActivated) {
 			focusNode.focus();
 			activeTable = true;
-		} else activeTable = null;
+		} else activeTable = false;
 	};
-	$: resetFocus($editor);
+	$effect(() => resetFocus($editor));
+	$effect(() => autoRowHeight && adjustHeight());
 
-	let activeTable = null;
+	let activeTable = $state(false);
 </script>
 
 <div
@@ -371,16 +368,17 @@
 		? $_sizes.headerHeight
 		: 0}px; --footer-height:{footer
 		? $_sizes.footerHeight
-		: 0}px;--split-left-width:{leftWidth}px;"
+		: 0}px;--split-left-width:{leftColumns.width}px;"
 >
-	<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		bind:this={focusNode}
 		class="wx-table-box"
-		use:clickOutside={() => (activeTable = null)}
+		use:clickOutside={() => (activeTable = false)}
 		class:wx-active={activeTable}
-		on:click={() => (activeTable = true)}
+		onclick={() => (activeTable = true)}
 		use:onresize={resize}
 		{style}
 		tabindex="0"
@@ -398,7 +396,7 @@
 	>
 		<div
 			class="wx-scroll"
-			on:scroll={onScroll}
+			onscroll={onScroll}
 			use:scrollTo={{
 				scroll,
 				getWidth: () => clientWidth,
@@ -409,8 +407,8 @@
 				<div class="wx-header-wrapper">
 					<HeaderFooter
 						{contentWidth}
-						deltaLeft={deltaLeftH}
-						columns={renderColumnsH}
+						deltaLeft={renderColumns.dh}
+						columns={renderColumns.header}
 						{columnStyle}
 					/>
 				</div>
@@ -418,7 +416,7 @@
 			<div
 				class="wx-body"
 				style="width:{contentWidth}px;height:{fullHeight}px;"
-				on:mousedown={ev => lockSelection(ev)}
+				onmousedown={ev => lockSelection(ev)}
 				use:delegateClick={bodyClickHandlers}
 			>
 				{#if overlay}
@@ -427,9 +425,9 @@
 				<div
 					bind:this={dataEl}
 					class="wx-data"
-					style="padding-top:{deltaTop}px;padding-left:{deltaLeft}px;"
+					style="padding-top:{renderRows.d}px;padding-left:{renderColumns.d}px;"
 				>
-					{#each renderRows as row (row.id)}
+					{#each dataRows as row (row.id)}
 						<div
 							class:wx-autoheight={autoRowHeight}
 							class={"wx-row" +
@@ -440,24 +438,20 @@
 								-1}
 							style={`${autoRowHeight ? "min-height" : "height"}:${defaultRowHeight}px;`}
 						>
-							{#each renderColumns as col (col.id)}
+							{#each renderColumns.data as col (col.id)}
 								{#if col.collapsed}
-									<div class="wx-cell wx-collapsed" />
+									<div class="wx-cell wx-collapsed"></div>
 								{:else if $editor?.id === row.id && $editor.column == col.id}
 									<Editor {col} />
 								{:else if col.cell}
-									<svelte:component
-										this={col.cell}
+									<col.cell
 										{api}
 										{row}
 										{col}
 										{columnStyle}
 										{cellStyle}
-										on:action={({ detail }) =>
-											api.exec(
-												detail.action,
-												detail.data
-											)}
+										onaction={({ action, data }) =>
+											api.exec(action, data)}
 									/>
 								{:else}
 									<Cell
@@ -476,8 +470,8 @@
 				<HeaderFooter
 					type={"footer"}
 					{contentWidth}
-					deltaLeft={deltaLeftF}
-					columns={renderColumnsF}
+					deltaLeft={renderColumns.df}
+					columns={renderColumns.footer}
 					{columnStyle}
 				/>
 			{/if}
@@ -488,12 +482,12 @@
 <style>
 	.wx-grid {
 		height: 100%;
-		width: 100%;
+		/* width: 100%;
 	}
 	.wx-grid :global(*) {
 		scroll-margin-top: var(--header-height);
 		scroll-margin-bottom: var(--footer-height);
-		scroll-margin-left: var(--split-left-width);
+		scroll-margin-left: var(--split-left-width); */
 	}
 	.wx-table-box {
 		outline: none;
