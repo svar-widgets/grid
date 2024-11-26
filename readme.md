@@ -25,6 +25,23 @@ SVAR DataGrid is an advanced Svelte component that enhances standard data tables
   <img src="https://cdn.svar.dev/public/react-grid.png" alt="SVAR Svelte DataGrid - Screenshot" width="700">
 </div>
 
+### 🔔 Versions for Svelte 4 and 5
+
+There are two versions of SVAR DataGrid: 
+- version **1.x** was designed to work with Svelte 4
+- version **2.x** is created for Svelte 5 (please note that this version is in beta and may contain some instabilities)
+
+To use the SVAR DataGrid v.2.0 beta for Svelte 5, install it as follows:
+
+```
+npm install wx-svelte-grid
+```
+
+To use the SVAR DataGrid for Svelte 4:
+
+```
+npm install wx-svelte-grid@1.3.0
+```
 
 ### :sparkles: Key Features
 
