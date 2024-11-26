@@ -10,8 +10,6 @@
 	import Overlay from "./Overlay.svelte";
 	import Editor from "./inlineEditors/Editor.svelte";
 
-	const SCROLLSIZE = getScrollSize();
-
 	let {
 		header,
 		footer,
@@ -39,6 +37,16 @@
 		scroll,
 	} = api.getReactiveState();
 
+	// defined as derived, so it will be calculated only once
+	// during first usage, which will be after rendering
+	const SCROLLSIZE = $derived(() => getScrollSize());
+
+	let scrollLeft = $state(0),
+		scrollTop = $state(0);
+	const hasAny = $derived.by(() => {
+		return $_columns.some(col => !col.hidden && col.flexgrow);
+	});
+
 	const defaultRowHeight = $derived($_sizes.rowHeight);
 	let clientWidth = $state(0),
 		clientHeight = $state(0);
@@ -57,6 +65,16 @@
 		}
 	});
 	// $inspect(fullHeight, "fullHeight");
+
+	const fullWidth = $derived(
+		$_columns.reduce((acc, col) => {
+			if (!col.hidden) {
+				acc += col.width;
+			}
+			return acc;
+		}, 0)
+	);
+	// $inspect(fullWidth, "fullWidth");
 
 	// mark split columns
 	const leftColumns = $derived.by(() => {
@@ -135,20 +153,6 @@
 		return { data, header, footer, d, df, dh };
 	});
 	// $inspect(renderColumns, "renderColumns");
-
-	const hasAny = $derived.by(() => {
-		return $_columns.some(col => !col.hidden && col.flexgrow);
-	});
-
-	const fullWidth = $derived(
-		$_columns.reduce((acc, col) => {
-			if (!col.hidden) {
-				acc += col.width;
-			}
-			return acc;
-		}, 0)
-	);
-	// $inspect(fullWidth, "fullWidth");
 
 	const contentWidth = $derived(
 		hasAny && fullWidth <= clientWidth
@@ -246,8 +250,6 @@
 	let renderStart = $derived(renderRows.start);
 	let renderEnd = $state();
 
-	let scrollLeft = $state(0),
-		scrollTop = $state(0);
 	function onScroll(ev) {
 		scrollTop = ev.target.scrollTop;
 		scrollLeft = ev.target.scrollLeft;

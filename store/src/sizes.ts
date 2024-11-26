@@ -6,6 +6,9 @@ const BASE_TREE_OFFSET = 28; // base offset for tree levels
 const SORT_EL_OFFSET = 16; // offset for sort arrows
 
 export function suggestSkin() {
+	// FIXME :: Svelte-kit
+	if (typeof document === "undefined") return "willow";
+
 	const skin = document.querySelector('[class^="wx"][class$="theme"]');
 	if (!skin) return "willow";
 

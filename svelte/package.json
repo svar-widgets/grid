@@ -1,6 +1,6 @@
 {
 	"name": "wx-svelte-grid",
-	"version": "2.0.0-beta-2",
+	"version": "2.0.0-beta-3",
 	"description": "A powerful and flexible DataGrid component written in Svelte",
 	"productTag": "grid",
 	"needsTrial": true,
@@ -36,9 +36,9 @@
 		"wx-lib-svelte": "0.4.0",
 		"wx-svelte-menu": "2.0.0-beta-2",
 		"wx-svelte-core": "2.0.0-beta-2",
-		"wx-grid-data-provider": "2.0.0-beta-2",
-		"wx-grid-locales": "2.0.0-beta-2",
-		"wx-grid-store": "2.0.0-beta-2"
+		"wx-grid-data-provider": "2.0.0-beta-3",
+		"wx-grid-locales": "2.0.0-beta-3",
+		"wx-grid-store": "2.0.0-beta-3"
 	},
 	"files": [
 		"src",
