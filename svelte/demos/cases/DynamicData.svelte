@@ -9,14 +9,14 @@
 	import { getContext } from "svelte";
 	const helpers = getContext("wx-helpers");
 
-	let data = [];
+	let data = $state([]);
 	let rawData = [];
-	let columns = [];
+	let columns = $state([]);
 
-	let stats = null;
-	let counter = 1;
-	let rowsCount = 1000;
-	let colsCount = 100;
+	let stats = $state(null);
+	let counter = $state(1);
+	let rowsCount = $state(1000);
+	let colsCount = $state(100);
 
 	function genAndLoad() {
 		timer("gen");
@@ -39,8 +39,7 @@
 	genAndLoad();
 
 	function dataProvider(ev) {
-		const { requestData } = ev.detail;
-		const { row } = requestData;
+		const { row } = ev;
 
 		if (row.start)
 			//mute notice for 1st request for testing purposes
@@ -71,7 +70,7 @@
 		/>
 	</div>
 	<div style="width: 320px; padding-bottom: 20px;">
-		<Button type="primary" click={genAndLoad}>
+		<Button type="primary" onclick={genAndLoad}>
 			Generate data and load
 		</Button>
 	</div>
@@ -81,7 +80,7 @@
 				{data}
 				{columns}
 				dynamic={{ rowsCount, colsCount }}
-				on:data-request={dataProvider}
+				onrequestdata={dataProvider}
 			/>
 		{/key}
 	</div>

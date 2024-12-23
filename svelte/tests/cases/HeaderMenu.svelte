@@ -1,7 +1,7 @@
 <script>
 	import { getData } from "../data";
 	import { Grid, HeaderMenu } from "../../src/";
-	import { Material, Locale } from "wx-svelte-core";
+	import { Willow, Locale } from "wx-svelte-core";
 
 	const { data } = getData();
 
@@ -13,10 +13,10 @@
 		{ id: "companyName", header: "Company", flexgrow: 1 },
 	];
 
-	let api;
+	let api = $state();
 </script>
 
-<Material>
+<Willow>
 	<Locale>
 		<div style="padding: 20px;">
 			<div>
@@ -24,9 +24,9 @@
 					columns={{ city: true, firstName: true, id: true }}
 					{api}
 				>
-					<Grid {data} {columns} bind:api />
+					<Grid {data} {columns} bind:this={api} />
 				</HeaderMenu>
 			</div>
 		</div>
 	</Locale>
-</Material>
+</Willow>

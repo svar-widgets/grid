@@ -17,7 +17,7 @@
 			header: 'Country - "combo"',
 			editor: {
 				type: "combo",
-				config: { template: option => `${option.id}. ${option.name}` },
+				config: { template: option => `${option.id}. ${option.label}` },
 			},
 			options: countries,
 			width: 180,

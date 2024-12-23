@@ -1,20 +1,22 @@
 <script>
 	import { ContextMenu } from "wx-svelte-menu";
-	import { getContext, createEventDispatcher } from "svelte";
+	import { getContext } from "svelte";
 	import { defaultMenuOptions } from "../../../src";
 
-	export let api;
-
-	export let handler;
-	export let options = defaultMenuOptions;
-	export let at = "point";
-	export let resolver = getItem;
-	export let dataKey;
-	export let filter;
-	export let css;
+	let {
+		api,
+		handler,
+		options = defaultMenuOptions,
+		at = "point",
+		resolver = getItem,
+		dataKey,
+		filter,
+		css,
+		children,
+		onclick,
+	} = $props();
 
 	const _ = getContext("wx-i18n").getGroup("grid");
-	const dispatch = createEventDispatcher();
 
 	const localize = options => {
 		return options.map(o => {
@@ -29,9 +31,9 @@
 	}
 
 	const handleClicks = ev => {
-		const option = ev.detail.action;
+		const option = ev.action;
 		if (option) {
-			const id = api.getState().selected;
+			const id = api.getState().selectedRows[0];
 			switch (option.id) {
 				case "add:before":
 					api.exec("add-row", { row: {}, before: id });
@@ -49,7 +51,7 @@
 					api.exec("delete-row", { id });
 					break;
 				default:
-					dispatch("click", ev.detail);
+					onclick(ev);
 			}
 		}
 	};
@@ -63,7 +65,7 @@
 	{handler}
 	{resolver}
 	{filter}
-	on:click={handleClicks}
+	onclick={handleClicks}
 >
-	<slot />
+	{@render children?.()}
 </ContextMenu>

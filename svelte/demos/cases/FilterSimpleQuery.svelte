@@ -20,7 +20,7 @@
 		{ id: "email", name: "Email" },
 	];
 
-	let filteredData = data;
+	let filteredData = $state(data);
 	function applyFilter(value) {
 		filteredData = createArrayFilter(value)(data);
 	}
@@ -33,7 +33,7 @@
 				type={"simple"}
 				{fields}
 				{options}
-				on:change={ev => applyFilter(ev.detail.value)}
+				onchange={ev => applyFilter(ev.value)}
 			/>
 		</div>
 		<Grid data={filteredData} {columns} />

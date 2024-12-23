@@ -1,13 +1,10 @@
 <script>
 	import { Willow } from "wx-svelte-core";
-	const SLOTS = $$props.$$slots;
-	export let fonts = true;
+	let { fonts = true, children } = $props();
 </script>
 
-{#if SLOTS && SLOTS.default}
-	<Willow {fonts}>
-		<slot />
-	</Willow>
+{#if children}
+	<Willow {fonts}>{@render children()}</Willow>
 {:else}
 	<Willow {fonts} />
 {/if}

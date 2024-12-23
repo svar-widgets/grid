@@ -1,6 +1,6 @@
 <script>
 	import { Grid } from "../../src/";
-	import { Material, Locale } from "wx-svelte-core";
+	import { Willow, Locale } from "wx-svelte-core";
 
 	const columns = [
 		{ id: 1, header: "Continent" },
@@ -75,7 +75,7 @@
 	];
 </script>
 
-<Material>
+<Willow>
 	<Locale>
 		<div class="demo" style="padding: 20px;">
 			<div>
@@ -83,7 +83,7 @@
 			</div>
 		</div>
 	</Locale>
-</Material>
+</Willow>
 
 <style>
 	.demo :global(.wx-h-row .wx-cell),

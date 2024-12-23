@@ -6,7 +6,7 @@
 	const { data } = getData();
 	const columns = repeatColumns(50);
 
-	let cellStyle;
+	let cellStyle = $state();
 	let i = 0;
 	function setCellStyle() {
 		let id = data[i].id;
@@ -18,7 +18,7 @@
 
 <div style="padding: 20px;">
 	<p>
-		<Button type="primary" click={() => setCellStyle()}
+		<Button type="primary" onclick={() => setCellStyle()}
 			>Set cell style</Button
 		>
 	</p>

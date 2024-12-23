@@ -7,6 +7,7 @@ import type {
 	IExportRowSize,
 	IData,
 	TExportStyles,
+	TSkinName,
 } from "../types";
 import { getRenderValue } from "./index";
 
@@ -90,28 +91,61 @@ function addExcelHeader(
 	}
 }
 
-export function getExportStyles(): TExportStyles {
-	const headerStyles = {
-		fontWeight: "bold",
-		color: "#000000b3",
-		background: "#f4f5f9",
+export function getExportStyles(skin: TSkinName): TExportStyles {
+	const fontColor = {
+		material: "#000000",
+		willow: "#000000",
+		"willow-dark": "#ffffff",
+	};
+
+	const bg = {
+		material: "none",
+		willow: "none",
+		"willow-dark": "#2a2b2d",
+	};
+	const headerBg = {
+		material: "#fafafb",
+		willow: "#f2f3f7",
+		"willow-dark": "#20262b",
+	};
+
+	const border = {
+		material: "0.5px solid #dfdfdf",
+		willow: "0.5px solid #e6e6e6",
+		"willow-dark": "0.5px solid #384047",
+	};
+
+	const headerBorderColor = {
+		material: "#dfdfdf",
+		willow: "#e6e6e6",
+		"willow-dark": "#384047",
+	};
+
+	const color = fontColor[skin];
+	const hBorder = "0.5px solid " + headerBorderColor[skin];
+	const align = {
 		verticalAlign: "center",
 		align: "left",
+	};
+	const headerStyles = {
+		fontWeight: "bold",
+		color,
+		background: headerBg[skin],
+		...align,
+		borderBottom: hBorder,
+		borderRight: hBorder,
 	};
 
 	const styles = {
 		cell: {
-			color: "#000000b3",
-			verticalAlign: "center",
-			align: "left",
+			color,
+			background: bg[skin],
+			borderBottom: border[skin],
+			borderRight: border[skin],
+			...align,
 		},
 		header: { ...headerStyles },
 		footer: { ...headerStyles },
-		lastHeaderCell: {
-			...headerStyles,
-			borderBottom: "0.5px solid #3498ff",
-		},
-		firstFooterCell: { ...headerStyles, borderTop: "0.5px solid #3498ff" },
 	};
 	return styles;
 }

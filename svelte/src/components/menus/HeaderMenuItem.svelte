@@ -1,10 +1,10 @@
 <script>
-	export let item;
+	let { item } = $props();
 </script>
 
 <div>
 	<div class="wx-icon" class:wx-hidden={!!item.hidden}>
-		<i class="wxi-eye" />
+		<i class="wxi-eye"></i>
 	</div>
 	<span>{item.text}</span>
 </div>

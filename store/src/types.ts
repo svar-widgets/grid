@@ -26,12 +26,12 @@ export interface IDataConfig {
 	tree?: boolean;
 	scroll?: null;
 	editor?: TEditorConfig;
+	dynamic?: TDynamicConfig;
 }
 
 export interface IData {
 	data: IRow[];
 	flatData: IRow[];
-	selected: TID;
 	selectedRows: TID[];
 	sizes: ISizeConfig;
 	_sizes: IRenderSizes;
@@ -42,10 +42,11 @@ export interface IData {
 	filter?: (obj: any) => boolean;
 	tree?: boolean;
 	scroll?: TScrollConfig;
-	_skin: string;
+	_skin: TSkinName;
 	split: {
 		left: number;
 	};
+	dynamic?: TDynamicConfig;
 }
 
 export interface IApi {
@@ -153,7 +154,7 @@ export type TScrollConfig = {
 
 export interface IOption {
 	id: TID;
-	name: string;
+	label: string;
 }
 
 export interface IRow {
@@ -187,15 +188,12 @@ export interface IExportRowSize {
 }
 
 export type TExportStyles = {
-	[key in
-		| "cell"
-		| "header"
-		| "footer"
-		| "lastHeaderCell"
-		| "firstFooterCell"]: {
+	[key in "cell" | "header" | "footer"]: {
 		[key: string]: string;
 	};
 };
+
+export type TConfigExportStyles = TExportStyles | string | boolean;
 
 export interface IExportOptions {
 	format?: string;
@@ -207,13 +205,17 @@ export interface IExportOptions {
 	sheetName?: string;
 	rows?: string;
 	cols?: string;
-	styles?: TExportStyles;
+	styles?: TConfigExportStyles;
 }
 
-const header = "header";
-const footer = "footer";
-
-export type TColumnType = typeof header | typeof footer;
+export type TColumnType = "header" | "footer";
 
 export type TSortValue = string | number;
 export type TSortObject = any;
+
+export type TSkinName = "material" | "willow" | "willow-dark";
+
+export type TDynamicConfig = {
+	rowsCount: number;
+	colsCount: number;
+};

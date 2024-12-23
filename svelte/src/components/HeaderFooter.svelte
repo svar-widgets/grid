@@ -3,28 +3,28 @@
 	import HeaderCell from "./HeaderCell.svelte";
 	import FooterCell from "./FooterCell.svelte";
 
-	export let deltaLeft;
-	export let contentWidth;
-	export let columns;
-	export let type = "header";
-
-	export let columnStyle;
+	let {
+		deltaLeft,
+		contentWidth,
+		columns,
+		type = "header",
+		columnStyle,
+	} = $props();
 
 	const api = getContext("grid-store");
 	const { _sizes: sizes } = api.getReactiveState();
-	$: rowHeights = $sizes[`${type}RowHeights`];
+	let rowHeights = $derived($sizes[`${type}RowHeights`]);
 
-	let renderedHeader = [];
-	$: {
+	let renderedHeader = $derived.by(() => {
+		let res = [];
 		if (columns.length) {
 			const rowsCount = columns[0][type].length;
-			renderedHeader = [];
 			for (let ri = 0; ri < rowsCount; ri++) {
 				let inSpan = 0;
-				renderedHeader.push([]);
+				res.push([]);
 				columns.forEach(col => {
 					if (!inSpan) {
-						renderedHeader[ri].push(col[type][ri]);
+						res[ri].push(col[type][ri]);
 					}
 
 					if (col[type][ri].colspan > 1) {
@@ -33,7 +33,8 @@
 				});
 			}
 		}
-	}
+		return res;
+	});
 
 	function getColumn(id) {
 		return columns.find(c => c.id === id);

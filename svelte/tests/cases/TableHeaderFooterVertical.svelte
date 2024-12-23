@@ -1,7 +1,7 @@
 <script>
 	import { Grid } from "../../src";
 	import { getData } from "../data";
-	import { Material, Locale } from "wx-svelte-core";
+	import { Willow, Locale } from "wx-svelte-core";
 
 	const {
 		allData: data,
@@ -10,7 +10,7 @@
 	} = getData();
 </script>
 
-<Material>
+<Willow>
 	<Locale>
 		<div class="demo">
 			<Grid {data} {columns} footer={true} />
@@ -19,7 +19,7 @@
 			<Grid {data} columns={scolumns} footer={true} />
 		</div>
 	</Locale>
-</Material>
+</Willow>
 
 <style>
 	.demo {

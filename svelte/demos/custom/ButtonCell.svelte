@@ -1,29 +1,29 @@
 <script>
 	import { Button } from "wx-svelte-core";
 	import { Cell } from "../../src";
-	import { createEventDispatcher } from "svelte";
 
-	export let row;
-	export let col;
-	export let columnStyle;
-	export let cellStyle;
-
-	const dispatch = createEventDispatcher();
+	let { row, col, columnStyle, cellStyle, onaction } = $props();
 
 	function onClick() {
-		dispatch("action", {
-			action: "custom-button",
-			data: {
-				column: col.id,
-				row: row.id,
-			},
-		});
+		onaction &&
+			onaction({
+				action: "custom-button",
+				data: {
+					column: col.id,
+					row: row.id,
+				},
+			});
 	}
 </script>
 
 <Cell {row} {col} {columnStyle} {cellStyle}>
 	<span class="name">{row[col.id] || "Unknown"}</span>
-	<Button type="primary" disabled={!row[col.id]} click={onClick} height="100">
+	<Button
+		type="primary"
+		disabled={!row[col.id]}
+		onclick={onClick}
+		height="100"
+	>
 		Show on map
 	</Button>
 	<style>

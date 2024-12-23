@@ -1,23 +1,23 @@
 <script>
 	import { getData } from "../../data";
 	import { Grid } from "../../../src";
-	import { Material, Locale } from "wx-svelte-core";
+	import { Willow, Locale } from "wx-svelte-core";
 
-	const { data, columnsSpansVertical: columns } = getData();
+	const { data, columnsSpansVertical: columns } = $state(getData());
 	data.length = 5;
 
-	let api;
+	let api = $state();
 </script>
 
-<Material>
+<Willow>
 	<Locale>
 		<div class="demo" style="padding: 20px;">
 			<div style="margin-top: 20px;">
-				<Grid {data} {columns} footer={true} bind:api />
+				<Grid {data} {columns} footer={true} bind:this={api} />
 			</div>
 		</div>
 	</Locale>
-</Material>
+</Willow>
 
 <style>
 	.demo {

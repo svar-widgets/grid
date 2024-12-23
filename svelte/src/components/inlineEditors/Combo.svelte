@@ -3,38 +3,31 @@
 
 	import { SuggestDropdown } from "wx-svelte-core";
 
-	export let actions;
-	export let editor;
+	let { actions, editor } = $props();
 
-	let template;
+	let { value, renderedValue: text, options: filterOptions } = $state(editor);
+	let template = $state(editor?.config?.template);
 
-	if (editor.config && editor.config.template) {
-		template = editor.config.template;
-	}
+	let index = $derived(filterOptions.findIndex(a => a.id === value));
 
-	let text = editor.renderedValue;
-	let filterOptions = editor.options;
-
-	function updateValue({ detail }) {
-		const value = detail.id;
-
-		actions.updateValue(value);
+	function updateValue({ id }) {
+		actions.updateValue(id);
 		actions.save();
 	}
 
 	let navigate;
-	let keydown;
+	let keydown = $state();
 
 	function ready(ev) {
-		navigate = ev.detail.navigate;
-		keydown = ev.detail.keydown;
-		navigate(index());
+		navigate = ev.navigate;
+		keydown = ev.keydown;
+		navigate(index);
 	}
 
 	function input() {
 		filterOptions = text
 			? editor.options.filter(i =>
-					i.name.toLowerCase().includes(text.toLowerCase())
+					i.label.toLowerCase().includes(text.toLowerCase())
 				)
 			: editor.options;
 
@@ -42,30 +35,25 @@
 		else navigate(null);
 	}
 
-	let node;
+	let node = $state();
 	onMount(() => {
 		node.focus();
 	});
-
-	const index = () => filterOptions.findIndex(a => a.id === editor.value);
 </script>
 
 <input
 	class="wx-input"
 	bind:this={node}
 	bind:value={text}
-	on:input={input}
-	on:keydown={e => keydown(e, index())}
+	oninput={input}
+	onkeydown={e => keydown(e, index)}
 />
-<SuggestDropdown
-	let:option
-	items={filterOptions}
-	on:ready={ready}
-	on:select={updateValue}
->
-	<slot {option}>
-		{#if template}{template(option)}{:else}{option.name}{/if}
-	</slot>
+<SuggestDropdown items={filterOptions} onready={ready} onselect={updateValue}>
+	{#snippet children({ option })}
+		{#if template}
+			{template(option)}
+		{:else}{option.label}{/if}
+	{/snippet}
 </SuggestDropdown>
 
 <style>

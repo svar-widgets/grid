@@ -1,31 +1,26 @@
 <script>
-	import { createEventDispatcher } from "svelte";
 	import { Checkbox } from "wx-svelte-core";
 	import { Cell } from "../../src";
 
-	export let row;
-	export let col;
-	export let columnStyle;
-	export let cellStyle;
-
-	const dispatch = createEventDispatcher();
+	let { row, col, columnStyle, cellStyle, onaction } = $props();
 
 	function onChange(ev) {
-		const { value } = ev.detail;
+		const { value } = ev;
 
-		dispatch("action", {
-			action: "select-row",
-			data: {
-				id: row.id,
-				mode: value,
-				toggle: true,
-			},
-		});
+		onaction &&
+			onaction({
+				action: "select-row",
+				data: {
+					id: row.id,
+					mode: value,
+					toggle: true,
+				},
+			});
 	}
 </script>
 
 <Cell {row} {col} {columnStyle} {cellStyle}>
 	<div data-action="ignore-click">
-		<Checkbox on:change={onChange} />
+		<Checkbox onchange={onChange} />
 	</div>
 </Cell>

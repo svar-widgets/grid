@@ -33,7 +33,12 @@
 <div class="demo" style="padding: 20px;">
 	<h4>Select by checkboxes and clicking</h4>
 	<div>
-		<Grid {data} columns={columnsBind} multiselect={true} selected={13} />
+		<Grid
+			{data}
+			columns={columnsBind}
+			multiselect={true}
+			selectedRows={[13]}
+		/>
 	</div>
 </div>
 

@@ -22,36 +22,32 @@
 		},
 	];
 
-	let api1;
-	let api2;
-
-	function resizeColumns(api) {
-		if (!api) api = api1;
-
-		api.exec("resize-column", { id: "email", auto: "data" });
-		api.exec("resize-column", { id: "lastName", auto: "header" });
-		api.exec("resize-column", {
+	let api1, api2;
+	function resizeColumns() {
+		api1.exec("resize-column", { id: "email", auto: "data" });
+		api1.exec("resize-column", { id: "lastName", auto: "header" });
+		api1.exec("resize-column", {
 			id: "companyName",
 			auto: true,
 			maxRows: 20,
 		});
-		api.exec("resize-column", { id: "street", auto: true });
+		api1.exec("resize-column", { id: "street", auto: true });
 	}
 
-	function resizeTreeColumns(api) {
-		if (!api) api = api2;
-
-		api.exec("resize-column", { id: "lastName", auto: "data" });
-		api.exec("resize-column", { id: "firstName", auto: "header" });
-		api.exec("resize-column", { id: "city", auto: true });
+	function resizeTreeColumns() {
+		api2.exec("resize-column", { id: "lastName", auto: "data" });
+		api2.exec("resize-column", { id: "firstName", auto: "header" });
+		api2.exec("resize-column", { id: "city", auto: true });
 	}
 
 	const init = api => {
-		resizeColumns(api);
+		api1 = api;
+		resizeColumns();
 	};
 
 	const treeInit = api => {
-		resizeTreeColumns(api);
+		api2 = api;
+		resizeTreeColumns();
 	};
 </script>
 
@@ -60,13 +56,7 @@
 	<h4>"Last Name" column is adjusted to header text</h4>
 	<h4>"Email" column is adjusted to data</h4>
 	<h4>"Company" column is adjusted to both data and header text</h4>
-	<Grid
-		{data}
-		{columns}
-		bind:api={api1}
-		{init}
-		on:update-cell={() => resizeColumns()}
-	/>
+	<Grid {data} {columns} {init} onupdatecell={() => resizeColumns()} />
 </div>
 
 <div style="padding: 20px;">
@@ -75,11 +65,10 @@
 	<h4>"First Name" column is adjusted to header</h4>
 	<h4>"City" column is adjusted to both data and header text</h4>
 	<Grid
-		bind:api={api2}
 		init={treeInit}
 		tree={true}
 		data={treeData}
 		columns={treeColumns}
-		on:update-cell={() => resizeTreeColumns()}
+		onupdatecell={() => resizeTreeColumns()}
 	/>
 </div>

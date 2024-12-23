@@ -1,38 +1,30 @@
 <script>
 	import { onMount } from "svelte";
-
 	import { SuggestDropdown } from "wx-svelte-core";
 
-	export let actions;
-	export let editor;
+	let { actions, editor, onaction } = $props();
 
-	$: data = editor.options.find(opt => opt.id === editor.value);
+	let data = $state(editor.options.find(opt => opt.id === editor.value));
+	let { value, options } = $state(editor);
+	let { template, cell } = $state(editor?.config || {});
 
-	let template;
-	let cell;
+	let index = $derived(options.findIndex(a => a.id === value));
 
-	$: if (editor.config) {
-		({ template, cell } = editor.config);
-	}
-
-	function updateValue({ detail }) {
-		const value = detail.id;
-
-		actions.updateValue(value);
+	function updateValue({ id }) {
+		actions.updateValue(id);
 		actions.save();
 	}
 
 	let navigate;
-	let keydown;
+	let keydown = $state();
 
 	function ready(ev) {
-		navigate = ev.detail.navigate;
-		keydown = ev.detail.keydown;
-		navigate(index());
+		navigate = ev.navigate;
+		keydown = ev.keydown;
+		navigate(index);
 	}
 
-	const index = () => editor.options.findIndex(a => a.id === editor.value);
-	let node;
+	let node = $state();
 	onMount(() => {
 		node.focus();
 		if (window && window.getSelection) {
@@ -41,33 +33,32 @@
 	});
 </script>
 
-<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
 	bind:this={node}
 	class="wx-value"
 	tabindex="0"
-	on:click={actions.cancel()}
-	on:keydown={ev => keydown(ev, index())}
+	onclick={() => actions.cancel()}
+	onkeydown={ev => keydown(ev, index)}
 >
 	{#if template}
 		{template(data)}
 	{:else if cell}
-		<svelte:component this={cell} {data} on:action />
+		{@const SvelteComponent = cell}
+		<SvelteComponent {data} {onaction} />
 	{:else}<span class="wx-text">{editor.renderedValue}</span>{/if}
 </div>
-<SuggestDropdown
-	let:option
-	items={editor.options}
-	on:ready={ready}
-	on:select={updateValue}
->
-	<slot {option}>
+<SuggestDropdown items={options} onready={ready} onselect={updateValue}>
+	{#snippet children({ option })}
 		{#if template}
 			{template(option)}
 		{:else if cell}
-			<svelte:component this={cell} data={option} on:action />
-		{:else}{option.name}{/if}
-	</slot>
+			{@const SvelteComponent_1 = cell}
+			<SvelteComponent_1 data={option} {onaction} />
+		{:else}{option.label}{/if}
+	{/snippet}
 </SuggestDropdown>
 
 <style>

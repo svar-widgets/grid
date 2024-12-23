@@ -1,4 +1,10 @@
-import type { IRenderColumn, TColumnType, IColumn, IRow } from "./types";
+import type {
+	IRenderColumn,
+	TColumnType,
+	IColumn,
+	IRow,
+	TSkinName,
+} from "./types";
 
 import { getRenderValue } from "./export";
 
@@ -6,10 +12,13 @@ const BASE_TREE_OFFSET = 28; // base offset for tree levels
 const SORT_EL_OFFSET = 16; // offset for sort arrows
 
 export function suggestSkin() {
+	// FIXME :: Svelte-kit
+	if (typeof document === "undefined") return "willow";
+
 	const skin = document.querySelector('[class^="wx"][class$="theme"]');
 	if (!skin) return "willow";
 
-	return skin.className.substr(3, skin.className.length - 9);
+	return skin.className.substring(3, skin.className.length - 6) as TSkinName;
 }
 
 function getTextSize(

@@ -12,7 +12,7 @@
 	import { getData } from "../data";
 	const { allData: data, countries, users } = getData();
 
-	let api;
+	let api = $state();
 
 	const columns = [
 		{ id: "id", width: 30 },
@@ -67,7 +67,7 @@
 	registerFormItem("datepicker", DatePicker);
 	registerFormItem("textarea", Area);
 
-	let dataToEdit = null;
+	let dataToEdit = $state(null);
 	const init = api => {
 		api.intercept("open-editor", ({ id }) => {
 			dataToEdit = api.getRow(id);
@@ -87,15 +87,15 @@
 <div style="padding: 20px;">
 	<h4>Grid - dbl-click to show editor</h4>
 	<div style="height: 320px; max-width: 800px;">
-		<Grid {data} {columns} bind:api {init} />
+		<Grid {data} {columns} bind:this={api} {init} />
 	</div>
 	{#if dataToEdit}
 		<Panel
 			data={dataToEdit}
 			config={{ placement: "sidebar", autoSave: true }}
 			sections={editorConfig(columns)}
-			on:update={e => {
-				const { changes, data } = e.detail;
+			onupdate={e => {
+				const { changes, data } = e;
 				changes.forEach(key => {
 					api.exec("update-cell", {
 						id: dataToEdit.id,
@@ -104,8 +104,8 @@
 					});
 				});
 			}}
-			on:toolbar={e => {
-				const id = e.detail.id;
+			ontoolbar={e => {
+				const id = e.id;
 				if (id === "close" || id === "save" || id === "cancel")
 					api.exec("close-editor", { ignore: id === "cancel" });
 			}}

@@ -1,15 +1,17 @@
 <script>
-	export let data;
+	let { data } = $props();
 
-	let stars = [];
-	$: {
+	const stars = $derived.by(() => {
+		const res = [];
 		const max = 5;
 		const n = Math.round((data.stars / 10000) * max);
 		for (let i = 0; i < max; i++) {
-			if (i < n) stars.push({ filled: true });
-			else stars.push({});
+			if (i < n) res.push({ filled: true });
+			else res.push({});
 		}
-	}
+
+		return res;
+	});
 </script>
 
 <div class="data">
@@ -19,7 +21,7 @@
 	<div class="line"><b>Address:</b> {data.street}, {data.zipCode}</div>
 	<div class="line stars">
 		{#each stars as star}
-			<i class="wxi-cat" class:filled={star.filled} />
+			<i class="wxi-cat" class:filled={star.filled}></i>
 		{/each}
 		({data.stars})
 	</div>

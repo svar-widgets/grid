@@ -22,7 +22,7 @@
 		{ id: "email", name: "Email" },
 	];
 
-	let filter;
+	let filter = $state();
 	function applyFilter(value) {
 		filter = createFilter(value);
 	}
@@ -34,7 +34,7 @@
 			{fields}
 			{options}
 			type={"line"}
-			on:change={ev => applyFilter(ev.detail.value)}
+			onchange={ev => applyFilter(ev.value)}
 		/>
 
 		<Grid {data} {columns} {filter} />

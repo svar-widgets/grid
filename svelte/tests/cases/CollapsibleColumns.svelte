@@ -1,12 +1,12 @@
 <script>
 	import { getData } from "../data";
 	import { Grid } from "../../src";
-	import { Material, Locale } from "wx-svelte-core";
+	import { Willow, Locale } from "wx-svelte-core";
 
 	const { data, collapsibleColumns } = getData();
 </script>
 
-<Material>
+<Willow>
 	<Locale>
 		<div class="demo" style="padding: 20px;">
 			<div>
@@ -24,7 +24,7 @@
 			</div>
 		</div>
 	</Locale>
-</Material>
+</Willow>
 
 <style>
 	.demo :global(.center) {

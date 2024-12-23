@@ -5,14 +5,16 @@
 	import { getData } from "../data";
 	const { data, allColumns } = getData();
 
-	let left = 2;
+	let left = $state(2);
 </script>
 
 <div style="padding: 20px;">
 	<h4>Drag the slider to fix columns on the left</h4>
 	<div class="controls">
-		<Field label="Fix columns" let:id>
-			<Slider min={0} max={4} bind:value={left} {id} />
+		<Field label="Fix columns">
+			{#snippet children({ id })}
+				<Slider min={0} max={4} bind:value={left} {id} />
+			{/snippet}
 		</Field>
 	</div>
 

@@ -3,7 +3,7 @@
 	import { Grid } from "../../src/";
 	import { ContextMenu } from "wx-svelte-menu";
 	import { getContext } from "svelte";
-	import { Material, Locale } from "wx-svelte-core";
+	import { Willow, Locale } from "wx-svelte-core";
 
 	const { data } = getData();
 
@@ -15,7 +15,7 @@
 		{ id: "companyName", header: "Company", flexgrow: 1 },
 	];
 
-	let table;
+	let table = $state();
 	function init(api) {
 		table = api;
 	}
@@ -35,9 +35,9 @@
 
 	const helpers = getContext("wx-helpers");
 	const handleClicks = ev => {
-		const option = ev.detail.action;
+		const option = ev.action;
 		if (option) {
-			const id = table.getState().selected;
+			const id = table.getState().selectedRows[0];
 			switch (option.id) {
 				case "add":
 					table.exec("add-row", { row: {}, before: id });
@@ -66,14 +66,14 @@
 	}
 </script>
 
-<Material>
+<Willow>
 	<Locale>
 		<div style="padding: 20px;">
 			<div>
 				<ContextMenu
 					{options}
 					resolver={getItem}
-					on:click={handleClicks}
+					onclick={handleClicks}
 					api={table}
 					at={"point"}
 				>
@@ -82,4 +82,4 @@
 			</div>
 		</div>
 	</Locale>
-</Material>
+</Willow>

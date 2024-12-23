@@ -6,7 +6,7 @@
 	import { en as enCore, cn as cnCore } from "wx-core-locales";
 
 	const { allData: data, countries, users } = getData();
-	let table;
+	let table = $state();
 	function init(api) {
 		table = api;
 	}
@@ -24,7 +24,7 @@
 			header: "Country",
 			editor: {
 				type: "combo",
-				config: { template: option => `${option.id}. ${option.name}` },
+				config: { template: option => `${option.id}. ${option.label}` },
 			},
 			options: countries,
 			width: 180,
@@ -45,14 +45,14 @@
 		},
 	];
 
-	let language = "en";
+	let language = $state("en");
 </script>
 
 <div class="demo">
 	<Segmented
 		options={[
-			{ id: "en", name: "English" },
-			{ id: "cn", name: "Chinese" },
+			{ id: "en", label: "English" },
+			{ id: "cn", label: "Chinese" },
 		]}
 		bind:value={language}
 	/>

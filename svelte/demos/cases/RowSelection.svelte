@@ -12,14 +12,17 @@
 		{ id: "companyName", header: "Company" },
 	];
 
-	let api,
-		s = 0;
-	const updateSelected = () => (s = api.getState().selected);
+	let api = $state(),
+		s = $state(0);
+	const updateSelected = () => (s = api.getState().selectedRows);
 </script>
 
 <div style="padding: 20px;">
-	<h4>Click on any cell to select. Selected: {s || "none"}</h4>
+	<h4>
+		Click on any cell to select. Selected:
+		{s.length ? s.join(", ") : "none"}
+	</h4>
 	<div>
-		<Grid {data} {columns} bind:api on:select-row={updateSelected} />
+		<Grid {data} {columns} bind:this={api} onselectrow={updateSelected} />
 	</div>
 </div>

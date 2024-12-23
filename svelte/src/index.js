@@ -11,6 +11,10 @@ import WillowDark from "./themes/WillowDark.svelte";
 
 export { editorConfig } from "wx-grid-store";
 
+import { setEnv } from "wx-lib-dom";
+import { env } from "wx-lib-svelte";
+setEnv(env);
+
 export {
 	Cell,
 	Grid,

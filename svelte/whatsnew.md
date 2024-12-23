@@ -1,3 +1,9 @@
+### 2.0.1
+
+-   [add] svelte 5 support
+-   [update] data-request event renamed to request-data
+-   [update] property `selected` removed
+
 ### 1.3.3
 
 -   [fix] treetable data is not fully shown in some cases

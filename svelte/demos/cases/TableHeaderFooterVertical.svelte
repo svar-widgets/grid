@@ -6,7 +6,7 @@
 		data,
 		columnsVertical: columns,
 		columnsSpansVertical: scolumns,
-	} = getData();
+	} = $state(getData());
 	data.length = 5;
 </script>
 

@@ -735,17 +735,17 @@ export function getData() {
 	];
 
 	const countries = [
-		{ id: 1, name: "Poland" },
-		{ id: 2, name: "Brasil" },
-		{ id: 3, name: "USA" },
-		{ id: 4, name: "Germany" },
-		{ id: 5, name: "France" },
-		{ id: 6, name: "Italy" },
-		{ id: 7, name: "Spain" },
-		{ id: 8, name: "Portugal" },
-		{ id: 9, name: "Switzerland" },
-		{ id: 10, name: "Ukraine" },
-		{ id: 11, name: "Austria" },
+		{ id: 1, label: "Poland" },
+		{ id: 2, label: "Brasil" },
+		{ id: 3, label: "USA" },
+		{ id: 4, label: "Germany" },
+		{ id: 5, label: "France" },
+		{ id: 6, label: "Italy" },
+		{ id: 7, label: "Spain" },
+		{ id: 8, label: "Portugal" },
+		{ id: 9, label: "Switzerland" },
+		{ id: 10, label: "Ukraine" },
+		{ id: 11, label: "Austria" },
 	];
 
 	const columnsSpans = [
@@ -802,11 +802,11 @@ export function getData() {
 	];
 
 	const users = [
-		{ id: 1, name: "Alex" },
-		{ id: 2, name: "John" },
-		{ id: 3, name: "Bob" },
-		{ id: 4, name: "Mary" },
-		{ id: 5, name: "Kate" },
+		{ id: 1, label: "Alex" },
+		{ id: 2, label: "John" },
+		{ id: 3, label: "Bob" },
+		{ id: 4, label: "Mary" },
+		{ id: 5, label: "Kate" },
 	];
 
 	const collapsibleColumns = mode => {

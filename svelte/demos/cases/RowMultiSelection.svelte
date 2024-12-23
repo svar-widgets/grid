@@ -12,8 +12,8 @@
 		{ id: "companyName", header: "Company" },
 	];
 
-	let api,
-		s = [];
+	let api = $state(),
+		s = $state([]);
 	const updateSelected = () => (s = api.getState().selectedRows);
 </script>
 
@@ -27,8 +27,8 @@
 			{data}
 			{columns}
 			multiselect={true}
-			bind:api
-			on:select-row={updateSelected}
+			bind:this={api}
+			onselectrow={updateSelected}
 		/>
 	</div>
 </div>

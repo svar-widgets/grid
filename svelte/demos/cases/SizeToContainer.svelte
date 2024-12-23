@@ -5,9 +5,9 @@
 	import { getData, repeatColumns } from "../data";
 	const { data, columns, flexibleColumns } = getData();
 
-	let w = 600;
-	let h = 320;
-	let psize = false;
+	let w = $state(600);
+	let h = $state(320);
+	let psize = $state(false);
 </script>
 
 <div style="padding: 20px;">

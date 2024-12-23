@@ -2,16 +2,12 @@
 	import { Checkbox } from "wx-svelte-core";
 	import { Cell } from "../../src";
 
-	export let row;
-	export let col;
-	export let columnStyle;
-	export let cellStyle;
-	export let api;
+	let { row, col, columnStyle, cellStyle, api } = $props();
 
 	const selectedRows = api.getReactiveState().selectedRows;
 
 	function onChange(ev) {
-		const { value } = ev.detail;
+		const { value } = ev;
 
 		api.exec("select-row", {
 			id: row.id,
@@ -24,7 +20,7 @@
 <Cell {row} {col} {columnStyle} {cellStyle}>
 	<div data-action="ignore-click">
 		<Checkbox
-			on:change={onChange}
+			onchange={onChange}
 			value={$selectedRows.indexOf(row.id) !== -1}
 		/>
 	</div>

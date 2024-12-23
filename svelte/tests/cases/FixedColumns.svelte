@@ -1,11 +1,11 @@
 <script>
-	import { Field, Slider, Material, Locale } from "wx-svelte-core";
+	import { Field, Slider, Willow, Locale } from "wx-svelte-core";
 	import { Grid } from "../../src";
 
 	import { getData } from "../data";
 	const { allData: data, allColumns } = getData();
 
-	let left = 2;
+	let left = $state(2);
 
 	const columns = allColumns.map(c => {
 		if (c.id !== "id") c.editor = "text";
@@ -13,13 +13,15 @@
 	});
 </script>
 
-<Material>
+<Willow>
 	<Locale>
 		<div style="padding: 20px;">
 			<h4>Table with fixed / resizable columns</h4>
 			<div class="controls">
-				<Field label="Fix columns" let:id>
-					<Slider min={0} max={4} bind:value={left} {id} />
+				<Field label="Fix columns">
+					{#snippet children({ id })}
+						<Slider min={0} max={4} bind:value={left} {id} />
+					{/snippet}
 				</Field>
 			</div>
 
@@ -28,7 +30,7 @@
 			</div>
 		</div>
 	</Locale>
-</Material>
+</Willow>
 
 <style>
 	.controls {

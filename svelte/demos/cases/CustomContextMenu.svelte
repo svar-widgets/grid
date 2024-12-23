@@ -21,9 +21,9 @@
 
 	const helpers = getContext("wx-helpers");
 	const handleClicks = ev => {
-		const option = ev.detail.action;
+		const option = ev.action;
 		if (option) {
-			const id = table.getState().selected;
+			const id = table.getState().selectedRows[0];
 			switch (option.id) {
 				case "add":
 					table.exec("add-row", { row: {}, before: id });
@@ -43,7 +43,7 @@
 		}
 	};
 
-	let table;
+	let table = $state();
 	function getItem(id) {
 		if (id) table.exec("select-row", { id });
 		return id;
@@ -54,11 +54,11 @@
 	<h4>Context menu with custom actions</h4>
 	<ContextMenu
 		{options}
-		on:click={handleClicks}
+		onclick={handleClicks}
 		at="point"
 		resolver={getItem}
 		api={table}
 	>
-		<Grid {data} {columns} bind:api={table} />
+		<Grid {data} {columns} bind:this={table} />
 	</ContextMenu>
 </div>

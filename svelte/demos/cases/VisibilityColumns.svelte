@@ -11,7 +11,7 @@
 		{ id: "lastName", header: "Last Name", flexgrow: 1 },
 		{ id: "companyName", header: "Company", flexgrow: 1 },
 	];
-	let api;
+	let api = $state();
 
 	const columns1 = [
 		{ id: "id", width: 50 },
@@ -31,7 +31,7 @@
 		{ id: "city", header: "City", width: 160, hidden: true },
 		{ id: "stars", header: "Stars" },
 	];
-	let api1;
+	let api1 = $state();
 </script>
 
 <div style="padding: 20px;">
@@ -40,7 +40,7 @@
 	</h4>
 	<div>
 		<HeaderMenu {api}>
-			<Grid {data} {columns} bind:api />
+			<Grid {data} {columns} bind:this={api} />
 		</HeaderMenu>
 	</div>
 
@@ -49,7 +49,7 @@
 	</h4>
 	<div>
 		<HeaderMenu columns={{ city: true, stars: true }} api={api1}>
-			<Grid {data} columns={columns1} bind:api={api1} />
+			<Grid {data} columns={columns1} bind:this={api1} />
 		</HeaderMenu>
 	</div>
 </div>

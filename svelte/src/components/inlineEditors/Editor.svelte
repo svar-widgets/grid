@@ -4,7 +4,7 @@
 	import { clickOutside } from "wx-lib-dom";
 	import { editors } from "./editors";
 
-	export let col;
+	let { col } = $props();
 
 	const api = getContext("grid-store");
 	const { editor } = api.getReactiveState();
@@ -21,21 +21,27 @@
 		api.exec("editor", { value });
 	}
 
-	let style;
-	$: style = getStyle(col.width, col.flexgrow, col.fixed, col.left);
+	let style = $derived(
+		getStyle(col.width, col.flexgrow, col.fixed, col.left)
+	);
+
+	const SvelteComponent = $derived(editors[col.editor.type]);
 </script>
 
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	class="wx-cell"
 	{style}
 	class:wx-shadow={col.fixed === -1}
 	use:clickOutside={save}
+	onclick={ev => ev.stopPropagation()}
+	ondblclick={ev => ev.stopPropagation()}
 >
-	<svelte:component
-		this={editors[col.editor.type]}
+	<SvelteComponent
 		editor={$editor}
 		actions={{ save, cancel, updateValue }}
-		on:action={({ detail }) => api.exec(detail.action, detail.data)}
+		onaction={({ action, data }) => api.exec(action, data)}
 	/>
 </div>
 
@@ -47,9 +53,6 @@
 		color: var(--wx-color-font);
 		position: relative;
 		z-index: 2;
-	}
-	.wx-shadow {
-		box-shadow: var(--wx-table-fixed-column-shadow);
 	}
 	.wx-cell :global(.wx-dropdown) {
 		border: var(--wx-table-editor-dropdown-border);

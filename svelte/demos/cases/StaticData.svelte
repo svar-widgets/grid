@@ -6,13 +6,13 @@
 	import { repeatData, repeatColumns } from "../data";
 	import { timer, timerEnd } from "../custom/timers";
 
-	let data = [];
-	let columns = [];
+	let data = $state([]);
+	let columns = $state([]);
 
-	let stats = null;
-	let counter = 1;
-	let rows = 1000;
-	let cols = 100;
+	let stats = $state(null);
+	let counter = $state(1);
+	let rows = $state(1000);
+	let cols = $state(100);
 
 	function genAndLoad() {
 		timer("gen");
@@ -44,7 +44,7 @@
 		<Slider label="Columns: {cols}" min={2} max={20000} bind:value={cols} />
 	</div>
 	<div style="width: 320px; padding-bottom: 20px;">
-		<Button type="primary" click={genAndLoad}>
+		<Button type="primary" onclick={genAndLoad}>
 			Generate data and load
 		</Button>
 	</div>
