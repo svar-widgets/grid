@@ -1,3 +1,7 @@
+### 2.0.2
+
+-   [add] type support
+
 ### 2.0.1
 
 -   [add] svelte 5 support

@@ -6,6 +6,7 @@ import { visualizer } from "rollup-plugin-visualizer";
 import { waitChanges, waitOn } from "wx-vite-tools";
 import conditionalCompile from "vite-plugin-conditional-compile";
 import pkg from "./package.json" with { type: "json" };
+import dts from "vite-plugin-dts";
 
 export default async ({ mode }) => {
 	process.env = { ...process.env, ...loadEnv(mode, process.cwd(), "WX") };
@@ -29,6 +30,7 @@ export default async ({ mode }) => {
 	if (files.length) plugins.push(waitChanges({ files }));
 	if (mode !== "development") plugins.push(conditionalCompile());
 	plugins.push(svelte({}));
+	plugins.push(dts({ outDir: resolve(__dirname, "dist/types") }));
 
 	const name = pkg.productTag;
 

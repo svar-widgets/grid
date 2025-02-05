@@ -1,6 +1,6 @@
 {
 	"name": "wx-svelte-grid",
-	"version": "2.0.1",
+	"version": "2.0.2",
 	"description": "A powerful and flexible DataGrid component written in Svelte",
 	"productTag": "grid",
 	"productTrial": false,
@@ -18,6 +18,7 @@
 	"svelte": "src/index.js",
 	"exports": {
 		".": {
+			"types": "./dist/types/index.d.ts",
 			"svelte": "./src/index.js"
 		},
 		"./package.json": "./package.json"
@@ -43,6 +44,7 @@
 	},
 	"files": [
 		"src",
+		"dist/types",
 		"readme.md",
 		"whatsnew.md",
 		"license.txt"
