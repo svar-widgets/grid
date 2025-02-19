@@ -16,6 +16,8 @@ import FixedColumns from "./cases/FixedColumns.svelte";
 import ContextMenu from "./cases/ContextMenu.svelte";
 import CustomContextMenu from "./cases/CustomContextMenu.svelte";
 import MenuOptions from "./cases/MenuOptions.svelte";
+import ReorderingBasic from "./cases/ReorderingBasic.svelte";
+import ReorderingHandlers from "./cases/ReorderingHandlers.svelte";
 
 export const links = [
 	["/local-data/:skin", "", LocalData],
@@ -36,4 +38,6 @@ export const links = [
 	["/context-menu/:skin", "", ContextMenu],
 	["/custom-menu/:skin", "", CustomContextMenu],
 	["/menu-options/:skin", "", MenuOptions],
+	["/reordering-basic/:skin", "", ReorderingBasic],
+	["/reordering-handlers/:skin", "", ReorderingHandlers],
 ];

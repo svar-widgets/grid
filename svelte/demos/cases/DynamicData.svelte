@@ -15,14 +15,15 @@
 
 	let stats = $state(null);
 	let counter = $state(1);
-	let rowsCount = $state(1000);
-	let colsCount = $state(100);
+	let rowCount = $state(1000);
+	let columnCount = $state(100);
+	let requestRange = $state({ start: 0, end: 0 });
 
 	function genAndLoad() {
 		timer("gen");
 		stats = null;
-		rawData = repeatData(+rowsCount);
-		columns = repeatColumns(+colsCount);
+		rawData = repeatData(+rowCount);
+		columns = repeatColumns(+columnCount);
 		counter += 1;
 		const gen = timerEnd("gen");
 
@@ -46,7 +47,28 @@
 			helpers.showNotice({
 				text: `Request data: ${row.start} - ${row.end}`,
 			});
-		if (row) data = rawData.slice(row.start, row.end);
+		if (row) {
+			data = rawData.slice(row.start, row.end);
+			requestRange = row;
+		}
+	}
+
+	function init(api) {
+		api.on("move-item", ev => {
+			const { id, target, mode } = ev;
+			const index = rawData.findIndex(el => el.id === id);
+			const targetIndex = rawData.findIndex(el => el.id === target);
+			rawData.splice(
+				mode === "before" ? targetIndex : targetIndex + 1,
+				0,
+				rawData.splice(index, 1)[0]
+			);
+
+			if (data.findIndex(el => el.id === id) === -1) {
+				// update visible range in case the item is not present there
+				data = rawData.slice(requestRange.start, requestRange.end);
+			}
+		});
 	}
 </script>
 
@@ -55,18 +77,18 @@
 
 	<div style="width: 320px; padding-bottom: 20px;">
 		<Slider
-			label="Rows: {rowsCount}"
+			label="Rows: {rowCount}"
 			min={2}
 			max={200000}
-			bind:value={rowsCount}
+			bind:value={rowCount}
 		/>
 	</div>
 	<div style="width: 320px; padding-bottom: 20px;">
 		<Slider
-			label="Columns: {colsCount}"
+			label="Columns: {columnCount}"
 			min={2}
 			max={20000}
-			bind:value={colsCount}
+			bind:value={columnCount}
 		/>
 	</div>
 	<div style="width: 320px; padding-bottom: 20px;">
@@ -77,16 +99,18 @@
 	<div style="width: 1000px; height: 600px;">
 		{#key counter}
 			<Grid
+				{init}
 				{data}
 				{columns}
-				dynamic={{ rowsCount, colsCount }}
+				dynamic={{ rowCount, columnCount }}
 				onrequestdata={dataProvider}
+				reorder
 			/>
 		{/key}
 	</div>
 	{#if stats}
 		<pre>
-{rowsCount} rows, {colsCount} columns, {rowsCount * colsCount} cells
+{rowCount} rows, {columnCount} columns, {rowCount * columnCount} cells
 dataset generation: {stats.gen}ms
 dataset rendering: {stats.render}ms</pre>
 	{/if}

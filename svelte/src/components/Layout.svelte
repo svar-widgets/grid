@@ -1,22 +1,36 @@
 <script>
-	import { getContext, onMount } from "svelte";
+	import { getContext, tick, onMount } from "svelte";
 	import { onresize } from "../helpers/actions/onresize";
-	import { delegateClick, locateAttr, clickOutside } from "wx-lib-dom";
+	import { reorder as drag, getOffset } from "../helpers/actions/reorder";
+	import {
+		resetAutoScroll,
+		tryAutoScroll,
+	} from "../helpers/actions/dragscroll";
+	import {
+		clickOutside,
+		delegateClick,
+		locateAttr,
+		locate,
+		id,
+	} from "wx-lib-dom";
+
 	import { hotkeys } from "wx-grid-store";
+	import { keys } from "../helpers/hotkeys";
 	import { scrollTo } from "wx-grid-store";
 
 	import Cell from "./Cell.svelte";
 	import HeaderFooter from "./HeaderFooter.svelte";
 	import Overlay from "./Overlay.svelte";
 	import Editor from "./inlineEditors/Editor.svelte";
+	import Print from "./print/Print.svelte";
 
 	let {
 		header,
 		footer,
 		overlay,
-		select,
 		multiselect,
-
+		reorder,
+		onreorder,
 		rowStyle,
 		columnStyle,
 		cellStyle,
@@ -32,9 +46,12 @@
 		split,
 		_sizes,
 		selectedRows,
+		_select: select,
 		editor,
-		filter,
 		scroll,
+		tree,
+		focusCell,
+		_print,
 	} = api.getReactiveState();
 
 	// will be calculated once, after rendering
@@ -49,10 +66,15 @@
 
 	const defaultRowHeight = $derived($_sizes.rowHeight);
 	let clientWidth = $state(0),
-		clientHeight = $state(0);
+		clientHeight = $state(0),
+		tableNode;
+
+	// reorder
+	let dragItem = $state(null),
+		dragNode = $state(null);
 
 	const fullHeight = $derived.by(() => {
-		const count = $dynamic ? $dynamic.rowsCount : $data.length;
+		const count = $dynamic ? $dynamic.rowCount : $data.length;
 		const base = count * defaultRowHeight;
 		if (autoRowHeight) {
 			return (
@@ -76,25 +98,55 @@
 	);
 	// $inspect(fullWidth, "fullWidth");
 
-	// mark split columns
+	// mark split left columns
 	const leftColumns = $derived.by(() => {
-		const columns = $_columns
-			.slice(0, $split.left)
-			.filter(c => !c.hidden)
-			.map(a => ({ ...a }));
-		let width = 0; // columns.reduce((acc, col) => acc + col.width, 0);
-		columns.forEach(a => {
-			a.fixed = 1;
-			a.left = width;
-			width += a.width;
-		});
-		if (columns.length) columns[columns.length - 1].fixed = -1;
+		let columns = [];
+		let width = 0;
+
+		if ($split.left) {
+			columns = $_columns
+				.slice(0, $split.left)
+				.filter(c => !c.hidden)
+				.map(a => ({ ...a }));
+			columns.forEach(a => {
+				a.fixed = { left: 1 };
+				a.left = width;
+				width += a.width;
+			});
+			if (columns.length)
+				columns[columns.length - 1].fixed = { left: -1 };
+		}
+
+		return { columns, width };
+	});
+
+	// mark split right columns
+	const rightColumns = $derived.by(() => {
+		let columns = [];
+		let width = 0;
+
+		if ($split.right) {
+			columns = $_columns
+				.slice($split.right * -1)
+				.filter(c => !c.hidden)
+				.map(a => ({ ...a }));
+			for (let i = columns.length - 1; i >= 0; i--) {
+				const col = columns[i];
+				col.fixed = { right: 1 };
+				col.right = width;
+				width += col.width;
+			}
+			if (columns.length) columns[0].fixed = { right: -1 };
+		}
+
 		return { columns, width };
 	});
 	// $inspect(leftColumns, "leftColumns");
 
 	const centerColumns = $derived.by(() => {
-		const center = $_columns.slice($split.left).filter(c => !c.hidden);
+		const center = $_columns
+			.slice($split.left, $_columns.length - ($split.right ?? 0))
+			.filter(c => !c.hidden);
 		center.forEach(a => {
 			a.fixed = 0;
 		});
@@ -135,19 +187,29 @@
 		const csF = footerPos.index;
 
 		if (hasAny && fullWidth > clientWidth) {
-			data = header = footer = [...leftColumns.columns, ...centerColumns];
+			data =
+				header =
+				footer =
+					[
+						...leftColumns.columns,
+						...centerColumns,
+						...rightColumns.columns,
+					];
 		} else {
 			data = [
 				...leftColumns.columns,
 				...centerColumns.slice(start, end + 1),
+				...rightColumns.columns,
 			];
 			header = [
 				...leftColumns.columns,
 				...centerColumns.slice(csH, end + 1),
+				...rightColumns.columns,
 			];
 			footer = [
 				...leftColumns.columns,
 				...centerColumns.slice(csF, end + 1),
+				...rightColumns.columns,
 			];
 		}
 
@@ -162,8 +224,13 @@
 	);
 	// $inspect(contentWidth, "contentWidth");
 
+	const headerHeight = $derived(header ? $_sizes.headerHeight : 0);
+	const footerHeight = $derived(footer ? $_sizes.footerHeight : 0);
+
 	const hasVScroll = $derived(
-		clientWidth && clientHeight ? fullHeight > clientHeight : false
+		clientWidth && clientHeight
+			? fullHeight + headerHeight + footerHeight > clientHeight
+			: false
 	);
 	const hasHScroll = $derived(
 		clientWidth && clientHeight ? fullWidth > clientWidth : false
@@ -184,8 +251,8 @@
 	// hom many rows visible
 	const visibleRowsHeight = $derived(
 		clientHeight -
-			(header ? $_sizes.headerHeight : 0) -
-			(footer ? $_sizes.footerHeight : 0) -
+			headerHeight -
+			footerHeight -
 			(hasHScroll ? SCROLLSIZE : 0)
 	);
 
@@ -218,7 +285,7 @@
 		}
 
 		const end = Math.min(
-			$dynamic ? $dynamic.rowsCount : $data.length,
+			$dynamic ? $dynamic.rowCount : $data.length,
 			start + visibleRows + EXTRAROWS
 		);
 
@@ -239,16 +306,18 @@
 	});
 
 	// get visible rows
-	const dataRows = $derived.by(() => {
-		if ($dynamic) return $data;
+	let dataRows = $state([]);
+	$effect(() => {
+		if ($dynamic) dataRows = $data;
 		else {
-			let rows = $data;
-			if ($filter) {
-				rows = rows.filter($filter);
-			}
-			return rows.slice(renderRows.start, renderRows.end);
+			dataRows = $data.slice(renderRows.start, renderRows.end);
 		}
 	});
+	//get visible selection
+	const visibleSelection = $derived(
+		$selectedRows.filter(s => dataRows.some(r => r.id === s))
+	);
+
 	let renderStart = $derived(renderRows.start);
 	let renderEnd = $state();
 
@@ -268,8 +337,15 @@
 		//
 		// in future, it will be optimal to block text selection directly, without affecting focus related event
 		if (ev.shiftKey) ev.preventDefault();
-		focusNode.focus();
+		tableNode.focus();
 	}
+
+	function checkDraggable() {
+		return !!$_columns.find(c => !!c.draggable);
+	}
+
+	let postDrag;
+	let movementY;
 
 	const bodyClickHandlers = {
 		dblclick: (id, ev) => {
@@ -277,11 +353,15 @@
 			api.exec("open-editor", data);
 		},
 		click: (id, ev) => {
+			if (postDrag) return;
+			const column = locateAttr(ev, "data-col-id");
+			api.exec("focus-cell", { row: id, column, eventSource: "click" });
+
 			if (select === false) return;
 
 			const toggle = multiselect && ev.ctrlKey;
 			const range = multiselect && ev.shiftKey;
-			api.exec("select-row", { id, toggle, range });
+			if ($select) api.exec("select-row", { id, toggle, range });
 		},
 		"toggle-row": id => {
 			const row = api.getRow(id);
@@ -291,6 +371,153 @@
 			return false;
 		},
 	};
+
+	const dragScrollConfig = $derived({
+		top: headerHeight,
+		bottom: footerHeight,
+		left: leftColumns.width,
+		xScroll: hasHScroll,
+		yScroll: hasVScroll,
+		sense:
+			autoRowHeight && dragNode
+				? dragNode.offsetHeight
+				: Math.max($_sizes.rowHeight, 40),
+		node: tableNode && tableNode.firstElementChild,
+	});
+
+	function startDrag(ev, context) {
+		const { container, sourceNode, from } = context;
+		const hasDraggable = checkDraggable();
+
+		if (hasDraggable && !sourceNode.getAttribute("draggable-data"))
+			return false;
+
+		dragItem = from;
+
+		if (api.getRow(dragItem).open)
+			api.exec("close-row", { id: dragItem, nested: true });
+
+		// default to drag source (target may be shifted by this moment)
+		const itemNode = locate(sourceNode, "data-id");
+		dragNode = itemNode.cloneNode(true);
+		dragNode.classList.remove("wx-selected");
+		dragNode
+			.querySelectorAll("[tabindex]")
+			.forEach(element => element.setAttribute("tabindex", "-1"));
+		container.appendChild(dragNode);
+
+		const offsetX = scrollLeft - renderColumns.d;
+		const vScrollSize = hasVScroll ? SCROLLSIZE : 0;
+
+		container.style.width =
+			Math.min(
+				clientWidth - vScrollSize,
+				hasAny && fullWidth <= clientWidth
+					? contentWidth
+					: contentWidth - vScrollSize
+			) +
+			offsetX +
+			"px";
+
+		const itemPos = getOffset(itemNode);
+		context.offset = {
+			x: offsetX,
+			y: -Math.round(itemPos.height / 2),
+		};
+
+		if (!movementY) movementY = ev.clientY;
+	}
+
+	function moveDrag(ev, context) {
+		const { from } = context;
+		const pos = context.pos;
+		const box = getOffset(tableNode);
+
+		pos.x = box.x;
+
+		const min = dragScrollConfig.top;
+		if (pos.y < min) pos.y = min;
+		else {
+			const max =
+				box.height -
+				(hasHScroll && SCROLLSIZE > 0
+					? SCROLLSIZE
+					: Math.round(dragScrollConfig.sense / 2)) -
+				dragScrollConfig.bottom;
+			if (pos.y > max) pos.y = max;
+		}
+
+		if (tableNode.contains(context.targetNode)) {
+			const targetRow = locate(context.targetNode, "data-id");
+			const to = id(targetRow?.getAttribute("data-id"));
+
+			if (to && to !== from) {
+				context.to = to;
+
+				const rowHeight = autoRowHeight
+					? dragNode?.offsetHeight
+					: $_sizes.rowHeight;
+
+				if (scrollTop === 0 || pos.y > min + rowHeight - 1) {
+					const targetRect = targetRow.getBoundingClientRect();
+					const dragNodeOffset = getOffset(dragNode);
+
+					const dragNodePos = dragNodeOffset.y;
+					const targetNodePos = targetRect.y;
+
+					const dir = dragNodePos > targetNodePos ? -1 : 1;
+					const initialMode = dir === 1 ? "after" : "before";
+					const diff = Math.abs(
+						api.getRowIndex(from) - api.getRowIndex(to)
+					);
+
+					const mode =
+						diff !== 1
+							? initialMode === "before"
+								? "after"
+								: "before"
+							: initialMode;
+
+					if (diff === 1) {
+						// prevent moving items near borders
+						if (dir === -1 && ev.clientY > movementY) return;
+						if (dir === 1 && ev.clientY < movementY) return;
+					}
+
+					movementY = ev.clientY;
+
+					api.exec("move-item", {
+						id: from,
+						target: to,
+						mode,
+						inProgress: true,
+					});
+				}
+			}
+
+			onreorder && onreorder({ event: ev, context });
+		}
+
+		tryAutoScroll(ev, box, context, dragScrollConfig);
+	}
+
+	function endDrag(ev, context) {
+		const { from, to } = context;
+
+		api.exec("move-item", {
+			id: from,
+			target: to,
+			inProgress: false,
+		});
+
+		// block potential clicks after mouseup
+		postDrag = setTimeout(() => {
+			postDrag = 0;
+		}, 1);
+
+		dragItem = dragNode = movementY = null;
+		resetAutoScroll(context);
+	}
 
 	// for header and footer (e.g. type): include visible spans
 	function getHeaderPosition(start, deltaLeft, type) {
@@ -334,69 +561,86 @@
 		return width;
 	}
 
-	const style = $derived(globalWidth ? `width:${globalWidth}px;` : "");
+	const style = $derived(globalWidth > 0 ? `width:${globalWidth}px;` : "");
 
 	let dataEl;
 	let rowHeights = [];
-	let renderedHeight = 0;
+	let renderedHeight = $state(0);
 	function adjustHeight() {
-		let rh = 0;
-		let re = renderStart;
-		dataEl.childNodes.forEach((row, i) => {
-			rowHeights[renderStart + i] = row.offsetHeight;
-			rh += row.offsetHeight;
-			re++;
-		});
+		// make sure the UI is updated before syncing the state
+		tick().then(() => {
+			let rh = 0;
+			let re = renderStart;
+			Array.from(dataEl.children).forEach((row, i) => {
+				rowHeights[renderStart + i] = row.offsetHeight;
+				rh += row.offsetHeight;
+				re++;
+			});
 
-		renderedHeight = rh;
-		renderEnd = re;
+			renderedHeight = rh;
+			renderEnd = re;
+		});
 	}
 
-	let focusNode, editorWasActivated;
-	const resetFocus = e => {
-		if (e) editorWasActivated = true;
-		if (!e && focusNode && editorWasActivated) {
-			focusNode.focus();
-			activeTable = true;
-		} else activeTable = false;
-	};
-	$effect(() => resetFocus($editor));
-	$effect(() => autoRowHeight && adjustHeight());
+	$effect(() => dataRows && autoRowHeight && adjustHeight());
 
-	let activeTable = $state(false);
+	/* focus is a focusable cell which either belongs to visible selection 
+	   or is the first visible cell in grid, which maybe scrolled up due to EXTRAROWS 
+	   If select is false, focusCell can be outside selection*/
+	let focus = $state();
+
+	$effect(() => {
+		if (
+			$focusCell &&
+			(!$select ||
+				!visibleSelection.length ||
+				visibleSelection.includes($focusCell.row))
+		)
+			focus = { ...$focusCell };
+		else if (dataRows.length && renderColumns.data.length) {
+			if (
+				!focus ||
+				(visibleSelection.length &&
+					!visibleSelection.includes(focus.row)) ||
+				dataRows.findIndex(r => r.id == focus.row) === -1 ||
+				renderColumns.data.findIndex(
+					c => c.id == focus.column && !c.collapsed
+				) === -1
+			) {
+				const row = visibleSelection[0] || dataRows[0].id;
+				const cind = renderColumns.data.findIndex(c => !c.collapsed);
+				if (cind !== -1)
+					focus = { row, column: renderColumns.data[cind].id };
+				else focus = null;
+			}
+		} else focus = null;
+	});
 </script>
 
 <div
 	class="wx-grid"
-	style="--header-height:{header
-		? $_sizes.headerHeight
-		: 0}px; --footer-height:{footer
-		? $_sizes.footerHeight
-		: 0}px;--split-left-width:{leftColumns.width}px;"
+	style="--header-height:{headerHeight}px; --footer-height:{footerHeight}px;--split-left-width:{leftColumns.width}px;
+		--split-right-width:{rightColumns.width}px;"
 >
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
-		bind:this={focusNode}
+		bind:this={tableNode}
 		class="wx-table-box"
-		use:clickOutside={() => (activeTable = false)}
-		class:wx-active={activeTable}
-		onclick={() => (activeTable = true)}
 		use:onresize={resize}
-		{style}
-		tabindex="0"
-		use:hotkeys={{
-			keys: {
-				tab: true,
-				"shift+tab": true,
-				arrowup: true,
-				arrowdown: true,
-				escape: true,
-				f2: true,
-			},
-			exec: v => api.exec("hotkey", v),
+		use:drag={{
+			start: startDrag,
+			move: moveDrag,
+			end: endDrag,
+			getReorder: () => reorder,
+			getDraggableInfo: () => ({ hasDraggable: checkDraggable() }),
 		}}
+		use:hotkeys={{ keys, exec: v => api.exec("hotkey", v) }}
+		{style}
+		role={$tree ? "treegrid" : "grid"}
+		aria-colcount={renderColumns.data.length}
+		aria-rowcount={dataRows.length}
+		aria-multiselectable={$tree && multiselect ? true : undefined}
 	>
 		<div
 			class="wx-scroll"
@@ -405,6 +649,7 @@
 				scroll,
 				getWidth: () => clientWidth,
 				getHeight: () => visibleRowsHeight,
+				getScrollMargin: () => leftColumns.width + rightColumns.width,
 			}}
 		>
 			{#if header}
@@ -414,13 +659,17 @@
 						deltaLeft={renderColumns.dh}
 						columns={renderColumns.header}
 						{columnStyle}
+						bodyHeight={visibleRowsHeight - +footer}
 					/>
 				</div>
 			{/if}
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
 				class="wx-body"
 				style="width:{contentWidth}px;height:{fullHeight}px;"
 				onmousedown={ev => lockSelection(ev)}
+				use:clickOutside={() =>
+					api.exec("focus-cell", { eventSource: "click" })}
 				use:delegateClick={bodyClickHandlers}
 			>
 				{#if overlay}
@@ -431,7 +680,7 @@
 					class="wx-data"
 					style="padding-top:{renderRows.d}px;padding-left:{renderColumns.d}px;"
 				>
-					{#each dataRows as row (row.id)}
+					{#each dataRows as row, rIndex (row.id)}
 						<div
 							class:wx-autoheight={autoRowHeight}
 							class={"wx-row" +
@@ -440,29 +689,31 @@
 							data-context-id={row.id}
 							class:wx-selected={$selectedRows.indexOf(row.id) !==
 								-1}
+							class:wx-inactive={dragItem === row.id}
 							style={`${autoRowHeight ? "min-height" : "height"}:${defaultRowHeight}px;`}
+							role="row"
+							aria-rowindex={rIndex}
+							aria-expanded={row.open}
+							aria-level={$tree ? row.$level + 1 : undefined}
+							aria-selected={$tree
+								? $selectedRows.indexOf(row.id) !== -1
+								: undefined}
+							tabindex="-1"
 						>
-							{#each renderColumns.data as col (col.id)}
-								{#if col.collapsed}
+							{#each renderColumns.data as column (column.id)}
+								{#if column.collapsed}
 									<div class="wx-cell wx-collapsed"></div>
-								{:else if $editor?.id === row.id && $editor.column == col.id}
-									<Editor {col} />
-								{:else if col.cell}
-									<col.cell
-										{api}
-										{row}
-										{col}
-										{columnStyle}
-										{cellStyle}
-										onaction={({ action, data }) =>
-											api.exec(action, data)}
-									/>
+								{:else if $editor?.id === row.id && $editor.column == column.id}
+									<Editor {row} {column} />
 								{:else}
 									<Cell
 										{row}
-										{col}
+										{column}
 										{columnStyle}
 										{cellStyle}
+										{reorder}
+										focusable={focus?.row === row.id &&
+											focus?.column === column.id}
 									/>
 								{/if}
 							{/each}
@@ -482,16 +733,28 @@
 		</div>
 	</div>
 </div>
+{#if $_print}
+	<Print
+		config={$_print}
+		{rowStyle}
+		{columnStyle}
+		{cellStyle}
+		{header}
+		{footer}
+		{reorder}
+	/>
+{/if}
 
 <style>
 	.wx-grid {
 		height: 100%;
-		/* width: 100%;
+		/* width: 100%; */
 	}
 	.wx-grid :global(*) {
 		scroll-margin-top: var(--header-height);
 		scroll-margin-bottom: var(--footer-height);
-		scroll-margin-left: var(--split-left-width); */
+		scroll-margin-left: var(--split-left-width);
+		scroll-margin-right: var(--split-right-width);
 	}
 	.wx-table-box {
 		outline: none;
@@ -504,13 +767,9 @@
 		box-sizing: content-box;
 	}
 
-	.wx-table-box.wx-active :global(.wx-row.wx-selected) {
-		background-color: var(--wx-table-select-focus-background);
-	}
-
 	.wx-header-wrapper {
 		position: sticky;
-		z-index: 2;
+		z-index: 3;
 		top: 0px;
 	}
 
@@ -556,6 +815,20 @@
 
 	.wx-selected :global(.wx-cell:first-child) {
 		box-shadow: var(--wx-table-select-border);
+	}
+
+	.wx-inactive {
+		color: var(--wx-table-drag-over-background);
+		background-color: var(--wx-table-drag-over-background);
+		--wx-table-select-border: none;
+	}
+
+	:global(.wx-drag-zone) {
+		z-index: 10;
+		position: absolute;
+		pointer-events: none;
+		overflow: hidden;
+		box-shadow: var(--wx-table-drag-zone-shadow);
 	}
 
 	.wx-cell.wx-collapsed {

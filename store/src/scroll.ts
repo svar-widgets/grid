@@ -2,7 +2,7 @@ import type { TScrollConfig } from "./types";
 
 export function scrollTo(
 	node: HTMLElement,
-	config: { scroll: any; getHeight: any; getWidth: any }
+	config: { scroll: any; getHeight: any; getWidth: any; getScrollMargin: any }
 ) {
 	let prev: TScrollConfig = null;
 	config.scroll.subscribe((v: TScrollConfig) => {
@@ -12,6 +12,7 @@ export function scrollTo(
 		const { left, top, height, width } = v;
 		const bHeight = config.getHeight();
 		const bWidth = config.getWidth();
+		const margin = config.getScrollMargin();
 
 		if (top >= 0) {
 			const now = node.scrollTop;
@@ -25,8 +26,8 @@ export function scrollTo(
 			const now = node.scrollLeft;
 			if (left < now) {
 				node.scrollLeft = left;
-			} else if (left + width > now + bWidth) {
-				node.scrollLeft = left - bWidth + width;
+			} else if (left + width > now + bWidth - margin) {
+				node.scrollLeft = left - bWidth + width + margin;
 			}
 		}
 	});

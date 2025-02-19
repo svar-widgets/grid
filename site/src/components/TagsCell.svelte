@@ -1,8 +1,7 @@
 <script>
-	import { Cell } from "wx-svelte-grid";
 	import { getData } from "../data/index";
 
-	let { row, col, columnStyle, cellStyle } = $props();
+	let { row, column } = $props();
 
 	const tagsData = getData().tags;
 
@@ -17,25 +16,23 @@
 
 		return result;
 	}
-	let tags = $derived(getTags(tagsData, row[col.id]));
+	let tags = $derived(getTags(tagsData, row[column.id]));
 </script>
 
-<Cell {row} {col} {columnStyle} {cellStyle}>
-	{#if tags.length}
-		<div class="tags">
-			<div class="tags-wrapper">
-				{#each tags as tag (tag.id)}
-					<span
-						class="tag"
-						style="background:{tag.background};color:{tag.color}"
-					>
-						{tag.label}
-					</span>
-				{/each}
-			</div>
+{#if tags.length}
+	<div class="tags">
+		<div class="tags-wrapper">
+			{#each tags as tag (tag.id)}
+				<span
+					class="tag"
+					style="background:{tag.background};color:{tag.color}"
+				>
+					{tag.label}
+				</span>
+			{/each}
 		</div>
-	{/if}
-</Cell>
+	</div>
+{/if}
 
 <style>
 	.tags {

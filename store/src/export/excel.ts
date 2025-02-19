@@ -8,28 +8,36 @@ import type {
 	IData,
 	TExportStyles,
 	TSkinName,
+	IDataHash,
+	Value,
 } from "../types";
 import { getRenderValue } from "./index";
+import { getValue } from "../editors";
+import { isSame } from "wx-lib-state";
 
-export function getExcelData(state: Partial<IData>, options: IExportOptions) {
+export function getExcelData(
+	state: Partial<IData>,
+	options: IExportOptions,
+	styles: IDataHash<any>[]
+) {
 	const cells: IExportCell[][] = [];
 	const merged: IExportMerged[] = [];
 	const colSizes: IExportColSize[] = [];
 	let rowSizes: IExportRowSize[] = [];
-
 	const cols = state._columns;
 	const data = state.flatData;
 	const sizes = state._sizes;
 
 	for (const c of cols)
 		colSizes.push({
-			width: c.flexgrow ? sizes.colWidth : c.width,
+			width: c.flexgrow ? sizes.columnWidth : c.width,
 		});
 
 	let rIndex = 0;
 
 	if (options.header !== false && cols[0].header) {
-		addExcelHeader("header", cols, cells, merged, rIndex);
+		addExcelHeader("header", cols, cells, merged, rIndex, options, styles);
+
 		rowSizes = rowSizes.concat(
 			sizes.headerRowHeights.map(height => ({ height }))
 		);
@@ -37,22 +45,37 @@ export function getExcelData(state: Partial<IData>, options: IExportOptions) {
 	}
 
 	for (let r = 0; r < data.length; r++) {
-		const row: IExportCell[] = [];
-		for (let c = 0; c < cols.length; c++)
-			row.push({ v: getRenderValue(data[r], cols[c]), s: 2 });
-		cells.push(row);
+		const dataRow: IExportCell[] = [];
+		for (let c = 0; c < cols.length; c++) {
+			const row = data[r];
+			const col = cols[c];
+			const value = getValue(row, col) ?? "";
+			let text = getRenderValue(row, col);
+			let newStyle;
+			if (options.cellStyle)
+				newStyle = options.cellStyle(value, row, col);
+
+			if (options.cellTemplate) {
+				text = options.cellTemplate(value, row, col) ?? text;
+			}
+
+			const result = prepareCellValues(text, 2, newStyle, styles);
+
+			dataRow.push(result);
+		}
+
+		cells.push(dataRow);
 		rowSizes.push({ height: sizes.rowHeight });
 	}
 	rIndex += data.length;
 
 	if (options.footer !== false && cols[0].footer) {
-		addExcelHeader("footer", cols, cells, merged, rIndex);
+		addExcelHeader("footer", cols, cells, merged, rIndex, options, styles);
 		rowSizes = rowSizes.concat(
 			sizes.footerRowHeights.map(height => ({ height }))
 		);
 	}
-
-	return { cells, merged, rowSizes, colSizes };
+	return { cells, merged, rowSizes, colSizes, styles };
 }
 
 function addExcelHeader(
@@ -60,7 +83,9 @@ function addExcelHeader(
 	cols: IColumn[],
 	cells: IExportCell[][],
 	merged: IExportMerged[],
-	rIndex: number
+	rIndex: number,
+	options: IExportOptions,
+	styles: IDataHash<any>[]
 ) {
 	for (let r = 0; r < cols[0][type as keyof IColumn].length; r++) {
 		const row: IExportCell[] = [];
@@ -75,20 +100,50 @@ function addExcelHeader(
 				});
 			}
 
-			const value = (header.text || "") + "";
+			let v = header.text ?? "";
+			let newStyle;
 
-			let style;
+			if (options.headerCellStyle)
+				newStyle = options.headerCellStyle(v, header, cols[c], type);
 
+			if (options.headerCellTemplate)
+				v = options.headerCellTemplate(v, header, cols[c], type) ?? v;
+
+			let s;
 			if (type == "header") {
-				if (r == cols[0][type as keyof IColumn].length - 1) style = 1;
-				else style = 0;
-			} else if (r) style = 4;
-			else style = 3;
+				if (r == cols[0][type as keyof IColumn].length - 1) s = 1;
+				else s = 0;
+			} else if (r) s = 4;
+			else s = 3;
 
-			row.push({ v: value, s: style });
+			const result = prepareCellValues(v, s, newStyle, styles);
+			row.push(result);
 		}
 		cells.push(row);
 	}
+}
+
+function prepareCellValues(
+	v: Value,
+	baseIndex: number,
+	newStyle: IDataHash<any>,
+	styles: IDataHash<any>[]
+) {
+	let s = baseIndex;
+	if (v && v instanceof Date) {
+		v = getExcelDate(v);
+		newStyle = newStyle || {};
+		newStyle.format = newStyle.format || "dd/mm/yyyy";
+	}
+	if (newStyle) {
+		newStyle = { ...styles[baseIndex], ...newStyle };
+		const i = styles.findIndex(style => isSame(style, newStyle));
+		if (i < 0) {
+			styles.push(newStyle);
+			s = styles.length - 1;
+		} else s = i;
+	}
+	return { v: v + "", s };
 }
 
 export function getExportStyles(skin: TSkinName): TExportStyles {
@@ -148,4 +203,12 @@ export function getExportStyles(skin: TSkinName): TExportStyles {
 		footer: { ...headerStyles },
 	};
 	return styles;
+}
+
+function getExcelDate(date: Date): number {
+	if (!date) return null;
+	const returnDateTime =
+		25569 +
+		(date.getTime() - date.getTimezoneOffset() * 60000) / (86400 * 1000);
+	return returnDateTime;
 }

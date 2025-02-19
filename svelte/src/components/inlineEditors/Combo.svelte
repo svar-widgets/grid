@@ -1,12 +1,11 @@
 <script>
 	import { onMount } from "svelte";
-
 	import { SuggestDropdown } from "wx-svelte-core";
 
-	let { actions, editor } = $props();
+	let { actions, editor, onaction } = $props();
 
 	let { value, renderedValue: text, options: filterOptions } = $state(editor);
-	let template = $state(editor?.config?.template);
+	let { template, cell } = $state(editor?.config || {});
 
 	let index = $derived(filterOptions.findIndex(a => a.id === value));
 
@@ -52,6 +51,9 @@
 	{#snippet children({ option })}
 		{#if template}
 			{template(option)}
+		{:else if cell}
+			{@const SvelteComponent_1 = cell}
+			<SvelteComponent_1 data={option} {onaction} />
 		{:else}{option.label}{/if}
 	{/snippet}
 </SuggestDropdown>

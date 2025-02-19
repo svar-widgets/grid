@@ -78,8 +78,11 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="wx-area" bind:this={area} onmousemove={move}>
 	{#if pos && pos.col.tooltip !== false && (Content || pos.text)}
+		<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 		<div
 			class="tooltip"
+			role="alert"
+			tabindex="0"
 			bind:this={tooltipNode}
 			style="top:{pos.top}px;left:{pos.left}px"
 		>

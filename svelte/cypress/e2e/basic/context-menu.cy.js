@@ -69,11 +69,13 @@ context("Context menu functionality", () => {
 		cy.wxT("table-row", 14).rightclick();
 		cy.wxT("menu-item", "info").click();
 		cy.get(".wx-notice").should("be.visible");
+		cy.get(".wx-notice .wxi-close").click();
 		cy.shot("custom-info");
 
 		cy.wxT("table-row", 15).rightclick();
 		cy.wxT("menu-item", "view").click();
 		cy.get(".wx-notice").should("be.visible");
+		cy.get(".wx-notice .wxi-close").click();
 		cy.shot("custom-view");
 	});
 });

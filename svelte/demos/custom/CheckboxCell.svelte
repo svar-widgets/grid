@@ -1,25 +1,28 @@
 <script>
 	import { Checkbox } from "wx-svelte-core";
-	import { Cell } from "../../src";
 
-	let { row = $bindable(), col, columnStyle, cellStyle, onaction } = $props();
+	let { row, column, onaction, api } = $props();
 
 	function onChange(ev) {
 		const { value } = ev;
-		row[col.id] = value;
 
+		//execute update action
+		api.exec("update-cell", {
+			id: row.id,
+			column: column.id,
+			value,
+		});
+		//trigger custom event
 		onaction &&
 			onaction({
 				action: "custom-check",
 				data: {
 					value,
-					column: col.id,
+					column: column.id,
 					row: row.id,
 				},
 			});
 	}
 </script>
 
-<Cell {row} {col} {columnStyle} {cellStyle}>
-	<Checkbox value={row[col.id]} onchange={onChange} />
-</Cell>
+<Checkbox value={row[column.id]} onchange={onChange} />

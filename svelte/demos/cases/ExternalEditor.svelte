@@ -2,25 +2,29 @@
 	import {
 		RichSelect,
 		Switch,
-		Checkbox,
 		DatePicker,
-		Area,
+		MultiCombo,
 	} from "wx-svelte-core";
-	import { Panel, registerFormItem } from "wx-svelte-form";
+	import { Editor, registerEditorItem } from "wx-svelte-editor";
 
-	import { Grid, editorConfig } from "../../src";
+	import { Grid, getEditorConfig } from "../../src";
 	import { getData } from "../data";
 	const { allData: data, countries, users } = getData();
 
 	let api = $state();
 
 	const columns = [
-		{ id: "id", width: 30 },
-		{ id: "firstName", header: "Name", editor: "text", width: 160 },
+		{ id: "id", width: 50 },
+		{
+			id: "firstName",
+			header: "Name",
+			editor: "text",
+			width: 160,
+		},
 		{
 			id: "country",
 			header: "Country",
-			editor: "combo",
+			editor: "richselect",
 			options: countries,
 			width: 160,
 		},
@@ -54,18 +58,17 @@
 		},
 		{
 			id: "companyName",
-			header: "Comments",
+			header: "Description",
 			editor: "textarea",
 			flexgrow: 1,
 		},
 	];
 
 	// Here are sections
-	registerFormItem("combo", RichSelect);
-	registerFormItem("switch", Switch);
-	registerFormItem("checkbox", Checkbox);
-	registerFormItem("datepicker", DatePicker);
-	registerFormItem("textarea", Area);
+	registerEditorItem("richselect", RichSelect);
+	registerEditorItem("switch", Switch);
+	registerEditorItem("datepicker", DatePicker);
+	registerEditorItem("multicombo", MultiCombo);
 
 	let dataToEdit = $state(null);
 	const init = api => {
@@ -78,36 +81,51 @@
 				dataToEdit = id ? api.getRow(id) : null;
 			}
 		});
-		api.on("close-editor", () => {
-			dataToEdit = null;
-		});
 	};
 </script>
 
 <div style="padding: 20px;">
-	<h4>Grid - dbl-click to show editor</h4>
+	<h4>Grid - dbl-click to show external editor</h4>
 	<div style="height: 320px; max-width: 800px;">
 		<Grid {data} {columns} bind:this={api} {init} />
 	</div>
 	{#if dataToEdit}
-		<Panel
-			data={dataToEdit}
-			config={{ placement: "sidebar", autoSave: true }}
-			sections={editorConfig(columns)}
-			onupdate={e => {
-				const { changes, data } = e;
-				changes.forEach(key => {
-					api.exec("update-cell", {
-						id: dataToEdit.id,
-						column: key,
-						value: data[key],
-					});
+		<Editor
+			values={dataToEdit}
+			items={getEditorConfig(columns)}
+			topBar={{
+				items: [
+					{
+						comp: "icon",
+						icon: "wxi-close",
+						id: "close",
+					},
+					{ comp: "spacer" },
+					{
+						comp: "button",
+						type: "danger",
+						text: "Delete",
+						id: "delete",
+					},
+					{
+						comp: "button",
+						type: "primary",
+						text: "Save",
+						id: "save",
+					},
+				],
+			}}
+			placement="sidebar"
+			onsave={({ values }) => {
+				api.exec("update-row", {
+					id: dataToEdit.id,
+					row: values,
 				});
 			}}
-			ontoolbar={e => {
-				const id = e.id;
-				if (id === "close" || id === "save" || id === "cancel")
-					api.exec("close-editor", { ignore: id === "cancel" });
+			onaction={({ item }) => {
+				if (item.id === "delete")
+					api.exec("delete-row", { id: dataToEdit.id });
+				if (item.comp) dataToEdit = null;
 			}}
 		/>
 	{/if}

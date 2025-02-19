@@ -2,7 +2,13 @@
 	let { item } = $props();
 </script>
 
-<div>
+<div
+	tabindex="-1"
+	role="menuitem"
+	aria-label={item.hidden
+		? `Show ${item.text} column`
+		: `Hide ${item.text} column`}
+>
 	<div class="wx-icon" class:wx-hidden={!!item.hidden}>
 		<i class="wxi-eye"></i>
 	</div>

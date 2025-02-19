@@ -8,8 +8,8 @@ import type {
 
 import { getRenderValue } from "./export";
 
-const BASE_TREE_OFFSET = 28; // base offset for tree levels
-const SORT_EL_OFFSET = 16; // offset for sort arrows
+const BASE_CELL_OFFSET = 28; // base offset for grid cells
+const SORT_EL_OFFSET = 20; // offset for sort arrows
 
 export function suggestSkin() {
 	// FIXME :: Svelte-kit
@@ -90,7 +90,7 @@ export function getHeaderFooterHeights(
 			let height = 0;
 
 			if (vertical && !collapsed) {
-				let cellCss = `wx-measure-cell-${condition} wx-measure-vertical`;
+				let cellCss = `wx-measure-cell-${condition}`;
 				cellCss += css ? ` ${css}` : "";
 
 				height = getTextSize(text, cellCss, skin).width;
@@ -140,11 +140,15 @@ export function getColumnWidth(col: IColumn, data: IRow[], skin: string) {
 		if (colText) {
 			text.push(colText);
 
-			if (col.treetoggle)
+			if (col.treetoggle) {
 				offsets.push(
-					data[i].$level * BASE_TREE_OFFSET +
-						(data[i].$count ? BASE_TREE_OFFSET : 0)
+					data[i].$level * BASE_CELL_OFFSET +
+						(data[i].$count ? BASE_CELL_OFFSET : 0) +
+						(col.draggable ? BASE_CELL_OFFSET : 0)
 				);
+			} else if (col.draggable) {
+				offsets.push(BASE_CELL_OFFSET);
+			}
 		}
 	}
 

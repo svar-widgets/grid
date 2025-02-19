@@ -8,17 +8,25 @@ import CustomContextMenu from "./cases/CustomContextMenu.svelte";
 import CustomEmbedingActions from "./cases/CustomEmbedingActions.svelte";
 import DynamicData from "./cases/DynamicData.svelte";
 import EventHandling from "./cases/EventHandling.svelte";
-// import ExternalEditor from "./cases/ExternalEditor.svelte";
+import ExternalEditor from "./cases/ExternalEditor.svelte";
+import ExternalEditorComments from "./cases/ExternalEditorComments.svelte";
+import ExternalEditorTasklist from "./cases/ExternalEditorTasklist.svelte";
 import FillspaceColumns from "./cases/FillspaceColumns.svelte";
 // import FilterBar from "./cases/FilterBar.svelte";
 // import FilterQuery from "./cases/FilterQuery.svelte";
 // import FilterSimpleQuery from "./cases/FilterSimpleQuery.svelte";
+import Filters from "./cases/Filters.svelte";
+import FiltersCustom from "./cases/FiltersCustom.svelte";
+import FiltersCustomHandler from "./cases/FiltersCustomHandler.svelte";
+import ExternalFilters from "./cases/ExternalFilters.svelte";
 import FixedColumns from "./cases/FixedColumns.svelte";
 import InlineEditors from "./cases/InlineEditors.svelte";
+import InlineEditorsCells from "./cases/InlineEditorsCells.svelte";
 import MultilineRows from "./cases/MultilineRows.svelte";
 import Overlay from "./cases/Overlay.svelte";
 import Paging from "./cases/Paging.svelte";
 import Resize from "./cases/Resize.svelte";
+import Reordering from "./cases/Reordering.svelte";
 import RestBackend from "./cases/RestBackend.svelte";
 import RowMultiSelection from "./cases/RowMultiSelection.svelte";
 import RowSelection from "./cases/RowSelection.svelte";
@@ -36,6 +44,8 @@ import Tooltips from "./cases/Tooltips.svelte";
 import VisibilityColumns from "./cases/VisibilityColumns.svelte";
 import Localization from "./cases/Localization.svelte";
 import TreeTable from "./cases/TreeTable.svelte";
+import Print from "./cases/Print.svelte";
+import PrintWideGrid from "./cases/PrintWideGrid.svelte";
 
 
 export const links = [
@@ -77,10 +87,32 @@ export const links = [
 	["/tooltips/:skin", "Tooltips for data cells", Tooltips],
 
 	["/editors/:skin", "Cell editors", InlineEditors],
+	["/editors-custom/:skin", "Custom cell editors", InlineEditorsCells],
+	["/editpanel/:skin", "Editor", ExternalEditor],
+	[
+		"/editpanel-comments/:skin",
+		"Editor with Comments",
+		ExternalEditorComments,
+	],
+	[
+		"/editpanel-tasklist/:skin",
+		"Editor with Tasklist",
+		ExternalEditorTasklist,
+	],
+
+	["/reordering/:skin", "Reordering rows", Reordering],
 	["/sort/:skin", "Sort data", Sort],
 	// ["/filter/:skin", "Filter data with filter bar", FilterBar],
 	// ["/filters/:skin", "Filter data with Simple Query", FilterSimpleQuery],
 	// ["/query/:skin", "Filter data with Full Query", FilterQuery],
+	["/filters/:skin", "Filters", Filters],
+	["/filters-custom/:skin", "Filter settings", FiltersCustom],
+	[
+		"/filters-handler/:skin",
+		"Filters with custom handler",
+		FiltersCustomHandler,
+	],
+	["/filters-external/:skin", "External filters", ExternalFilters],
 	["/pagination/:skin", "Pagination", Paging],
 
 	["/context/:skin", "Context menu", ContextMenu],
@@ -97,6 +129,7 @@ export const links = [
 	["/api/:skin", "API calls", TableAPI],
 	["/events/:skin", "Event handling", EventHandling],
 	["/scroll/:skin", "Scroll by API", ScrollTable],
-	["/locale/:skin", "Localization", Localization],
-	// ["/editpanel", "External Editor", ExternalEditor],
+	["/print/:skin", "Print", Print],
+	["/print-wide/:skin", "Print wide grid", PrintWideGrid],
+	["/locale/:skin", "Locales", Localization],
 ];

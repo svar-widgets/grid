@@ -4,6 +4,8 @@ import { getValue, setValue } from "./editors";
 import { download, getRenderValue } from "./export";
 import { getCsvData } from "./export/csv";
 import { getExcelData, getExportStyles } from "./export/excel";
+import { normalizePrintConfig } from "./print";
+import { isCommunity } from "./package";
 
 import type {
 	IColumn,
@@ -19,7 +21,9 @@ import type {
 	IExportOptions,
 	TColumnType,
 	TSortValue,
-	TExportStyles,
+	IDataHash,
+	IFilterValues,
+	IPrintConfig,
 } from "./types";
 import { sortByMany } from "./sort";
 import {
@@ -28,6 +32,7 @@ import {
 	getHeaderColWidth,
 	suggestSkin,
 } from "./sizes";
+import { getFilterHandler } from "./filters";
 
 export default class DataStore extends Store<IData> {
 	public in: EventBus<TMethodsConfig, keyof TMethodsConfig>;
@@ -40,7 +45,7 @@ export default class DataStore extends Store<IData> {
 
 		const defaultSizes = {
 			rowHeight: 37,
-			colWidth: 160,
+			columnWidth: 160,
 			headerHeight: 36,
 			footerHeight: 36,
 		};
@@ -98,14 +103,14 @@ export default class DataStore extends Store<IData> {
 					},
 				},
 				{
-					in: ["data", "tree"],
+					in: ["data", "tree", "filter"],
 					out: ["flatData"],
 					exec: (ctx: TDataConfig) => {
-						const { data, tree } = this.getState();
-						this.setState(
-							{ flatData: tree ? this.flattenRows(data) : data },
-							ctx
-						);
+						const { data, tree, filter } = this.getState();
+						let flatData = tree ? this.flattenRows(data) : data;
+						if (filter) flatData = flatData.filter(filter);
+
+						this.setState({ flatData }, ctx);
 					},
 				},
 			],
@@ -164,8 +169,10 @@ export default class DataStore extends Store<IData> {
 			}
 		});
 		inBus.on("add-row", (ev: IDataMethodsConfig["add-row"]) => {
-			let { data } = this.getState();
-			const { row, before, after } = ev;
+			const state = this.getState();
+			let { data } = state;
+			const { _select: select } = state;
+			const { row, before, after, select: selectForce } = ev;
 			ev.id = row.id = ev.id || row.id || uid();
 
 			if (before || after) {
@@ -179,10 +186,12 @@ export default class DataStore extends Store<IData> {
 
 			this.setState({ data });
 
-			inBus.exec("select-row", { id: row.id });
+			if (typeof selectForce === "boolean" && !selectForce) return;
+			if (selectForce || select)
+				inBus.exec("select-row", { id: row.id, show: true });
 		});
 		inBus.on("delete-row", (ev: IDataMethodsConfig["delete-row"]) => {
-			const { data, selectedRows } = this.getState();
+			const { data, selectedRows, focusCell } = this.getState();
 			const { id } = ev;
 
 			const update: Partial<IData> = {
@@ -193,6 +202,10 @@ export default class DataStore extends Store<IData> {
 			}
 
 			this.setState(update);
+
+			if (focusCell?.row === id) {
+				this.in.exec("focus-cell", { eventSource: "delete-row" });
+			}
 		});
 		inBus.on("update-cell", (ev: IDataMethodsConfig["update-cell"]) => {
 			let { data } = this.getState();
@@ -204,24 +217,12 @@ export default class DataStore extends Store<IData> {
 			const col = this.getColumn(column);
 
 			if (tree) {
-				const row = this._branches[id];
-				const obj = { ...row };
+				const obj = { ...this._branches[id] };
 				setValue(obj, col, value);
 
-				// we need not recreate all data objects, as rendering layer doesn't work
-				// with the hierarchy, just need to update the object itself and its references
-				this._branches[id] = obj;
-				// update in parent collection
-				const parentRow = this._branches[obj.$parent];
-				const parentIndex = parentRow.data.findIndex(
-					(a: IRow) => a.id == id
-				);
-
-				parentRow.data = [...parentRow.data];
-				parentRow.data[parentIndex] = obj;
-
+				const update = this.updateTreeCell(obj);
 				if (obj.$parent === 0) {
-					data = parentRow.data;
+					data = update;
 				}
 			} else {
 				const index = data.findIndex(a => a.id == id);
@@ -252,7 +253,9 @@ export default class DataStore extends Store<IData> {
 				show,
 				column,
 			}: IDataMethodsConfig["select-row"]) => {
-				let { selectedRows } = this.getState();
+				const state = this.getState();
+				const { focusCell } = state;
+				let { selectedRows } = state;
 
 				if (!selectedRows.length) range = toggle = false;
 
@@ -278,11 +281,35 @@ export default class DataStore extends Store<IData> {
 						selectedRows.push(id);
 					} else selectedRows = [id];
 				}
+
 				this.setState({ selectedRows });
 
+				if (focusCell?.row !== id) {
+					this.in.exec("focus-cell", { eventSource: "select-row" });
+				}
 				if (show) this.in.exec("scroll", { row: id, column });
 			}
 		);
+		this.in.on("focus-cell", (ev: IDataMethodsConfig["focus-cell"]) => {
+			const { row, column, eventSource } = ev;
+			const { _columns, split } = this.getState();
+
+			if (row && column) {
+				this.setState({ focusCell: { row, column } });
+				if (eventSource !== "click") {
+					if (
+						(!split.left ||
+							_columns.findIndex(a => a.id === ev.column) >=
+								split.left) &&
+						(!split.right ||
+							_columns.findIndex(a => a.id === ev.column) <
+								_columns.length - split.right)
+					) {
+						this.in.exec("scroll", { row, column });
+					} else this.in.exec("scroll", { row });
+				}
+			} else this.setState({ focusCell: null });
+		});
 		inBus.on("resize-column", (ev: IDataMethodsConfig["resize-column"]) => {
 			const { id, auto, maxRows } = ev;
 			let width = ev.width || 0;
@@ -374,7 +401,29 @@ export default class DataStore extends Store<IData> {
 		});
 
 		inBus.on("filter-rows", (ev: IDataMethodsConfig["filter-rows"]) => {
-			this.setState({ filter: ev.handler });
+			const { value, key, filter } = ev;
+			const state = this.getState();
+			let { filterValues } = state;
+
+			// clear all filters
+			if (!Object.keys(ev).length) {
+				this.setState({ filterValues: {}, filter: null });
+				return;
+			}
+
+			const update: Partial<IData> = {};
+
+			if (key) {
+				filterValues = {
+					...filterValues,
+					[key]: value,
+				};
+				update.filterValues = filterValues;
+			}
+
+			update.filter = filter ?? this.createFilter(filterValues);
+
+			this.setState(update);
 		});
 
 		inBus.on(
@@ -392,147 +441,342 @@ export default class DataStore extends Store<IData> {
 			}
 		);
 
+		inBus.on(
+			"move-item",
+			({
+				id,
+				target,
+				mode = "after",
+				inProgress,
+			}: IDataMethodsConfig["move-item"]) => {
+				const { data, flatData, tree } = this.getState();
+				const sourceIndex = flatData.findIndex(a => a.id == id);
+				const targetIndex = flatData.findIndex(a => a.id == target);
+
+				if (
+					sourceIndex === -1 ||
+					targetIndex === -1 ||
+					inProgress === false
+				)
+					// event called with inProgress=false is purely informational (indicates that the drag is over)
+					return;
+
+				if (tree) {
+				} else {
+					this.moveItem(id, target, data, mode);
+				}
+
+				this.setState({
+					data: tree ? this.normalizeTreeRows(data) : data,
+				});
+			}
+		);
+
 		inBus.on("open-row", (ev: IDataMethodsConfig["open-row"]) => {
 			const { id, nested } = ev;
-			const { data } = this.getState();
 			this.toggleBranch(id, true, nested);
-			this.setState({ data });
 		});
 
 		inBus.on("close-row", (ev: IDataMethodsConfig["close-row"]) => {
 			const { id, nested } = ev;
-			const { data } = this.getState();
 			this.toggleBranch(id, false, nested);
-			this.setState({ data });
 		});
-		inBus.on("hotkey", ({ key, event }: IDataMethodsConfig["hotkey"]) => {
-			switch (key) {
-				case "arrowup": {
-					const {
-						selectedRows,
-						editor,
-						flatData: data,
-					} = this.getState();
-
-					if (!editor) {
+		inBus.on(
+			"hotkey",
+			({ key, event, isInput }: IDataMethodsConfig["hotkey"]) => {
+				switch (key) {
+					case "arrowup": {
+						const {
+							flatData: data,
+							focusCell,
+							_select: select,
+						} = this.getState();
 						event.preventDefault();
-						const selected = selectedRows[0];
-						const id = selected
-							? this.getPrevRow(selected)?.id
+						if (isInput) return;
+
+						const colId = focusCell
+							? focusCell.column
+							: this._getFirstVisibleColumn()?.id;
+						const rowId = focusCell
+							? this.getPrevRow(focusCell.row)?.id
 							: data[data.length - 1]?.id;
-						if (id) {
-							this.in.exec("select-row", { id, show: true });
+						if (colId && rowId) {
+							this.in.exec("focus-cell", {
+								row: rowId,
+								column: colId,
+								eventSource: "key",
+							});
+							if (select)
+								this.in.exec("select-row", { id: rowId });
 						}
+						break;
 					}
-					break;
-				}
-				case "arrowdown": {
-					const {
-						selectedRows,
-						editor,
-						flatData: data,
-					} = this.getState();
-					if (!editor) {
+					case "arrowdown": {
+						const {
+							flatData: data,
+							focusCell,
+							_select: select,
+						} = this.getState();
 						event.preventDefault();
-						const selected = selectedRows[0];
-						const id = selected
-							? this.getNextRow(selected)?.id
+						if (isInput) return;
+
+						const colId = focusCell
+							? focusCell.column
+							: this._getFirstVisibleColumn()?.id;
+						const rowId = focusCell
+							? this.getNextRow(focusCell.row)?.id
 							: data[0]?.id;
-						if (id) {
-							this.in.exec("select-row", { id, show: true });
+						if (colId && rowId) {
+							this.in.exec("focus-cell", {
+								row: rowId,
+								column: colId,
+								eventSource: "key",
+							});
+							if (select)
+								this.in.exec("select-row", { id: rowId });
 						}
+						break;
 					}
-					break;
-				}
-				case "tab": {
-					const { editor } = this.getState();
-					if (editor) {
-						event.preventDefault();
+					case "arrowright": {
+						const { focusCell } = this.getState();
+						if (isInput) return;
 
-						const column = editor.column;
-						let id = editor.id;
-						let col = this.getNextEditor(column);
-						if (!col) {
-							const row = this.getNextRow(id);
-							if (row) {
-								id = row.id;
-								col = this.getNextEditor();
-								this.in.exec("select-row", {
-									id,
-									show: true,
-									column: col.id,
+						event.preventDefault();
+						if (focusCell) {
+							const colId = this.getNextColumn(
+								focusCell.column,
+								true
+							)?.id;
+							if (colId) {
+								this.in.exec("focus-cell", {
+									row: focusCell.row,
+									column: colId,
+									eventSource: "key",
 								});
 							}
-						} else {
-							this.in.exec("select-row", {
-								id,
-								show: true,
-								column: col.id,
-							});
 						}
-
-						if (col)
-							this.in.exec("open-editor", {
-								id,
-								column: col.id,
-							});
+						break;
 					}
-					break;
-				}
-				case "shift+tab": {
-					const { editor } = this.getState();
-					if (editor) {
-						event.preventDefault();
+					case "arrowleft": {
+						const { focusCell } = this.getState();
+						if (isInput) return;
 
-						const column = editor.column;
-						let id = editor.id;
-						let col = this.getPrevEditor(column);
-						if (!col) {
-							const row = this.getPrevRow(id);
-							if (row) {
-								id = row.id;
-								col = this.getPrevEditor();
-								this.in.exec("select-row", {
-									id,
-									show: true,
-									column: col.id,
+						event.preventDefault();
+						if (focusCell) {
+							const colId = this.getPrevColumn(
+								focusCell.column,
+								true
+							)?.id;
+							if (colId) {
+								this.in.exec("focus-cell", {
+									row: focusCell.row,
+									column: colId,
+									eventSource: "key",
 								});
 							}
-						} else {
-							this.in.exec("select-row", {
-								id,
-								show: true,
-								column: col.id,
+						}
+						break;
+					}
+					case "tab": {
+						const {
+							editor,
+							focusCell,
+							_select: select,
+						} = this.getState();
+						if (editor) {
+							event.preventDefault();
+
+							const column = editor.column;
+							let id = editor.id;
+							let col = this.getNextEditor(column);
+							if (!col) {
+								const row = this.getNextRow(id);
+								if (row) {
+									id = row.id;
+									col = this.getNextEditor();
+								}
+							}
+
+							if (col) {
+								this.in.exec("open-editor", {
+									id,
+									column: col.id,
+								});
+								this.in.exec("focus-cell", {
+									row: id,
+									column: col.id,
+									eventSource: "key",
+								});
+								if (select && !this.isSelected(id))
+									this.in.exec("select-row", { id });
+							}
+						} else if (focusCell) {
+							this.in.exec("focus-cell", { eventSource: "key" });
+						}
+						break;
+					}
+					case "shift+tab": {
+						const {
+							editor,
+							focusCell,
+							_select: select,
+						} = this.getState();
+						if (editor) {
+							event.preventDefault();
+
+							const column = editor.column;
+							let id = editor.id;
+							let col = this.getPrevEditor(column);
+							if (!col) {
+								const row = this.getPrevRow(id);
+								if (row) {
+									id = row.id;
+									col = this.getPrevEditor();
+								}
+							}
+
+							if (col) {
+								this.in.exec("open-editor", {
+									id,
+									column: col.id,
+								});
+								this.in.exec("focus-cell", {
+									row: id,
+									column: col.id,
+									eventSource: "key",
+								});
+								if (select && !this.isSelected(id))
+									this.in.exec("select-row", { id });
+							}
+						} else if (focusCell) {
+							this.in.exec("focus-cell", { eventSource: "key" });
+						}
+						break;
+					}
+					case "escape": {
+						const { editor } = this.getState();
+						if (editor) {
+							this.in.exec("close-editor", { ignore: true });
+							this.in.exec("focus-cell", {
+								row: editor.id,
+								column: editor.column,
+								eventSource: "key",
 							});
 						}
-
-						if (col)
+						break;
+					}
+					case "f2": {
+						const { editor, focusCell } = this.getState();
+						if (!editor && focusCell) {
 							this.in.exec("open-editor", {
-								id,
-								column: col.id,
+								id: focusCell.row,
+								column: focusCell.column,
 							});
+						}
+						break;
 					}
-					break;
-				}
-				case "escape": {
-					const { editor } = this.getState();
-					if (editor) {
-						this.in.exec("close-editor", { ignore: true });
+					case "enter": {
+						const { focusCell, tree } = this.getState();
+						if (!isInput && tree && focusCell) {
+							const column = this.getColumn(focusCell.column);
+							if (column.treetoggle) {
+								const item = this.getRow(focusCell.row);
+								this.in.exec(
+									item.open ? "close-row" : "open-row",
+									{
+										id: focusCell.row,
+										nested: true,
+									}
+								);
+							}
+						}
+						break;
 					}
-					break;
-				}
-				case "f2": {
-					const { editor, selectedRows } = this.getState();
-					if (!editor && selectedRows.length) {
-						this.in.exec("open-editor", { id: selectedRows[0] });
+					case "home": {
+						const { editor, focusCell } = this.getState();
+						if (!editor && focusCell) {
+							event.preventDefault();
+							const colId = this._getFirstVisibleColumn()?.id;
+							this.in.exec("focus-cell", {
+								row: focusCell.row,
+								column: colId,
+								eventSource: "key",
+							});
+						}
+						break;
 					}
-					break;
+					case "ctrl+home": {
+						const {
+							editor,
+							focusCell,
+							flatData: data,
+							_select: select,
+						} = this.getState();
+						if (!editor && focusCell) {
+							event.preventDefault();
+							const rowId = data[0]?.id;
+							const colId = this._getFirstVisibleColumn()?.id;
+							if (rowId && colId) {
+								this.in.exec("focus-cell", {
+									row: rowId,
+									column: colId,
+									eventSource: "key",
+								});
+								if (select && !this.isSelected(rowId))
+									this.in.exec("select-row", { id: rowId });
+							}
+						}
+						break;
+					}
+					case "end": {
+						const { editor, focusCell } = this.getState();
+						if (!editor && focusCell) {
+							event.preventDefault();
+							const colId = this._getLastVisibleColumn()?.id;
+							const rowId = focusCell.row;
+							this.in.exec("focus-cell", {
+								row: rowId,
+								column: colId,
+								eventSource: "key",
+							});
+						}
+						break;
+					}
+					case "ctrl+end": {
+						const {
+							editor,
+							focusCell,
+							flatData: data,
+							_select: select,
+						} = this.getState();
+						if (!editor && focusCell) {
+							event.preventDefault();
+							const rowId = data.at(-1).id;
+							const colId = this._getLastVisibleColumn()?.id;
+							if (rowId && colId) {
+								this.in.exec("focus-cell", {
+									row: rowId,
+									column: colId,
+									eventSource: "key",
+								});
+								if (select && !this.isSelected(rowId))
+									this.in.exec("select-row", { id: rowId });
+							}
+						}
+						break;
+					}
 				}
 			}
-		});
+		);
 
 		inBus.on("scroll", (ev: IDataMethodsConfig["scroll"]) => {
-			const { _columns, split, _sizes, data, dynamic } = this.getState();
+			const {
+				_columns,
+				split,
+				_sizes,
+				flatData: data,
+				dynamic,
+			} = this.getState();
 
 			let left = -1,
 				top = -1,
@@ -541,7 +785,7 @@ export default class DataStore extends Store<IData> {
 				left = 0;
 				const ind = _columns.findIndex(a => a.id === ev.column);
 				width = _columns[ind].width;
-				for (let i = split.left; i < ind; i++) {
+				for (let i = split.left ?? 0; i < ind; i++) {
 					const col = _columns[i];
 					if (col.hidden) continue;
 					left += col.width;
@@ -562,6 +806,12 @@ export default class DataStore extends Store<IData> {
 					height: _sizes.rowHeight,
 				},
 			});
+		});
+
+		inBus.on("print", (ev: IDataMethodsConfig["print"]) => {
+			const config = normalizePrintConfig(ev);
+			this.setState({ _print: config });
+			this.setStateAsync({ _print: null });
 		});
 	}
 
@@ -600,11 +850,18 @@ export default class DataStore extends Store<IData> {
 			state.data = this.normalizeTreeRows(state.data);
 		} else state.data = this.normalizeRows(state.data);
 
+		if (state.split) {
+			if (state.split.right && isCommunity()) state.split.right = 0;
+		}
+
 		this._router.init({
 			sort: [],
 			filter: null,
+			filterValues: {},
 			scroll: null,
 			editor: null,
+			focusCell: null,
+			_print: null,
 			...state,
 		});
 	}
@@ -613,26 +870,86 @@ export default class DataStore extends Store<IData> {
 		return this._router.setState(state, ctx);
 	}
 
+	setStateAsync(state: Partial<IData>) {
+		this._router.setStateAsync(state);
+	}
+
 	getRow(id: TID): IRow {
 		const { tree } = this.getState();
 		if (tree) return this._branches[id];
 		return this.getState().data.find(a => a.id == id);
 	}
 
+	getRowIndex(id: TID, data?: any[]): number {
+		if (!data) data = this.getState().flatData;
+		return data.findIndex(a => a.id == id);
+	}
+
 	getNextRow(id: TID): IRow {
 		const data = this.getState().flatData;
-		const index = data.findIndex((r: IRow) => r.id == id);
+		const index = this.getRowIndex(id, data);
 		return data[index + 1];
 	}
 
 	getPrevRow(id: TID): IRow {
 		const data = this.getState().flatData;
-		const index = data.findIndex((o: IRow) => o.id == id);
+		const index = this.getRowIndex(id, data);
 		return data[index - 1];
 	}
 
 	getColumn(id: TID): IColumn {
 		return this.getState().columns.find(a => a.id == id);
+	}
+
+	getNextColumn(id: TID, visible?: boolean): IRenderColumn {
+		const columns = this.getState()._columns;
+		const index = columns.findIndex((c: IRenderColumn) => c.id == id);
+
+		if (visible) {
+			return this._getFirstVisibleColumn(index + 1);
+		}
+
+		return columns[index + 1];
+	}
+
+	getPrevColumn(id: TID, visible?: boolean): IRenderColumn {
+		const columns = this.getState()._columns;
+		const index = columns.findIndex((c: IRenderColumn) => c.id == id);
+
+		if (visible) {
+			return this._getLastVisibleColumn(index - 1);
+		}
+
+		return columns[index - 1];
+	}
+
+	_getFirstVisibleColumn(index?: number): IRenderColumn {
+		const columns = this.getState()._columns;
+		let start = index ?? 0;
+
+		while (
+			start < columns.length &&
+			(columns[start]?.hidden || columns[start]?.collapsed)
+		) {
+			start++;
+		}
+
+		return columns[start];
+	}
+
+	_getLastVisibleColumn(index?: number): IRenderColumn {
+		const columns = this.getState()._columns;
+
+		let start = index ?? columns.length - 1;
+
+		while (
+			start < columns.length &&
+			(columns[start]?.hidden || columns[start]?.collapsed)
+		) {
+			start--;
+		}
+
+		return columns[start];
 	}
 
 	getNextEditor(id?: TID): IColumn {
@@ -654,30 +971,125 @@ export default class DataStore extends Store<IData> {
 	}
 
 	toggleBranch(id: TID, open: boolean, nested?: boolean) {
-		const item = this._branches[id];
+		let item = this._branches[id];
+
+		let { data } = this.getState();
+		data = [...data];
+
 		if (id !== 0) {
-			item.open = open;
+			item = { ...item, open };
+			const update = this.updateTreeCell(item);
+			if (item.$parent === 0) data = update;
 		}
 
 		if (nested && item.data?.length) {
 			item.data.forEach((row: IRow) => {
-				this.toggleKids(row, open, nested);
+				const update = this.toggleKids(row, open, nested);
+				if (id === 0) data = update;
 			});
 		}
+		this.setState({ data });
 	}
 
 	toggleKids(item: IRow, open: boolean, nested?: boolean) {
-		item.open = open;
+		item = { ...item, open };
+
+		const data = this.updateTreeCell(item);
 
 		if (nested && item.data?.length) {
 			item.data.forEach((row: IRow) => {
 				this.toggleKids(row, open, nested);
 			});
 		}
+		return data;
+	}
+
+	private updateTreeCell(item: IRow) {
+		const id = item.id;
+
+		this._branches[id] = item;
+
+		const parentRow = this._branches[item.$parent];
+		const parentIndex = parentRow.data.findIndex((a: IRow) => a.id == id);
+
+		parentRow.data = [...parentRow.data];
+		parentRow.data[parentIndex] = item;
+
+		return parentRow.data;
 	}
 
 	private isSelected(id: TID): boolean {
 		return this.getState().selectedRows.indexOf(id) !== -1;
+	}
+
+	private findAndRemove(items: any[], id: TID): any {
+		for (let i = 0; i < items.length; i++) {
+			if (items[i].id == id) {
+				return items.splice(i, 1)[0];
+			}
+			if (items[i].data) {
+				const found = this.findAndRemove(items[i].data, id);
+				if (found) return found;
+			}
+		}
+		return null;
+	}
+
+	private insertItem(
+		items: any[],
+		targetId: TID,
+		item: any,
+		mode: IDataMethodsConfig["move-item"]["mode"]
+	): boolean {
+		for (let i = 0; i < items.length; i++) {
+			if (items[i].id == targetId) {
+				const targetItem = items[i];
+				const insertIndex = mode === "before" ? i : i + 1;
+
+				// is a branch
+				if (targetItem.data) {
+					if (mode === "before") {
+						const prevItem = i > 0 ? items[i - 1] : null;
+
+						// open branch - insert as last child of prev. branch (before)
+						if (prevItem?.data && prevItem.open) {
+							prevItem.data.push(item);
+						} else {
+							items.splice(insertIndex, 0, item);
+						}
+
+						return true;
+					} else {
+						// open branch - insert as first child of target branch (after)
+						if (targetItem.open) {
+							targetItem.data.unshift(item);
+							return true;
+						}
+					}
+				}
+
+				items.splice(insertIndex, 0, item);
+				return true;
+			}
+
+			if (
+				items[i].data &&
+				this.insertItem(items[i].data, targetId, item, mode)
+			) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private moveItem(
+		id: TID,
+		target: TID,
+		data: any[],
+		mode: IDataMethodsConfig["move-item"]["mode"]
+	) {
+		const movedItem = this.findAndRemove(data, id);
+		return this.insertItem(data, target, movedItem, mode);
 	}
 
 	private copyColumns(columns: IColumn[]) {
@@ -750,11 +1162,13 @@ export default class DataStore extends Store<IData> {
 		sizes: IRenderSizes
 	) {
 		const col = columns[index];
-		if (!col.width) col.width = col.flexgrow ? 17 : sizes.colWidth;
+		if (!col.width) col.width = col.flexgrow ? 17 : sizes.columnWidth;
 
 		if (col.editor && typeof col.editor === "string") {
 			col.editor = { type: col.editor };
 		}
+
+		col._colindex = index + 1;
 
 		// normalize header and footer config
 		const config: IRenderHeaderConfig[] = col[type];
@@ -774,7 +1188,7 @@ export default class DataStore extends Store<IData> {
 
 			// fill space covered by rowspans with empties so that rows are rendered column by column regardless of upper row overlap
 			for (let r = 1; r < row.rowspan; r++) {
-				(config as any).splice(i + r, 0, {});
+				(config as any).splice(i + r, 0, { _hidden: true });
 				// fill neighboring columns as well for headers with colspans and rowspans
 				for (let c = 1; c < row.colspan; c++) {
 					const nextColRows = columns[index + c][type];
@@ -805,7 +1219,7 @@ export default class DataStore extends Store<IData> {
 						} else if (curCell.flexgrow) {
 							flexgrow += curCell.flexgrow;
 						} else {
-							width += curCell.width || sizes.colWidth;
+							width += curCell.width || sizes.columnWidth;
 						}
 					}
 					if (flexgrow) {
@@ -817,6 +1231,14 @@ export default class DataStore extends Store<IData> {
 			} else {
 				row.width = col.width;
 				row.flexgrow = col.flexgrow;
+			}
+
+			if (
+				type === "header" &&
+				row.filter &&
+				typeof row.filter === "string"
+			) {
+				row.filter = { type: row.filter };
 			}
 		}
 
@@ -841,9 +1263,14 @@ export default class DataStore extends Store<IData> {
 
 			this._branches[row.id] = row;
 
-			if (row.data?.length) {
-				row.$count = row.data.length;
-				this.normalizeTreeRows(row.data, row.$level + 1, row.id);
+			if (row.data) {
+				if (row.data.length) {
+					row.$count = row.data.length;
+					this.normalizeTreeRows(row.data, row.$level + 1, row.id);
+				} else {
+					delete row.data;
+					delete row.$count;
+				}
 			}
 		});
 		return data;
@@ -867,6 +1294,35 @@ export default class DataStore extends Store<IData> {
 			}
 		});
 		return res;
+	}
+
+	createFilter(filterValues: IFilterValues) {
+		const { _columns: columns } = this.getState();
+		const filters: ((obj: any) => boolean)[] = [];
+
+		for (const field in filterValues) {
+			const { config, type } = columns
+				.find(c => c.id == field)
+				.header.find(h => h.filter).filter;
+			const value = filterValues[field];
+
+			filters.push((obj: any) => {
+				if (config?.handler) {
+					return config.handler(obj[field], value);
+				}
+
+				return getFilterHandler(type)(obj[field], value);
+			});
+		}
+
+		return (obj: any) => {
+			for (let i = 0; i < filters.length; i++) {
+				if (!filters[i](obj)) {
+					return false;
+				}
+			}
+			return true;
+		};
 	}
 
 	private normalizeSizes(
@@ -921,6 +1377,7 @@ export interface IDataMethodsConfig {
 		before?: TID;
 		after?: TID;
 		row: IRow;
+		select?: boolean;
 	};
 	["delete-row"]: { id: TID };
 	["update-row"]: { id: TID; row: Record<string, any> };
@@ -957,13 +1414,22 @@ export interface IDataMethodsConfig {
 	};
 
 	["filter-rows"]: {
-		handler: any;
+		filter?: any;
+		key?: string;
+		value?: any;
 	};
 
 	["collapse-column"]: {
 		id: TID;
 		row: number;
 		mode?: boolean;
+	};
+
+	["move-item"]: {
+		id: TID;
+		target: TID;
+		mode: "before" | "after";
+		inProgress?: boolean;
 	};
 
 	["open-row"]: {
@@ -989,4 +1455,10 @@ export interface IDataMethodsConfig {
 		event: any;
 		isInput: boolean;
 	};
+	["focus-cell"]: {
+		row?: TID;
+		column?: TID;
+		eventSource: string;
+	};
+	["print"]?: IPrintConfig;
 }

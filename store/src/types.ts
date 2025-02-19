@@ -18,6 +18,17 @@ export interface IMethodsHash {
 	[key: string]: any;
 }
 
+export type TSelect = boolean;
+export type TFilterType = "text" | "richselect";
+export type TEditorType = "text" | "combo" | "datepicker" | "richselect";
+export interface IColumnEditor {
+	type: TEditorType;
+	config?: {
+		template?: (v: any) => string;
+		cell?: any;
+	};
+}
+
 export interface IDataConfig {
 	data: any[];
 	columns: IColumn[];
@@ -27,6 +38,16 @@ export interface IDataConfig {
 	scroll?: null;
 	editor?: TEditorConfig;
 	dynamic?: TDynamicConfig;
+	focusCell?: {
+		row: TID;
+		column: TID;
+	};
+	filterValues: IFilterValues;
+	_print?: IPrintConfig;
+	split: {
+		left?: number;
+		right?: number;
+	};
 }
 
 export interface IData {
@@ -36,17 +57,26 @@ export interface IData {
 	sizes: ISizeConfig;
 	_sizes: IRenderSizes;
 	columns: IColumn[];
-	_columns: IColumn[];
+	_columns: IRenderColumn[];
 	sort?: TSortConfig[];
 	editor?: TEditorConfig;
 	filter?: (obj: any) => boolean;
 	tree?: boolean;
 	scroll?: TScrollConfig;
 	_skin: TSkinName;
+	_select?: TSelect;
 	split: {
-		left: number;
+		left?: number;
+		right?: number;
 	};
 	dynamic?: TDynamicConfig;
+	exportStyles?: TExportStyles;
+	focusCell?: {
+		row: TID;
+		column: TID;
+	};
+	filterValues: IFilterValues;
+	_print?: IPrintConfig;
 }
 
 export interface IApi {
@@ -77,7 +107,7 @@ export interface IColumn {
 	sort?: boolean;
 	$sort?: TSortConfig;
 	left?: number;
-	editor?: string | { type: string; config?: any };
+	editor?: TEditorType | IColumnEditor;
 	setter?: ValueSetter;
 	getter?: ValueGetter;
 	hidden?: boolean;
@@ -89,6 +119,7 @@ export interface IColumn {
 	css?: string;
 	template?: any;
 	treetoggle?: boolean;
+	draggable?: boolean | ((row: IRow, column: IColumn) => boolean);
 }
 
 export type TColumnHeader = string | string[] | IHeaderConfig | IHeaderConfig[];
@@ -97,11 +128,14 @@ export interface IRenderColumn extends IColumn {
 	header?: IRenderHeaderConfig[];
 	footer?: IRenderHeaderConfig[];
 	collapsed?: boolean;
+	_colindex: number;
+	editor?: IColumnEditor;
 }
 
 export interface IHeaderConfig {
 	id: string;
 	text?: "";
+	cell?: any;
 	css?: string;
 	rowspan?: number;
 	colspan?: number;
@@ -109,25 +143,28 @@ export interface IHeaderConfig {
 	collapsed?: boolean;
 	vertical?: boolean;
 	autoheight?: boolean;
+	filter?: TFilterType | IHeaderFilter;
 }
 
 export interface IRenderHeaderConfig extends IHeaderConfig {
 	width: number;
 	height?: number;
 	flexgrow?: number;
+	filter?: IHeaderFilter;
 }
 
 export interface ISizeConfig {
 	rowHeight?: number;
 	headerHeight?: number;
 	footerHeight?: number;
-	colWidth?: number;
+	columnWidth?: number;
 }
 
 export interface IRenderSizes extends ISizeConfig {
 	headerRowHeight?: number;
 	headerRowHeights?: number[];
 	footerRowHeights?: number[];
+	columnWidth?: number;
 }
 
 export type TSortConfig = {
@@ -206,6 +243,24 @@ export interface IExportOptions {
 	rows?: string;
 	cols?: string;
 	styles?: TConfigExportStyles;
+	cellTemplate?: (value: Value, row: IRow, column: IColumn) => string;
+	headerCellTemplate?: (
+		value: Value,
+		headerCell: TColumnHeader,
+		column: IColumn,
+		type: TColumnType
+	) => string;
+	cellStyle?: (
+		value: Value,
+		row: IRow,
+		column: IColumn
+	) => IDataHash<any> | null;
+	headerCellStyle?: (
+		value: Value,
+		headerCell: TColumnHeader,
+		column: IColumn,
+		type: TColumnType
+	) => IDataHash<any> | null;
 }
 
 export type TColumnType = "header" | "footer";
@@ -216,6 +271,25 @@ export type TSortObject = any;
 export type TSkinName = "material" | "willow" | "willow-dark";
 
 export type TDynamicConfig = {
-	rowsCount: number;
-	colsCount: number;
+	rowCount: number;
+	columnCount: number;
 };
+
+interface IHeaderFilter {
+	type: TFilterType;
+	config?: {
+		template?: (opt: any) => string;
+		options?: { id: TID; label: "string" }[];
+		handler?: TFilterHandler;
+	};
+}
+export interface IFilterValues {
+	[field: string]: any;
+}
+export type TFilterHandler = (value: any, filter: any) => boolean;
+
+export interface IPrintConfig {
+	mode?: "portrait" | "landscape";
+	ppi?: number;
+	paper?: "a3" | "a4" | "letter";
+}

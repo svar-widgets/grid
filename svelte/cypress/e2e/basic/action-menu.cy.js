@@ -8,6 +8,7 @@ context("Header menu functionality", () => {
 		cy.wxT("menu").should("be.visible");
 		cy.wxT("menu-item", "copy").click();
 		cy.wxT("table-rows").should("have.length", 11);
+		cy.get(".wx-notice .wxi-close").click();
 		cy.shot("embedding-actions-copy");
 	});
 });

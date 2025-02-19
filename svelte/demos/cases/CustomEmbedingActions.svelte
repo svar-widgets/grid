@@ -1,16 +1,28 @@
 <script>
+	import { getContext } from "svelte";
 	import { Grid, defaultMenuOptions } from "../../src";
 	import { ActionMenu } from "wx-svelte-menu";
 
-	let api = $state();
-
 	import { getData } from "../data";
-	const { data } = getData();
 
 	import ButtonCell from "../custom/ButtonCell.svelte";
+	import CheckboxCell from "../custom/CheckboxCell.svelte";
 	import IconCell from "../custom/IconCell.svelte";
+	import HeaderCheckboxCell from "../custom/HeaderCheckboxCell.svelte";
+	import HeaderButtonCell from "../custom/HeaderButtonCell.svelte";
+
+	const helpers = getContext("wx-helpers");
+	let { data } = $state(getData());
+	let api = $state();
 
 	const columns = [
+		{ id: "id", header: [{ cell: HeaderButtonCell }] },
+		{
+			id: "checked",
+			cell: CheckboxCell,
+			header: [{ cell: HeaderCheckboxCell }],
+			width: 36,
+		},
 		{ id: "menu", cell: IconCell, width: 50 },
 		{ id: "firstName", header: "First Name", editor: "text" },
 		{ id: "lastName", header: "Last Name", editor: "text" },
@@ -24,16 +36,29 @@
 		},
 	];
 
-	import { getContext } from "svelte";
-	const helpers = getContext("wx-helpers");
-
 	function action(action, ev) {
-		const { row, column } = ev;
+		const { row, column, value } = ev;
 		const event = `Event: ${action}\n`;
+		const val = `value: ${value}\n`;
 		const r = `Row ID: ${row}\n`;
 		const c = `Col ID: ${column}\n`;
 
-		helpers.showNotice({ text: event + r + c });
+		helpers.showNotice({
+			text: event + (action === "header-checkbox" ? val : r + c),
+		});
+
+		if (action === "header-checkbox") onHeaderCheck(ev);
+	}
+
+	function onHeaderCheck(ev) {
+		const { value, eventSource } = ev;
+
+		if (eventSource == "click") {
+			data = api.getState().data.map(d => {
+				d.checked = value;
+				return d;
+			});
+		}
 	}
 
 	const handleClicks = ev => {
@@ -79,6 +104,8 @@
 				{columns}
 				oncustombutton={ev => action("button", ev)}
 				oncustomicon={ev => action("icon", ev)}
+				oncustomcheck={ev => action("checkbox", ev)}
+				oncustomheadercheck={ev => action("header-checkbox", ev)}
 			/>
 		</ActionMenu>
 	</div>

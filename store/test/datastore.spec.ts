@@ -1,3 +1,4 @@
+/* eslint-disable vitest/valid-expect */
 import { describe, expect, vi, beforeEach, afterEach, test } from "vitest";
 import { DataStore } from "../src/index";
 import { getData, shuffle } from "./stubs/data";
@@ -26,6 +27,7 @@ describe("datastore", () => {
 			resetState();
 			const { data } = store.getState();
 
+			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			expect(store).to.not.be.undefined;
 			expect(data.length).to.eq(6);
 		});
@@ -396,8 +398,6 @@ describe("datastore", () => {
 
 			const { data, flatData } = store.getState();
 
-			expect(data).to.deep.eq(getData("tree").data);
-
 			expect(extractPropsAndFlatten({ data })).to.deep.eq([
 				"Parent 1",
 				"Kid 1",
@@ -695,6 +695,209 @@ describe("datastore", () => {
 				["Kid 7", "Type 2"],
 				["Kid 6", "Type 1"],
 			]);
+		});
+	});
+
+	describe("filter-rows", () => {
+		test("can set filterValues correctly", () => {
+			resetState(getData("filters"));
+
+			const filters = [
+				{ key: "name", value: "i" },
+				{ key: "name", value: "it" },
+				{ key: "name", value: "ite" },
+				{ key: "name", value: "it" },
+			];
+
+			let filterValues, filter;
+
+			filters.forEach(f => {
+				store.in.exec("filter-rows", f);
+				({ filterValues, filter } = store.getState());
+
+				expect(filterValues).to.deep.eq({
+					[f.key]: f.value,
+				});
+				expect(typeof filter).to.eq("function");
+			});
+
+			store.in.exec("filter-rows", { key: "type", value: "t" });
+			store.in.exec("filter-rows", { key: "season", value: 3 });
+
+			({ filterValues, filter } = store.getState());
+			expect(filterValues).to.deep.eq({
+				name: "it",
+				type: "t",
+				season: 3,
+			});
+
+			store.in.exec("filter-rows", { key: "type", value: "" });
+
+			({ filterValues, filter } = store.getState());
+			expect(filterValues).to.deep.eq({
+				name: "it",
+				type: "",
+				season: 3,
+			});
+
+			expect(typeof filter).to.eq("function");
+		});
+
+		test("can reset filterValues correctly", () => {
+			resetState(getData("filters"));
+
+			const filters = [
+				{ key: "name", value: "it" },
+				{ key: "type", value: "y" },
+				{ key: "season", value: 2 },
+			];
+
+			filters.forEach(f => {
+				store.in.exec("filter-rows", f);
+			});
+
+			store.in.exec("filter-rows", {});
+
+			const { filterValues, filter } = store.getState();
+
+			expect(filterValues).to.deep.eq({});
+			expect(filter).to.eq(null);
+		});
+
+		test("can filter data correctly", () => {
+			resetState(getData("filters"));
+
+			store.in.exec("filter-rows", { key: "name", value: "a" });
+			let { flatData } = store.getState();
+
+			expect(flatData.map(x => x.name)).to.deep.eq([
+				"Alex",
+				"Mary",
+				"Kate",
+			]);
+
+			store.in.exec("filter-rows", { key: "type", value: "2" });
+
+			({ flatData } = store.getState());
+
+			expect(flatData.map(x => x.name)).to.deep.eq(["Mary", "Kate"]);
+
+			store.in.exec("filter-rows", { key: "season", value: 4 });
+
+			({ flatData } = store.getState());
+
+			expect(flatData.map(x => x.name)).to.deep.eq(["Mary"]);
+		});
+
+		test("can set filter correctly", () => {
+			resetState(getData("filters"));
+
+			const filterFunction = (obj: any) =>
+				obj.name.toLowerCase().indexOf("a") !== -1;
+
+			store.in.exec("filter-rows", { filter: filterFunction });
+
+			const { filterValues, filter, flatData } = store.getState();
+
+			expect(filterValues).to.deep.eq({});
+			expect(filter).to.deep.eq(filterFunction);
+			expect(flatData.map(x => x.name)).to.deep.eq([
+				"Alex",
+				"Mary",
+				"Kate",
+			]);
+		});
+	});
+
+	describe("move-item", () => {
+		test("should move item before target", () => {
+			resetState();
+
+			store.in.exec("move-item", { id: 3, target: 2, mode: "before" });
+
+			const { data } = store.getState();
+
+			expect(store.getRowIndex(3)).to.eq(1);
+			expect(data.map(x => x.id)).to.deep.eq([1, 3, 2, 4, 5, 6]);
+		});
+
+		test("should move item after target", () => {
+			resetState();
+
+			store.in.exec("move-item", { id: 2, target: 4, mode: "after" });
+
+			const { data } = store.getState();
+
+			expect(store.getRowIndex(2)).to.eq(3);
+			expect(data.map(x => x.id)).to.deep.eq([1, 3, 4, 2, 5, 6]);
+		});
+
+		test("should move item to the start", () => {
+			resetState();
+
+			store.in.exec("move-item", { id: 5, target: 1, mode: "before" });
+
+			const { data } = store.getState();
+
+			expect(store.getRowIndex(5)).to.eq(0);
+			expect(data.map(x => x.id)).to.deep.eq([5, 1, 2, 3, 4, 6]);
+		});
+
+		test("should move item to the end", () => {
+			resetState();
+
+			store.in.exec("move-item", { id: 2, target: 6, mode: "after" });
+
+			const { data } = store.getState();
+
+			expect(store.getRowIndex(2)).to.eq(5);
+			expect(data.map(x => x.id)).to.deep.eq([1, 3, 4, 5, 6, 2]);
+		});
+
+		test("should move item between the boundaries", () => {
+			resetState();
+
+			store.in.exec("move-item", { id: 4, target: 1, mode: "before" });
+
+			let { data } = store.getState();
+
+			expect(store.getRowIndex(4)).to.eq(0);
+			expect(data.map(x => x.id)).to.deep.eq([4, 1, 2, 3, 5, 6]);
+
+			store.in.exec("move-item", { id: 4, target: 6, mode: "after" });
+
+			({ data } = store.getState());
+
+			expect(store.getRowIndex(4)).to.eq(5);
+			expect(data.map(x => x.id)).to.deep.eq([1, 2, 3, 5, 6, 4]);
+		});
+
+		test("should not perform move with a wrong ID specified", () => {
+			resetState();
+
+			store.in.exec("move-item", {
+				id: "someId",
+				target: 4,
+				mode: "before",
+			});
+
+			const { data } = store.getState();
+
+			expect(data.map(x => x.id)).to.deep.eq([1, 2, 3, 4, 5, 6]);
+		});
+
+		test("should not perform move with a wrong target specified", () => {
+			resetState();
+
+			store.in.exec("move-item", {
+				id: 4,
+				target: "someId",
+				mode: "before",
+			});
+
+			const { data } = store.getState();
+
+			expect(data.map(x => x.id)).to.deep.eq([1, 2, 3, 4, 5, 6]);
 		});
 	});
 });

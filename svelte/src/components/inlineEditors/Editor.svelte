@@ -4,39 +4,58 @@
 	import { clickOutside } from "wx-lib-dom";
 	import { editors } from "./editors";
 
-	let { col } = $props();
+	let { column, row } = $props();
 
 	const api = getContext("grid-store");
 	const { editor } = api.getReactiveState();
 
-	function save() {
-		api.exec("close-editor", { ignore: false });
+	function save(ignoreFocus) {
+		const cell = ignoreFocus
+			? null
+			: { row: $editor.id, column: $editor.column };
+		closeEditor(false, cell);
 	}
 
 	function cancel() {
-		api.exec("close-editor", { ignore: true });
+		closeEditor(true, { row: $editor.id, column: $editor.column });
 	}
 
 	function updateValue(value) {
 		api.exec("editor", { value });
 	}
 
+	function closeEditor(ignore, cell) {
+		api.exec("close-editor", { ignore });
+		if (cell) {
+			api.exec("focus-cell", {
+				...cell,
+				eventSource: "click",
+			});
+		}
+	}
+
 	let style = $derived(
-		getStyle(col.width, col.flexgrow, col.fixed, col.left)
+		getStyle(column.width, column.flexgrow, column.fixed, column.left)
 	);
 
-	const SvelteComponent = $derived(editors[col.editor.type]);
+	const SvelteComponent = $derived(editors[column.editor.type]);
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	class="wx-cell"
+	class="wx-cell wx-editor"
 	{style}
-	class:wx-shadow={col.fixed === -1}
-	use:clickOutside={save}
+	role={typeof row.$parent !== "undefined" ? "gridcell" : "cell"}
+	aria-readonly={typeof row.$parent !== "undefined"
+		? column.editor
+			? false
+			: true
+		: undefined}
+	tabindex="-1"
 	onclick={ev => ev.stopPropagation()}
 	ondblclick={ev => ev.stopPropagation()}
+	use:clickOutside={() => save(true)}
 >
 	<SvelteComponent
 		editor={$editor}
@@ -52,7 +71,7 @@
 		background-color: var(--wx-background);
 		color: var(--wx-color-font);
 		position: relative;
-		z-index: 2;
+		z-index: 3;
 	}
 	.wx-cell :global(.wx-dropdown) {
 		border: var(--wx-table-editor-dropdown-border);

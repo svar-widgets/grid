@@ -19,31 +19,29 @@
 
 </div>
 
-
 [SVAR DataGrid](https://svar.dev/svelte/datagrid/) is an advanced Svelte component that enhances standard data tables, enabling you to create high-performance, feature-rich data grids that efficiently handle large data sets. Fully customizable, it supports inline editing with a variety of cell editors to meet diverse project requirements.
 
 <div align="center">
   <img src="https://cdn.svar.dev/public/react-grid.png" alt="SVAR Svelte DataGrid - Screenshot" width="700">
 </div>
 
-
 # :sparkles: Key Features
 
-- High performance (virtual scrolling and dynamic loading)
-- In-cell editing with different cell editors (datepicker, combo, select, rich select, etc.)
-- Sorting by multiple columns
-- Responsive design to adapt to different screen/container sizes
-- Multiple row selection
-- Fixed columns
-- Expandable/collapsible columns
-- Customizable tooltips for grid cells
-- Context menu
-- Tree-like structure
-- Paging
-- Export to CSV
-- Keyboard navigation
-- RestDataProvider for easy backend data binding
-- Dark and light skins
+-   High performance (virtual scrolling and dynamic loading)
+-   In-cell editing with different cell editors (datepicker, combo, select, rich select, etc.)
+-   Sorting by multiple columns
+-   Responsive design to adapt to different screen/container sizes
+-   Multiple row selection
+-   Fixed columns
+-   Expandable/collapsible columns
+-   Customizable tooltips for grid cells
+-   Context menu
+-   Tree-like structure
+-   Paging
+-   Export to CSV
+-   Keyboard navigation
+-   RestDataProvider for easy backend data binding
+-   Dark and light skins
 
 # :hammer_and_wrench: How to Use
 
@@ -80,7 +78,8 @@ To use SVAR DataGrid, simply import the package and include the component in you
 
 <Grid {data} {columns} />
 ```
-For further instructions, see the detailed [how-to-start guide](https://docs.svar.dev/svelte/grid/getting_started). 
+
+For further instructions, see the detailed [how-to-start guide](https://docs.svar.dev/svelte/grid/getting_started).
 
 ### :computer: How to Modify
 
@@ -104,5 +103,4 @@ To run the test:
 
 ### :speech_balloon: Need Help?
 
-Join our [community forum](https://forum.svar.dev) to get help or post feature requests. 
-
+Join our [community forum](https://forum.svar.dev) to get help or post feature requests.

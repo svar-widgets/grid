@@ -41,7 +41,10 @@
 	class="wx-value"
 	tabindex="0"
 	onclick={() => actions.cancel()}
-	onkeydown={ev => keydown(ev, index)}
+	onkeydown={ev => {
+		keydown(ev, index);
+		ev.preventDefault();
+	}}
 >
 	{#if template}
 		{template(data)}

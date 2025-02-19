@@ -1,8 +1,7 @@
 <script>
-	import { Cell } from "wx-svelte-grid";
 	import { getData } from "../data";
 
-	let { row, col, columnStyle, cellStyle } = $props();
+	let { row, column } = $props();
 
 	const employeesData = getData().employees;
 
@@ -17,23 +16,21 @@
 
 		return result;
 	}
-	let employees = $derived(getEmployees(employeesData, row[col.id]));
+	let employees = $derived(getEmployees(employeesData, row[column.id]));
 </script>
 
-<Cell {row} {col} {columnStyle} {cellStyle}>
-	{#if employees.length}
-		<div class="employees">
-			{#each employees as employee (employee.id)}
-				<div class="employee">
-					<div class="avatar">
-						<img src={employee.avatar} alt="avatar" />
-					</div>
-					<span>{employee.label}</span>
+{#if employees.length}
+	<div class="employees">
+		{#each employees as employee (employee.id)}
+			<div class="employee">
+				<div class="avatar">
+					<img src={employee.avatar} alt="avatar" />
 				</div>
-			{/each}
-		</div>
-	{/if}
-</Cell>
+				<span>{employee.label}</span>
+			</div>
+		{/each}
+	</div>
+{/if}
 
 <style>
 	.employees {

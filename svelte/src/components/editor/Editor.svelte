@@ -9,13 +9,7 @@
 		Checkbox,
 		Switch,
 	} from "wx-svelte-core";
-	/**
-	 * @typedef {Object} Props
-	 * @property {any} editors
-	 * @property {any} [data]
-	 */
 
-	/** @type {Props} */
 	let { editors, data = null } = $props();
 </script>
 

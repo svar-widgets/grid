@@ -1,15 +1,15 @@
-type TDataType = "default" | "empty" | "tree" | "tree_short";
+type TDataType = "default" | "empty" | "tree" | "tree_short" | "filters";
 
 export const defaultSizes = {
 	rowHeight: 37,
-	colWidth: 160,
+	columnWidth: 160,
 	headerHeight: 36,
 	footerHeight: 36,
 };
 
 export const getData = (type?: TDataType) => {
 	if (!type) type = "default";
-	return { ...data[type], sizes: defaultSizes };
+	return { ...structuredClone(data[type]), sizes: defaultSizes };
 };
 
 export const shuffle = (arr: any[]) => {
@@ -361,6 +361,72 @@ const data = {
 				id: 12,
 				name: "Parent 3",
 				type: "Type 2",
+			},
+		],
+	},
+	filters: {
+		columns: [
+			{
+				id: "id",
+				header: "",
+			},
+			{
+				id: "name",
+				header: { filter: "text" },
+			},
+			{
+				id: "type",
+				header: { filter: "text" },
+			},
+			{
+				id: "season",
+				header: {
+					filter: "richselect",
+					options: [
+						{ id: 1, label: "spring" },
+						{ id: 2, label: "spring" },
+						{ id: 3, label: "spring" },
+						{ id: 4, label: "spring" },
+					],
+				},
+			},
+		],
+		data: [
+			{
+				id: 1,
+				name: "Alex",
+				type: "Type 1",
+				season: 1,
+			},
+			{
+				id: 2,
+				name: "John",
+				type: "Type 1",
+				season: 2,
+			},
+			{
+				id: 3,
+				name: "Bob",
+				type: "Type 1",
+				season: 3,
+			},
+			{
+				id: 4,
+				name: "Mary",
+				type: "Type 2",
+				season: 4,
+			},
+			{
+				id: 5,
+				name: "Kate",
+				type: "Type 2",
+				season: 2,
+			},
+			{
+				id: 6,
+				name: "Billy",
+				type: "Type 2",
+				season: 3,
 			},
 		],
 	},

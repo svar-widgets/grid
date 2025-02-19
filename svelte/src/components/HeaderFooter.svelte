@@ -2,6 +2,7 @@
 	import { getContext } from "svelte";
 	import HeaderCell from "./HeaderCell.svelte";
 	import FooterCell from "./FooterCell.svelte";
+	import { isCommunity } from "wx-grid-store";
 
 	let {
 		deltaLeft,
@@ -9,6 +10,7 @@
 		columns,
 		type = "header",
 		columnStyle,
+		bodyHeight,
 	} = $props();
 
 	const api = getContext("grid-store");
@@ -22,13 +24,25 @@
 			for (let ri = 0; ri < rowsCount; ri++) {
 				let inSpan = 0;
 				res.push([]);
-				columns.forEach(col => {
+				columns.forEach((col, ci) => {
+					const cell = { ...col[type][ri] };
 					if (!inSpan) {
-						res[ri].push(col[type][ri]);
+						res[ri].push(cell);
 					}
 
-					if (col[type][ri].colspan > 1) {
-						inSpan = col[type][ri].colspan - 1;
+					if (cell.colspan > 1) {
+						inSpan = cell.colspan - 1;
+
+						if (!isCommunity()) {
+							if (col.right) {
+								// if column is fixed on the right and have colspan we need to recalculate right position
+								let right = col.right;
+								for (let i = 1; i < cell.colspan; i++) {
+									right -= columns[ci + i].width;
+								}
+								cell.right = right;
+							}
+						}
 					} else if (inSpan) inSpan--;
 				});
 			}
@@ -44,31 +58,45 @@
 		if (cell.rowspan) ind += cell.rowspan - 1;
 		return ind === renderedHeader.length - 1;
 	}
+
+	function isSort(cell, ind, column) {
+		for (let i = renderedHeader.length - 1; i >= 0; i--) {
+			const cell = column.header[i];
+			if (!cell.filter && !cell._hidden) return ind === i;
+		}
+		return isLast(cell, ind);
+	}
 </script>
 
 <div
 	class={`wx-${type}`}
 	style="padding-left:{deltaLeft}px;width:{contentWidth}px;"
+	role="rowgroup"
 >
 	{#each renderedHeader as row, i}
 		<div
 			class={type === "header" ? "wx-h-row" : "wx-f-row"}
 			style="height:{rowHeights[i]}px; display: flex"
+			role="row"
 		>
 			{#each row as cell (cell.id)}
+				{@const column = getColumn(cell.id)}
 				{#if type === "header"}
 					<HeaderCell
 						{cell}
 						{columnStyle}
-						column={getColumn(cell.id)}
+						{column}
 						row={i}
 						lastRow={isLast(cell, i)}
+						{bodyHeight}
+						sortRow={isSort(cell, i, column)}
 					/>
 				{:else}
 					<FooterCell
 						{cell}
 						{columnStyle}
 						column={getColumn(cell.id)}
+						row={i}
 					/>
 				{/if}
 			{/each}
@@ -92,13 +120,5 @@
 		z-index: 2;
 		bottom: 0;
 		border-top: var(--wx-table-header-border);
-	}
-
-	.wx-h-row:not(:last-child) {
-		border-bottom: var(--wx-table-header-cell-border);
-	}
-
-	.wx-f-row:not(:last-child) {
-		border-bottom: var(--wx-table-footer-cell-border);
 	}
 </style>

@@ -7,15 +7,17 @@
 
 	let value = $state(editor.value || new Date());
 
-	let template = $derived(editor?.config?.template);
-	let cell = $derived(editor?.config?.cell);
+	let template = $state(editor?.config?.template);
+	let cell = $state(editor?.config?.cell);
 
 	function updateValue({ value }) {
 		actions.updateValue(value);
 		actions.save();
 	}
 
+	let node;
 	onMount(() => {
+		node.focus();
 		if (window.getSelection) {
 			window.getSelection().removeAllRanges();
 		}
@@ -23,13 +25,20 @@
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="wx-value" onclick={() => actions.cancel()}>
+<div
+	class="wx-value"
+	bind:this={node}
+	tabindex="0"
+	onclick={() => actions.cancel()}
+	onkeydown={ev => ev.preventDefault()}
+>
 	{#if template}
 		{template(value)}
 	{:else if cell}
 		{@const SvelteComponent = cell}
-		<SvelteComponent data={value} {onaction} />
+		<SvelteComponent data={editor.value} {onaction} />
 	{:else}<span class="wx-text">{editor.renderedValue}</span>{/if}
 </div>
 <Dropdown width={"auto"}>

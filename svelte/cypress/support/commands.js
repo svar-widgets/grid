@@ -32,6 +32,33 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add(
+	"drag",
+	{
+		prevSubject: "element",
+	},
+	(subject, action, position = "center", options = {}) => {
+		const defaults = {
+			button: 0,
+		};
+
+		if (action === "end") defaults.force = true;
+
+		const config = { ...defaults, ...options };
+
+		switch (action) {
+			case "start":
+				return cy.wrap(subject).trigger("mousedown", position, config);
+
+			case "move":
+				return cy.wrap(subject).trigger("mousemove", position, config);
+
+			case "end":
+				return cy.wrap(subject).trigger("mouseup", position, config);
+		}
+	}
+);
+
+Cypress.Commands.add(
 	"wxT",
 	{
 		prevSubject: "optional",
@@ -41,6 +68,8 @@ Cypress.Commands.add(
 		switch (type) {
 			case "table":
 				return subject.get(".wx-grid");
+			case "table-scroll":
+				return subject.get(".wx-scroll");
 			case "table-row":
 				return subject.get(`.wx-row[data-id="${id}"]`);
 			case "table-rows":
@@ -49,6 +78,10 @@ Cypress.Commands.add(
 				return subject.find(".wx-cell").eq(id);
 			case "row-toggle":
 				return subject.find(".wx-table-tree-toggle");
+			case "row-drag-handle":
+				return subject.find(".wx-draggable");
+			case "drag-zone":
+				return subject.get(".wx-drag-zone");
 			case "modal":
 				return subject.get(".modal");
 			case "button":

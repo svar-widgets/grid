@@ -1,6 +1,6 @@
 {
 	"name": "wx-svelte-grid",
-	"version": "2.0.1",
+	"version": "2.1.0",
 	"description": "A powerful and flexible DataGrid component written in Svelte",
 	"productTag": "grid",
 	"productTrial": false,
@@ -30,16 +30,21 @@
 	"bugs": {
 		"url": "https://forum.svar.dev"
 	},
-	"homepage": "https://svar.dev/svelte/grid/",
+	"homepage": "https://svar.dev/svelte/datagrid/",
 	"dependencies": {
-		"wx-lib-dom": "0.7.1",
+		"wx-lib-dom": "0.8.0",
 		"wx-lib-state": "1.9.0",
 		"wx-lib-svelte": "0.5.1",
-		"wx-svelte-menu": "2.0.1",
-		"wx-svelte-core": "2.0.1",
-		"wx-grid-data-provider": "2.0.1",
-		"wx-grid-locales": "2.0.1",
-		"wx-grid-store": "2.0.1"
+		"wx-svelte-menu": "2.1.0",
+		"wx-svelte-core": "2.1.0",
+		"wx-grid-data-provider": "2.1.0",
+		"wx-grid-locales": "2.1.0",
+		"wx-grid-store": "2.1.0"
+	},
+	"devDependencies": {
+		"wx-svelte-editor": "2.1.0",
+		"wx-svelte-comments": "2.1.0",
+		"wx-svelte-tasklist": "2.1.0"
 	},
 	"files": [
 		"src",

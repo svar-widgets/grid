@@ -16,6 +16,6 @@
 <div style="padding: 20px;">
 	<h4>Resizable columns: drag a border between header cells</h4>
 	<div style="max-width: 700px;">
-		<Grid {data} {columns} splitLeft="2" />
+		<Grid {data} {columns} split={{ left: 2 }} />
 	</div>
 </div>

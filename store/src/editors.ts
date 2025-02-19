@@ -17,19 +17,21 @@ export function setValue(row: IRow, col: IColumn, v: Value): any {
 	return (col.setter || rawSetter(col.id))(row, v);
 }
 
-export function editorConfig(columns: IColumn[]) {
+export function getEditorConfig(columns: IColumn[]) {
 	return columns
 		.filter(a => !!a.editor)
 		.map(col => {
-			const obj: any = {
+			let obj: any = {
 				key: col.id || uid(),
-				type:
-					typeof col.editor === "object"
-						? col.editor.type
-						: col.editor,
 				label: col.header,
 			};
 			if (col.options) obj.options = col.options;
+
+			if (typeof col.editor === "object") {
+				obj = { ...obj, ...col.editor };
+				obj.comp = col.editor.type;
+			} else obj.comp = col.editor;
+
 			return obj;
 		});
 }

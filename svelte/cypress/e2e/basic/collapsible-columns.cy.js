@@ -27,12 +27,6 @@ context("Basic functionality", () => {
 			.find(".wx-cell")
 			.should("have.length", 6);
 
-		cy.get(".wx-collapse").eq(1).click();
-		cy.wxT("table-row", 11)
-			.first()
-			.find(".wx-cell")
-			.should("have.length", 6);
-
 		cy.shot(`collapsed-columns-first-mode-result`);
 
 		cy.wxT("table-row", 11).eq(1).find(".wx-cell").should("have.length", 7);

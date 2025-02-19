@@ -6,6 +6,8 @@ export type HotkeyHandler = (params: {
 	isInput: boolean;
 }) => void;
 
+import { locate } from "wx-lib-dom";
+
 export function hotkeys(
 	node: HTMLElement,
 	{ keys, exec }: { keys: hotkeysConfig; exec: HotkeyHandler }
@@ -17,7 +19,7 @@ export function hotkeys(
 		}
 	}
 	function handleKeydown(event: any) {
-		let code = event.code.toLowerCase();
+		let code = event.code.replace("Key", "").toLowerCase();
 		if (code === " ") code = "space";
 		const key = `${event.ctrlKey || event.metaKey ? "ctrl+" : ""}${
 			event.shiftKey ? "shift+" : ""
@@ -27,8 +29,11 @@ export function hotkeys(
 		if (typeof handler !== "undefined") {
 			const isInput =
 				event.target.tagName === "INPUT" ||
-				event.target.tagName === "TEXTAREA";
-
+				event.target.tagName === "TEXTAREA" ||
+				locate(event.target, "data-header-id")?.classList.contains(
+					"wx-filter"
+				) ||
+				!!event.target.closest(".wx-cell.wx-editor");
 			if (typeof handler === "function") {
 				handler({ key, event, node, isInput });
 			} else if (handler) {

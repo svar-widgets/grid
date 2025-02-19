@@ -9,7 +9,7 @@
 
 	// stores
 	import { EventBusRouter } from "wx-lib-state";
-	import { DataStore } from "wx-grid-store";
+	import { DataStore, isCommunity } from "wx-grid-store";
 
 	// ui
 	import Layout from "./Layout.svelte";
@@ -29,6 +29,8 @@
 		editor = null,
 		filter = null,
 		overlay = null,
+		reorder = false,
+		onreorder = null,
 		autoRowHeight = false,
 		sizes = {},
 		split = { left: 0 },
@@ -87,6 +89,7 @@
 		getReactiveState: dataStore.getReactive.bind(dataStore),
 		exec: firstInRoute.exec.bind(firstInRoute),
 		getRow: dataStore.getRow.bind(dataStore),
+		getRowIndex: dataStore.getRowIndex.bind(dataStore),
 	});
 	// auto config columns
 	const finalColumns = $derived.by(() => {
@@ -111,6 +114,13 @@
 		return columns;
 	});
 
+	const isReorderAvailable = $derived.by(() => {
+		let available = !tree;
+		if (!isCommunity()) available = true;
+
+		return available ? reorder : false;
+	});
+
 	let _skin = $derived(getContext("wx-theme"));
 
 	let init_once = true;
@@ -126,6 +136,7 @@
 			filter,
 			tree,
 			_skin,
+			_select: select,
 		});
 
 		if (init_once && init) {
@@ -146,7 +157,8 @@
 		{rowStyle}
 		{columnStyle}
 		{cellStyle}
-		{select}
+		reorder={isReorderAvailable}
+		{onreorder}
 		{multiselect}
 		{autoRowHeight}
 	/>
