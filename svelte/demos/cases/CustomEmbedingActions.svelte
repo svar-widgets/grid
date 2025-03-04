@@ -16,14 +16,18 @@
 	let api = $state();
 
 	const columns = [
-		{ id: "id", header: [{ cell: HeaderButtonCell }] },
+		{
+			id: "menu",
+			cell: IconCell,
+			header: [{ cell: HeaderButtonCell }],
+			width: 134,
+		},
 		{
 			id: "checked",
 			cell: CheckboxCell,
 			header: [{ cell: HeaderCheckboxCell }],
 			width: 36,
 		},
-		{ id: "menu", cell: IconCell, width: 50 },
 		{ id: "firstName", header: "First Name", editor: "text" },
 		{ id: "lastName", header: "Last Name", editor: "text" },
 		{ id: "email", header: "Email", editor: "text" },
@@ -87,28 +91,25 @@
 </script>
 
 <div class="demo" style="padding: 20px;">
-	<div style="height: 320px; max-width: 1900px;">
-		<ActionMenu
-			resolver={id => id}
-			{api}
-			at={"point"}
-			dataKey={"actionId"}
-			options={defaultMenuOptions}
-			onclick={handleClicks}
-		>
-			<Grid
-				bind:this={api}
-				cellStyle={(row, col) =>
-					col.id == "city" ? "button_cell" : ""}
-				{data}
-				{columns}
-				oncustombutton={ev => action("button", ev)}
-				oncustomicon={ev => action("icon", ev)}
-				oncustomcheck={ev => action("checkbox", ev)}
-				oncustomheadercheck={ev => action("header-checkbox", ev)}
-			/>
-		</ActionMenu>
-	</div>
+	<ActionMenu
+		resolver={id => id}
+		{api}
+		at={"point"}
+		dataKey={"actionId"}
+		options={defaultMenuOptions}
+		onclick={handleClicks}
+	>
+		<Grid
+			bind:this={api}
+			cellStyle={(row, col) => (col.id == "city" ? "button_cell" : "")}
+			{data}
+			{columns}
+			oncustombutton={ev => action("button", ev)}
+			oncustomicon={ev => action("icon", ev)}
+			oncustomcheck={ev => action("checkbox", ev)}
+			oncustomheadercheck={ev => action("header-checkbox", ev)}
+		/>
+	</ActionMenu>
 </div>
 
 <style>

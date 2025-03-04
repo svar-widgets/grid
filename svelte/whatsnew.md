@@ -1,3 +1,10 @@
+## 2.1.1
+
+### Fixes
+
+-   Data with empty fields is filtered out when filters are cleared
+-   Column sorting should use `getter` to get field value
+
 ## 2.1.0
 
 ### New features

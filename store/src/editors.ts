@@ -10,7 +10,7 @@ function rawSetter(key: string): ValueSetter {
 }
 
 export function getValue(row: IRow, col: IColumn): any {
-	return (col.getter || rawGetter(col.id))(row) ?? "";
+	return (col.getter || rawGetter(col.id))(row);
 }
 
 export function setValue(row: IRow, col: IColumn, v: Value): any {

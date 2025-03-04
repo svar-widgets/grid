@@ -1,4 +1,5 @@
-import type { TSortObject, TSortValue, TSortConfig } from "./types";
+import { getValue } from "./editors";
+import type { TSortObject, TSortValue, TSortConfig, IColumn } from "./types";
 
 function sortAsc(a: TSortValue, b: TSortValue): number {
 	if (typeof a === "undefined" || a === null) return -1;
@@ -10,17 +11,22 @@ function sortDesc(a: TSortValue, b: TSortValue): number {
 	return -sortAsc(a, b);
 }
 
-function sortBy(key: string, order: string) {
+function sortBy(order: string, column: IColumn) {
 	const sortMethod = order === "asc" ? sortAsc : sortDesc;
 	return function (a: TSortObject, b: TSortObject) {
-		return sortMethod(a[key], b[key]);
+		return sortMethod(getValue(a, column), getValue(b, column));
 	};
 }
 
-export function sortByMany(sortArray: TSortConfig[]) {
+export function sortByMany(sortArray: TSortConfig[], columns: IColumn[]) {
 	if (!sortArray || !sortArray.length) return;
 
-	const sorts = sortArray.map(item => sortBy(item.key, item.order));
+	const sorts = sortArray.map(item =>
+		sortBy(
+			item.order,
+			columns.find(c => c.id == item.key)
+		)
+	);
 	if (sortArray.length === 1) return sorts[0];
 
 	return function (a: TSortObject, b: TSortObject) {

@@ -424,7 +424,7 @@ const data = {
 			},
 			{
 				id: 6,
-				name: "Billy",
+				name: "",
 				type: "Type 2",
 				season: 3,
 			},

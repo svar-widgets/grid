@@ -149,7 +149,7 @@ export default class DataStore extends Store<IData> {
 					editor = {
 						column: col.id,
 						id,
-						value: getValue(row, col),
+						value: getValue(row, col) ?? "",
 						renderedValue: getRenderValue(row, col),
 					};
 
@@ -299,10 +299,10 @@ export default class DataStore extends Store<IData> {
 				if (eventSource !== "click") {
 					if (
 						(!split.left ||
-							_columns.findIndex(a => a.id === ev.column) >=
+							_columns.findIndex(a => a.id == ev.column) >=
 								split.left) &&
 						(!split.right ||
-							_columns.findIndex(a => a.id === ev.column) <
+							_columns.findIndex(a => a.id == ev.column) <
 								_columns.length - split.right)
 					) {
 						this.in.exec("scroll", { row, column });
@@ -388,7 +388,7 @@ export default class DataStore extends Store<IData> {
 			});
 			this.setState({ columns });
 
-			const sorter = sortByMany(sort);
+			const sorter = sortByMany(sort, columns);
 			if (sorter) {
 				const nextData = [...data];
 
@@ -783,7 +783,7 @@ export default class DataStore extends Store<IData> {
 				width = 0;
 			if (ev.column) {
 				left = 0;
-				const ind = _columns.findIndex(a => a.id === ev.column);
+				const ind = _columns.findIndex(a => a.id == ev.column);
 				width = _columns[ind].width;
 				for (let i = split.left ?? 0; i < ind; i++) {
 					const col = _columns[i];

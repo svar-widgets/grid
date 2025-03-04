@@ -10,7 +10,7 @@ export function download(blob: any, filename: string) {
 }
 
 export function getRenderValue(row: IRow, col: IColumn): string {
-	let v = getValue(row, col);
+	let v = getValue(row, col) ?? "";
 	if (col.template) v = col.template(v, row, col);
 	if (col.optionsMap) {
 		if (Array.isArray(v)) v = v.map(x => col.optionsMap.get(x));

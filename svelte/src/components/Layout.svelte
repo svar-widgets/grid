@@ -305,14 +305,13 @@
 		}
 	});
 
-	// get visible rows
-	let dataRows = $state([]);
-	$effect(() => {
-		if ($dynamic) dataRows = $data;
+	const dataRows = $derived.by(() => {
+		if ($dynamic) return $data;
 		else {
-			dataRows = $data.slice(renderRows.start, renderRows.end);
+			return $data.slice(renderRows.start, renderRows.end);
 		}
 	});
+
 	//get visible selection
 	const visibleSelection = $derived(
 		$selectedRows.filter(s => dataRows.some(r => r.id === s))
@@ -713,7 +712,7 @@
 										{cellStyle}
 										{reorder}
 										focusable={focus?.row === row.id &&
-											focus?.column === column.id}
+											focus?.column == column.id}
 									/>
 								{/if}
 							{/each}

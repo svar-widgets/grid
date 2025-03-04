@@ -787,6 +787,13 @@ describe("datastore", () => {
 			({ flatData } = store.getState());
 
 			expect(flatData.map(x => x.name)).to.deep.eq(["Mary"]);
+
+			store.in.exec("filter-rows", { key: "name", value: "" });
+			store.in.exec("filter-rows", { key: "season", value: "" });
+
+			({ flatData } = store.getState());
+
+			expect(flatData.map(x => x.name)).to.deep.eq(["Mary", "Kate", ""]);
 		});
 
 		test("can set filter correctly", () => {
