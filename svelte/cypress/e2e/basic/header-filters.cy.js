@@ -1,5 +1,5 @@
 describe.only("Header filters functionality", () => {
-	it("header filters", () => {
+	it("header filters", { scrollBehavior: false }, () => {
 		cy.visit(`/index.html#/filters/willow`);
 		cy.wait(1000);
 		cy.shot(`header-filters`);

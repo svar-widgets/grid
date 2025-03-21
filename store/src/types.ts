@@ -139,7 +139,7 @@ export interface IHeaderConfig {
 	css?: string;
 	rowspan?: number;
 	colspan?: number;
-	collapsible?: boolean | "first";
+	collapsible?: boolean | "first" | "header";
 	collapsed?: boolean;
 	vertical?: boolean;
 	autoheight?: boolean;

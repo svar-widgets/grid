@@ -4,8 +4,16 @@
 	import { getCssName, getStyle } from "../helpers/columnWidth";
 	import Filter from "./inlineFilters/Filter.svelte";
 
-	let { cell, column, row, lastRow, sortRow, columnStyle, bodyHeight } =
-		$props();
+	let {
+		cell,
+		column,
+		row,
+		lastRow,
+		sortRow,
+		columnStyle,
+		bodyHeight,
+		hasSplit,
+	} = $props();
 
 	const api = getContext("grid-store");
 
@@ -40,6 +48,12 @@
 	}
 
 	let isCollapsed = $derived(cell.collapsed && column.collapsed);
+	let overlay = $derived(
+		isCollapsed && !hasSplit && cell.collapsible !== "header"
+	);
+	let collapsedTextStyle = $derived(
+		overlay ? `top:-${bodyHeight / 2}px;position:absolute;` : ""
+	);
 
 	let style = $derived(
 		getStyle(
@@ -48,7 +62,7 @@
 			column.fixed,
 			column.left,
 			cell.right ?? column.right,
-			cell.height + (isCollapsed ? bodyHeight : 0)
+			cell.height + (isCollapsed && overlay ? bodyHeight : 0)
 		)
 	);
 
@@ -75,7 +89,7 @@
 		onclick={collapse}
 		data-header-id={column.id}
 	>
-		<div class="wx-text" style="top:-{bodyHeight / 2}px;position:absolute;">
+		<div class="wx-text" style={collapsedTextStyle}>
 			{cell.text || ""}
 		</div>
 	</div>
@@ -310,7 +324,10 @@
 	}
 
 	.wx-sort {
+		height: 100%;
 		margin-left: auto;
+		display: flex;
+		align-items: center;
 	}
 
 	.wx-order {

@@ -35,7 +35,13 @@
 	}
 
 	let style = $derived(
-		getStyle(column.width, column.flexgrow, column.fixed, column.left)
+		getStyle(
+			column.width,
+			column.flexgrow,
+			column.fixed,
+			column.left,
+			column.right
+		)
 	);
 
 	const SvelteComponent = $derived(editors[column.editor.type]);

@@ -13,8 +13,7 @@
 	:global(.wx-material-theme) {
 		/*PLACE HERE*/
 
-		--wx-table-select-background: #e2e2e2;
-		--wx-table-select-focus-background: #dceaff;
+		--wx-table-select-background: #f0f0f0;
 		--wx-table-select-color: var(--wx-color-font);
 		--wx-table-border: 1px solid #dfdfdf;
 		--wx-table-select-border: none;

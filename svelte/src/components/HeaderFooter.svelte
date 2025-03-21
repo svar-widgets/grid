@@ -14,7 +14,7 @@
 	} = $props();
 
 	const api = getContext("grid-store");
-	const { _sizes: sizes } = api.getReactiveState();
+	const { _sizes: sizes, split } = api.getReactiveState();
 	let rowHeights = $derived($sizes[`${type}RowHeights`]);
 
 	let renderedHeader = $derived.by(() => {
@@ -49,6 +49,8 @@
 		}
 		return res;
 	});
+
+	const hasSplit = $derived($split?.left || $split?.right);
 
 	function getColumn(id) {
 		return columns.find(c => c.id === id);
@@ -90,6 +92,7 @@
 						lastRow={isLast(cell, i)}
 						{bodyHeight}
 						sortRow={isSort(cell, i, column)}
+						{hasSplit}
 					/>
 				{:else}
 					<FooterCell

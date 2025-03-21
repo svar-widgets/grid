@@ -793,9 +793,7 @@ export default class DataStore extends Store<IData> {
 			}
 			if (ev.row && !dynamic) {
 				const index = data.findIndex(a => a.id === ev.row);
-				if (index >= 0)
-					top =
-						_sizes.rowHeight * data.findIndex(a => a.id === ev.row);
+				if (index >= 0) top = _sizes.rowHeight * index;
 			}
 
 			this.setState({

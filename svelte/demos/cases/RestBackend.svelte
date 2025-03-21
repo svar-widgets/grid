@@ -45,7 +45,7 @@
 	};
 	const addRow = () => {
 		api.exec("add-row", {
-			row: { name: "New Film", year: 2022, votes: 1 },
+			row: { name: "New Film", year: "2022", votes: 1 },
 		});
 	};
 	const init = api => {

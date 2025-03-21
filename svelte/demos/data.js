@@ -730,6 +730,12 @@ export function getData() {
 	const columns = allColumns.slice(0, 5);
 	const data = allData.slice(10);
 
+	const balance = [0.598, 1000.36, 45, 50, 0, 79, 138.1, 32, 11, -0.1];
+	const clientData = data.map((item, i) => ({
+		...item,
+		balance: balance[i],
+	}));
+
 	const flexibleColumns = [
 		{ id: "id", width: 50 },
 		{ id: "city", header: "City", width: 160 },
@@ -931,12 +937,20 @@ export function getData() {
 			footer: { text: data.length, css: "right" },
 		},
 	];
+	const clientColumns = columnsSpans.toSpliced(6, 1, {
+		id: "balance",
+		header: "Balance",
+		template: v => v.toLocaleString(),
+	});
+	clientColumns[0].width = 80;
+	clientColumns[0].template = v => v.toString().padStart(5, "0");
 
 	return {
 		data,
 		users,
 		allData,
 		treeData,
+		clientData,
 		columns,
 		allColumns,
 		flexibleColumns,
@@ -947,6 +961,7 @@ export function getData() {
 		collapsibleColumns,
 		columnsVertical,
 		columnsSpansVertical,
+		clientColumns,
 	};
 }
 

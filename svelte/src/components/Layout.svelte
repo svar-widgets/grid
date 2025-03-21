@@ -176,6 +176,26 @@
 			if (right > sum) end = index + EXTRACOLUMNS;
 		});
 
+		// header and footer cells correction depending on colSpans
+		const rightSpanDelta = { header: 0, footer: 0 };
+		for (let i = end; i >= start; i--) {
+			["header", "footer"].forEach(key => {
+				if (centerColumns[i])
+					centerColumns[i][key].forEach(hCell => {
+						const colspan = hCell.colspan;
+						if (colspan && colspan > 1) {
+							const diff = colspan - (end - i + 1);
+							if (diff > 0) {
+								rightSpanDelta[key] = Math.max(
+									rightSpanDelta[key],
+									diff
+								);
+							}
+						}
+					});
+			});
+		}
+
 		// include visible header/footer spans
 		const headerPos = getHeaderPosition(start, d, "header");
 		const footerPos = getHeaderPosition(start, d, "footer");
@@ -203,12 +223,12 @@
 			];
 			header = [
 				...leftColumns.columns,
-				...centerColumns.slice(csH, end + 1),
+				...centerColumns.slice(csH, end + rightSpanDelta.header + 1),
 				...rightColumns.columns,
 			];
 			footer = [
 				...leftColumns.columns,
-				...centerColumns.slice(csF, end + 1),
+				...centerColumns.slice(csF, end + rightSpanDelta.footer + 1),
 				...rightColumns.columns,
 			];
 		}
@@ -619,7 +639,9 @@
 <div
 	class="wx-grid"
 	style="--header-height:{headerHeight}px; --footer-height:{footerHeight}px;--split-left-width:{leftColumns.width}px;
-		--split-right-width:{rightColumns.width}px;"
+		--split-right-width:{rightColumns.width}px;width:{hasAny
+		? '100%'
+		: 'fit-content'}"
 >
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -646,7 +668,7 @@
 			onscroll={onScroll}
 			use:scrollTo={{
 				scroll,
-				getWidth: () => clientWidth,
+				getWidth: () => clientWidth - (hasVScroll ? SCROLLSIZE : 0),
 				getHeight: () => visibleRowsHeight,
 				getScrollMargin: () => leftColumns.width + rightColumns.width,
 			}}
@@ -747,13 +769,8 @@
 <style>
 	.wx-grid {
 		height: 100%;
-		/* width: 100%; */
-	}
-	.wx-grid :global(*) {
-		scroll-margin-top: var(--header-height);
-		scroll-margin-bottom: var(--footer-height);
-		scroll-margin-left: var(--split-left-width);
-		scroll-margin-right: var(--split-right-width);
+		border: var(--wx-table-cell-border);
+		max-width: 100%;
 	}
 	.wx-table-box {
 		outline: none;
@@ -761,7 +778,6 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
-		border: var(--wx-table-cell-border);
 		overflow: hidden;
 		box-sizing: content-box;
 	}
@@ -784,6 +800,8 @@
 		position: relative;
 		flex: 1;
 		overflow: auto;
+		scroll-padding-top: var(--header-height);
+		scroll-padding-bottom: var(--footer-height);
 	}
 
 	.wx-row {

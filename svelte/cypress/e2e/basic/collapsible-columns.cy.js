@@ -1,5 +1,5 @@
 context("Basic functionality", () => {
-	it("main views", () => {
+	it("main views", { scrollBehavior: false }, () => {
 		cy.visit(`/index.html#/collapsible-columns/willow`);
 		cy.wait(1000);
 		cy.shot(`collapsed-columns-first-mode`);

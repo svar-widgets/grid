@@ -1,3 +1,11 @@
+## 2.1.2
+
+### Fixes
+
+-   Up/down navigation on dynamic data: selected node hides under header/footer
+-   Incorrect position of sort markers when sorting by multiple columns
+-   Fully collapsed columns invoke unneeded scrollbars
+
 ## 2.1.1
 
 ### Fixes
