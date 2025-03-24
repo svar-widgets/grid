@@ -1,3 +1,9 @@
+## 2.1.3
+
+### Fixes
+
+-   Regression with table borders
+
 ## 2.1.2
 
 ### Fixes

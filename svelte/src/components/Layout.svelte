@@ -639,9 +639,7 @@
 <div
 	class="wx-grid"
 	style="--header-height:{headerHeight}px; --footer-height:{footerHeight}px;--split-left-width:{leftColumns.width}px;
-		--split-right-width:{rightColumns.width}px;width:{hasAny
-		? '100%'
-		: 'fit-content'}"
+		--split-right-width:{rightColumns.width}px;"
 >
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -769,8 +767,6 @@
 <style>
 	.wx-grid {
 		height: 100%;
-		border: var(--wx-table-cell-border);
-		max-width: 100%;
 	}
 	.wx-table-box {
 		outline: none;
@@ -778,6 +774,7 @@
 		display: flex;
 		flex-direction: column;
 		height: 100%;
+		border: var(--wx-table-cell-border);
 		overflow: hidden;
 		box-sizing: content-box;
 	}

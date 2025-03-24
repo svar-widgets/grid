@@ -206,7 +206,7 @@ describe(
 				cy.wrap($table).drag("move", "right", { clientX: box.right });
 				cy.wait(1000);
 				cy.wrap($table).drag("move", "right", {
-					clientX: box.right - 45,
+					clientX: box.right - 40,
 				});
 				syncScrollState("scrollLeft");
 			});
