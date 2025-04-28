@@ -53,9 +53,7 @@
 		overflow: hidden;
 	}
 	.bottom {
-		flex: 1;
-		height: 100%;
-		overflow: hidden;
+		height: calc(100% - 40px);
 	}
 	.toolbar {
 		height: 32px;

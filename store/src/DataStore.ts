@@ -402,8 +402,7 @@ export default class DataStore extends Store<IData> {
 
 		inBus.on("filter-rows", (ev: IDataMethodsConfig["filter-rows"]) => {
 			const { value, key, filter } = ev;
-			const state = this.getState();
-			let { filterValues } = state;
+			let { filterValues } = this.getState();
 
 			// clear all filters
 			if (!Object.keys(ev).length) {
@@ -811,6 +810,8 @@ export default class DataStore extends Store<IData> {
 			this.setState({ _print: config });
 			this.setStateAsync({ _print: null });
 		});
+
+		this.initOnce();
 	}
 
 	private getXlsxWorker(path: string): Promise<any> {
@@ -829,6 +830,19 @@ export default class DataStore extends Store<IData> {
 			});
 		}
 		return this._xlsxWorker;
+	}
+
+	initOnce() {
+		const state: Partial<IDataConfig> = {
+			sort: [],
+			filter: null,
+			filterValues: {},
+			scroll: null,
+			editor: null,
+			focusCell: null,
+			_print: null,
+		};
+		this._router.init(state);
 	}
 
 	init(state: Partial<IDataConfig>) {
@@ -853,13 +867,6 @@ export default class DataStore extends Store<IData> {
 		}
 
 		this._router.init({
-			sort: [],
-			filter: null,
-			filterValues: {},
-			scroll: null,
-			editor: null,
-			focusCell: null,
-			_print: null,
 			...state,
 		});
 	}

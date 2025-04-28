@@ -362,6 +362,9 @@
 	.wx-collapsed {
 		position: relative;
 	}
+	.wx-collapse i {
+		margin-right: 4px;
+	}
 
 	:global(.wx-h-row:not(:last-child)) .wx-cell:not(.wx-rowspan) {
 		border-bottom: var(--wx-table-header-cell-border);

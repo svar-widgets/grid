@@ -39,7 +39,7 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
-		gap: 8px;
+		gap: 4px;
 	}
 	.employees .employee {
 		display: flex;
@@ -47,8 +47,8 @@
 		gap: 8px;
 	}
 	.employees .avatar {
-		height: 28px;
-		width: 28px;
+		height: 26px;
+		width: 26px;
 		border-radius: 50%;
 	}
 	.employees .avatar img {

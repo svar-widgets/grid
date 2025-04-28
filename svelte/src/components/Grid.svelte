@@ -26,7 +26,6 @@
 		header = true,
 		footer = false,
 		dynamic = null,
-		editor = null,
 		filter = null,
 		overlay = null,
 		reorder = false,
@@ -127,7 +126,6 @@
 	const reinitStore = () => {
 		dataStore.init({
 			data,
-			editor,
 			columns: finalColumns,
 			split,
 			sizes,

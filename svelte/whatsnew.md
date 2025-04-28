@@ -1,3 +1,10 @@
+## 2.1.4
+
+### Fixes
+
+-   Filters are cleared when other properties change
+-   Regression in paddings of collapsible columns
+
 ## 2.1.3
 
 ### Fixes

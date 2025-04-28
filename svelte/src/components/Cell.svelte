@@ -172,7 +172,7 @@
 	.wx-table-tree-toggle {
 		font-size: 20px;
 		cursor: pointer;
-		margin: 0 8px 0 0;
+		margin: 0 4px 0 0;
 		display: inline-block;
 	}
 

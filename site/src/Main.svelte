@@ -9,11 +9,17 @@
 
 	const { data, statuses } = getData();
 
+	function columnStyle(col) {
+		if (col.id == "id") return "checkbox-cell";
+		if (col.id == "taskName") return "task-cell";
+		return "";
+	}
+
 	const columns = [
 		{
 			id: "id",
 			cell: CheckboxCell,
-			width: 34,
+			width: 52,
 		},
 		{
 			id: "taskName",
@@ -64,13 +70,28 @@
 	];
 </script>
 
-<Grid sizes={{ rowHeight: 73 }} {data} {columns} select={false} tree={true} />
+<Grid
+	sizes={{ rowHeight: 73 }}
+	{data}
+	{columns}
+	select={false}
+	tree={true}
+	{columnStyle}
+/>
 
 <style>
 	:global(.demo .wx-cell) {
 		word-break: normal;
 		white-space: normal;
 		border-right: none;
+	}
+
+	:global(.demo .checkbox-cell) {
+		padding: 12px 12px 12px 16px;
+	}
+
+	:global(.demo .wx-body .task-cell) {
+		padding-left: 4px;
 	}
 
 	:global(.demo .wx-cell:not(:last-child)) {
