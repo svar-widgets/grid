@@ -249,11 +249,12 @@
 
 	const hasVScroll = $derived(
 		clientWidth && clientHeight
-			? fullHeight + headerHeight + footerHeight > clientHeight
+			? fullHeight + headerHeight + footerHeight >=
+					clientHeight - (fullWidth >= clientWidth ? SCROLLSIZE : 0)
 			: false
 	);
 	const hasHScroll = $derived(
-		clientWidth && clientHeight ? fullWidth > clientWidth : false
+		clientWidth && clientHeight ? fullWidth >= clientWidth : false
 	);
 
 	// set global width
@@ -663,6 +664,9 @@
 	>
 		<div
 			class="wx-scroll"
+			style="overflow-x:{hasHScroll
+				? 'scroll'
+				: 'hidden'};overflow-y:{hasVScroll ? 'scroll' : 'hidden'};"
 			onscroll={onScroll}
 			use:scrollTo={{
 				scroll,
@@ -796,7 +800,6 @@
 	.wx-scroll {
 		position: relative;
 		flex: 1;
-		overflow: auto;
 		scroll-padding-top: var(--header-height);
 		scroll-padding-bottom: var(--footer-height);
 	}

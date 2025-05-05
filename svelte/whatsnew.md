@@ -1,3 +1,9 @@
+## 2.1.5
+
+### Fixes
+
+-   Resize observer error in corner cases
+
 ## 2.1.4
 
 ### Fixes
