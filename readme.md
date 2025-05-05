@@ -45,7 +45,7 @@
 -   RestDataProvider for easy backend data binding
 -   Dark and light skins
 
-### Svelte 4 and Svelte 5 versions
+### :wrench: Svelte 4 and Svelte 5 versions
 
 There are two versions of the datagrid library: the 1.x version, designed to work with Svelte 4, and the 2.x version, created for Svelte 5.
 
