@@ -18,17 +18,38 @@
 
 </div>
 
-SVAR DataGrid is an advanced Svelte component that enhances standard data tables, enabling you to create high-performance, feature-rich data grids that efficiently handle large data sets. Fully customizable, it supports inline editing with a variety of cell editors to meet diverse project requirements.
+**SVAR DataGrid** is a powerful and flexible Svelte component for building high-performance, feature-rich data grids. Designed to handle large datasets efficiently, it supports virtual scrolling, inline editing, sorting, filtering, and full customization to fit complex project needs.
 
 <div align="center">
   <img src="https://cdn.svar.dev/public/react-grid.png" alt="SVAR Svelte DataGrid - Screenshot" width="700">
 </div>
 
+### :sparkles: Key Features
+
+-   High performance (virtual scrolling and dynamic loading)
+-   In-cell editing with different cell editors (datepicker, combo, select, rich select, etc.)
+-   Custom HTML for cells
+-   Sorting by multiple columns
+-   Filtering
+-   Paging
+-   Accessibility: compatibility with [WAI-ARIA](https://www.w3.org/WAI/standards-guidelines/aria/) standard
+-   Frozen columns
+-   Expandable/collapsible columns
+-   Row reordering with drag-and-drop
+-   Customizable tooltips for grid cells
+-   Context menu
+-   External editor for grid data
+-   Tree-like structure
+-   Print support
+-   Keyboard navigation
+-   RestDataProvider for easy backend data binding
+-   Dark and light skins
+
 ### Svelte 4 and Svelte 5 versions
 
-There are two versions of the library: the 1.x version, designed to work with Svelte 4, and the 2.x version, created for Svelte 5. Please note that the 2.x version is in beta and may contain some instabilities.
+There are two versions of the datagrid library: the 1.x version, designed to work with Svelte 4, and the 2.x version, created for Svelte 5.
 
-To use the SVAR DataGrid beta for Svelte 5, install it as follows:
+To use the SVAR DataGrid for Svelte 5, install it as follows:
 
 ```
 npm install wx-svelte-grid
@@ -39,24 +60,6 @@ To use the SVAR DataGrid for Svelte 4:
 ```
 npm install wx-svelte-grid@1.3.3
 ```
-
-### :sparkles: Key Features
-
--   High performance (virtual scrolling and dynamic loading)
--   In-cell editing with different cell editors (datepicker, combo, select, rich select, etc.)
--   Sorting by multiple columns
--   Responsive design to adapt to different screen/container sizes
--   Multiple row selection
--   Fixed columns
--   Expandable/collapsible columns
--   Customizable tooltips for grid cells
--   Context menu
--   Tree-like structure
--   Paging
--   Export to CSV
--   Keyboard navigation
--   RestDataProvider for easy backend data binding
--   Dark and light skins
 
 ### :hammer_and_wrench: How to Use
 
