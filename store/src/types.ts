@@ -26,14 +26,19 @@ export interface IColumnEditor {
 	config?: {
 		template?: (v: any) => string;
 		cell?: any;
+		options?: IOption[];
 	};
 }
+export type TEditorHandler = (
+	row?: IRow,
+	column?: IColumn
+) => TEditorType | IColumnEditor | null;
 
 export interface IDataConfig {
 	data: any[];
 	columns: IColumn[];
-	sort: TSortConfig[];
-	filter?: (obj: any) => boolean;
+	sortMarks: ISortMarks;
+	_filterIds?: TID[];
 	tree?: boolean;
 	scroll?: null;
 	editor?: TEditorConfig;
@@ -48,6 +53,11 @@ export interface IDataConfig {
 		left?: number;
 		right?: number;
 	};
+	undo?: boolean;
+	history?: {
+		undo: number;
+		redo: number;
+	};
 }
 
 export interface IData {
@@ -58,9 +68,9 @@ export interface IData {
 	_sizes: IRenderSizes;
 	columns: IColumn[];
 	_columns: IRenderColumn[];
-	sort?: TSortConfig[];
+	sortMarks: ISortMarks;
+	_filterIds?: TID[];
 	editor?: TEditorConfig;
-	filter?: (obj: any) => boolean;
 	tree?: boolean;
 	scroll?: TScrollConfig;
 	_skin: TSkinName;
@@ -77,6 +87,11 @@ export interface IData {
 	};
 	filterValues: IFilterValues;
 	_print?: IPrintConfig;
+	undo?: boolean;
+	history?: {
+		undo: number;
+		redo: number;
+	};
 }
 
 export interface IApi {
@@ -105,9 +120,8 @@ export interface IColumn {
 	width: number;
 	flexgrow?: number;
 	sort?: boolean;
-	$sort?: TSortConfig;
 	left?: number;
-	editor?: TEditorType | IColumnEditor;
+	editor?: TEditorType | IColumnEditor | TEditorHandler;
 	setter?: ValueSetter;
 	getter?: ValueGetter;
 	hidden?: boolean;
@@ -170,7 +184,6 @@ export interface IRenderSizes extends ISizeConfig {
 export type TSortConfig = {
 	key: string;
 	order: string;
-	index?: number;
 };
 
 export type TEditorConfig = {
@@ -179,7 +192,7 @@ export type TEditorConfig = {
 	value?: any;
 	renderedValue?: any;
 	config?: { [key: string]: any };
-	options?: any[];
+	options?: IColumn["options"];
 };
 
 export type TScrollConfig = {
@@ -284,8 +297,16 @@ interface IHeaderFilter {
 	};
 }
 export interface IFilterValues {
-	[field: string]: any;
+	[key: string]: any;
 }
+
+export interface ISortMarks {
+	[key: string]: {
+		order: "asc" | "desc";
+		index?: number;
+	};
+}
+
 export type TFilterHandler = (value: any, filter: any) => boolean;
 
 export interface IPrintConfig {

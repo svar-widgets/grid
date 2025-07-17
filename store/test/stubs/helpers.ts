@@ -1,3 +1,5 @@
+import type { IColumn } from "../../src/types";
+
 export function findById(data: Record<string, any>[], id: string | number) {
 	for (let i = 0; i < data.length; i++) {
 		if (data[i].id === id) return data[i];
@@ -7,6 +9,10 @@ export function findById(data: Record<string, any>[], id: string | number) {
 		}
 	}
 	return null;
+}
+
+export function findColumnById(columns: IColumn[], id: string | number) {
+	return columns.find(c => c.id == id);
 }
 
 export function extractPropsAndFlatten(

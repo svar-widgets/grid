@@ -35,11 +35,9 @@
 
 	let cellEl;
 	$effect(() => {
-		if (cellEl) {
-			if (focusable && $focusCell) cellEl.focus();
-			else if (!focusable && document.activeElement === cellEl)
-				cellEl.blur();
-		}
+		const needFocus =
+			$focusCell?.row === row.id && $focusCell?.column === column.id;
+		if (cellEl && focusable && needFocus) cellEl.focus();
 	});
 
 	function buildCellCss(columnStyle, cellStyle) {

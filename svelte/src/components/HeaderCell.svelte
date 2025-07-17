@@ -16,17 +16,29 @@
 	} = $props();
 
 	const api = getContext("grid-store");
+	const { sortMarks } = api.getReactiveState();
 
 	let start;
+
+	let sortMark = $derived($sortMarks[column.id]);
 
 	function down(node) {
 		start = cell.flexgrow ? node.parentNode.clientWidth : cell.width;
 	}
 
 	function move(dx) {
+		resizeColumn(dx, true);
+	}
+
+	function up(dx) {
+		resizeColumn(dx, false);
+	}
+
+	function resizeColumn(dx, inProgress) {
 		api.exec("resize-column", {
 			id: cell.id,
 			width: Math.max(1, start + dx),
+			inProgress,
 		});
 	}
 
@@ -110,9 +122,9 @@
 		aria-colindex={cell._colindex}
 		aria-colspan={cell.colspan > 1 ? cell.colspan : undefined}
 		aria-rowspan={cell.rowspan > 1 ? cell.rowspan : undefined}
-		aria-sort={!column.$sort?.order || cell.filter
+		aria-sort={!sortMark?.order || cell.filter
 			? "none"
-			: column.$sort?.order === "asc"
+			: sortMark?.order === "asc"
 				? "ascending"
 				: "descending"}
 		onkeydown={toggleSortColumn}
@@ -154,23 +166,23 @@
 				class="wx-grip"
 				role="presentation"
 				aria-label="Resize column"
-				use:resize={{ down, move }}
+				use:resize={{ down, move, up }}
 				onclick={ev => ev.stopPropagation()}
 			>
 				<div></div>
 			</div>
 		{/if}
 
-		{#if column.sort && !cell._hidden && !cell.filter}
+		{#if sortRow}
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div class="wx-sort">
-				{#if column.$sort && sortRow}
-					{#if column.$sort.index > 0}
-						<div class="wx-order">{column.$sort.index}</div>
+				{#if sortMark}
+					{#if typeof sortMark.index !== "undefined"}
+						<div class="wx-order">{sortMark.index + 1}</div>
 					{/if}
 					<i
-						class="wxi-arrow-{column.$sort.order === 'asc'
+						class="wxi-arrow-{sortMark.order === 'asc'
 							? 'up'
 							: 'down'}"
 					></i>

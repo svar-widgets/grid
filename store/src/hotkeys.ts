@@ -23,7 +23,7 @@ export function hotkeys(
 		if (code === " ") code = "space";
 		const key = `${event.ctrlKey || event.metaKey ? "ctrl+" : ""}${
 			event.shiftKey ? "shift+" : ""
-		}${event.altKey ? "alt+" : ""}${code}`;
+		}${event.altKey ? "alt+" : ""}${code.replace(/^key/, "")}`;
 		const handler = keys[key];
 
 		if (typeof handler !== "undefined") {

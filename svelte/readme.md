@@ -19,31 +19,34 @@
 
 </div>
 
-[SVAR DataGrid](https://svar.dev/svelte/datagrid/) is an advanced Svelte component that enhances standard data tables, enabling you to create high-performance, feature-rich data grids that efficiently handle large data sets. Fully customizable, it supports inline editing with a variety of cell editors to meet diverse project requirements.
+[SVAR DataGrid](https://svar.dev/svelte/datagrid/) is an advanced Svelte component that enhances standard data tables, enabling you to create high-performance, feature-rich data grids that efficiently handle large data sets. Fully customizable, it supports inline editing, sorting, filtering, and virtual scrolling for optimal performance.
 
 <div align="center">
   <img src="https://cdn.svar.dev/public/react-grid.png" alt="SVAR Svelte DataGrid - Screenshot" width="700">
 </div>
 
-# :sparkles: Key Features
+### :sparkles: Key Features
 
--   High performance (virtual scrolling and dynamic loading)
+-   High performance (virtual scrolling for rows and columns)
 -   In-cell editing with different cell editors (datepicker, combo, select, rich select, etc.)
+-   Custom HTML for cells
 -   Sorting by multiple columns
--   Responsive design to adapt to different screen/container sizes
--   Multiple row selection
+-   Filtering
+-   Paging
 -   Fixed columns
 -   Expandable/collapsible columns
 -   Customizable tooltips for grid cells
 -   Context menu
+-   External editor for grid data
 -   Tree-like structure
--   Paging
--   Export to CSV
+-   Print support
+-   Responsive design to adapt to different screen/container sizes
+-   Accessibility: compatibile with [WAI-ARIA](https://www.w3.org/WAI/standards-guidelines/aria/) standard
 -   Keyboard navigation
 -   RestDataProvider for easy backend data binding
 -   Dark and light skins
 
-# :hammer_and_wrench: How to Use
+### :hammer_and_wrench: How to Use
 
 To use SVAR DataGrid, simply import the package and include the component in your Svelte file:
 

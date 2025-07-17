@@ -1,10 +1,11 @@
-import { Store, EventBus, DataRouter } from "wx-lib-state";
+import { Store, EventBus, DataRouter, isSame } from "wx-lib-state";
 import type { TDataConfig, TWritableCreator, TID } from "wx-lib-state";
 import { getValue, setValue } from "./editors";
 import { download, getRenderValue } from "./export";
 import { getCsvData } from "./export/csv";
 import { getExcelData, getExportStyles } from "./export/excel";
 import { normalizePrintConfig } from "./print";
+import { HistoryManager } from "./HistoryManager";
 import { isCommunity } from "./package";
 
 import type {
@@ -15,7 +16,6 @@ import type {
 	IRenderHeaderConfig,
 	IRow,
 	TMethodsConfig,
-	TSortConfig,
 	ISizeConfig,
 	IRenderSizes,
 	IExportOptions,
@@ -39,6 +39,7 @@ export default class DataStore extends Store<IData> {
 	private _router: DataRouter<IData, IDataConfig, TMethodsConfig>;
 	private _branches: { [key: TID]: IRow };
 	private _xlsxWorker: any;
+	private _historyManager: HistoryManager;
 
 	constructor(w: TWritableCreator) {
 		super({ writable: w, async: false });
@@ -103,13 +104,19 @@ export default class DataStore extends Store<IData> {
 					},
 				},
 				{
-					in: ["data", "tree", "filter"],
+					in: ["data", "tree", "_filterIds"],
 					out: ["flatData"],
 					exec: (ctx: TDataConfig) => {
-						const { data, tree, filter } = this.getState();
-						let flatData = tree ? this.flattenRows(data) : data;
-						if (filter) flatData = flatData.filter(filter);
-
+						const {
+							data,
+							tree,
+							_filterIds: filterIds,
+						} = this.getState();
+						const flatData = tree
+							? this.flattenRows(data, [], filterIds)
+							: data.filter(
+									d => !filterIds || filterIds.includes(d.id)
+								);
 						this.setState({ flatData }, ctx);
 					},
 				},
@@ -140,11 +147,16 @@ export default class DataStore extends Store<IData> {
 				let editor = this.getState().editor;
 				if (editor) inBus.exec("close-editor", {});
 
+				const row = this.getRow(id);
 				const col = column
 					? this.getColumn(column)
-					: this.getNextEditor();
+					: this.getNextEditor(row);
+
 				if (col?.editor) {
-					const row = this.getRow(id);
+					let columnEditor = col.editor;
+					if (typeof columnEditor === "function")
+						columnEditor = columnEditor(row, col);
+					if (!columnEditor) return;
 
 					editor = {
 						column: col.id,
@@ -153,10 +165,18 @@ export default class DataStore extends Store<IData> {
 						renderedValue: getRenderValue(row, col),
 					};
 
-					if (typeof col.editor !== "string" && col.editor.config) {
-						editor.config = col.editor.config;
+					if (
+						typeof columnEditor === "object" &&
+						columnEditor.config
+					) {
+						editor.config = columnEditor.config;
+						if (columnEditor.config.options)
+							editor.options = columnEditor.config.options;
 					}
-					if (col.options) editor.options = col.options;
+
+					if (col.options && !editor.options)
+						editor.options = col.options;
+
 					this.setState({ editor });
 				}
 			}
@@ -171,7 +191,7 @@ export default class DataStore extends Store<IData> {
 		inBus.on("add-row", (ev: IDataMethodsConfig["add-row"]) => {
 			const state = this.getState();
 			let { data } = state;
-			const { _select: select } = state;
+			const { _select: select, _filterIds: filterIds } = state;
 			const { row, before, after, select: selectForce } = ev;
 			ev.id = row.id = ev.id || row.id || uid();
 
@@ -184,7 +204,11 @@ export default class DataStore extends Store<IData> {
 				data = [...data, ev.row];
 			}
 
-			this.setState({ data });
+			const update: Partial<IData> = { data };
+
+			if (filterIds) update._filterIds = [...filterIds, ev.id];
+
+			this.setState(update);
 
 			if (typeof selectForce === "boolean" && !selectForce) return;
 			if (selectForce || select)
@@ -197,6 +221,7 @@ export default class DataStore extends Store<IData> {
 			const update: Partial<IData> = {
 				data: data.filter(a => a.id !== id),
 			};
+
 			if (this.isSelected(id)) {
 				update.selectedRows = selectedRows.filter(a => a !== id);
 			}
@@ -208,10 +233,11 @@ export default class DataStore extends Store<IData> {
 			}
 		});
 		inBus.on("update-cell", (ev: IDataMethodsConfig["update-cell"]) => {
-			let { data } = this.getState();
+			const state = this.getState();
+			let { data } = state;
 			data = [...data];
 
-			const { tree } = this.getState();
+			const { tree } = state;
 			const { id, column, value } = ev;
 
 			const col = this.getColumn(column);
@@ -220,7 +246,7 @@ export default class DataStore extends Store<IData> {
 				const obj = { ...this._branches[id] };
 				setValue(obj, col, value);
 
-				const update = this.updateTreeCell(obj);
+				const update = this.updateTreeRow(obj);
 				if (obj.$parent === 0) {
 					data = update;
 				}
@@ -311,7 +337,11 @@ export default class DataStore extends Store<IData> {
 			} else this.setState({ focusCell: null });
 		});
 		inBus.on("resize-column", (ev: IDataMethodsConfig["resize-column"]) => {
-			const { id, auto, maxRows } = ev;
+			const { id, auto, maxRows, inProgress } = ev;
+			if (inProgress === false) {
+				// event called with inProgress=false is purely informational (indicates that the resize is over)
+				return;
+			}
 			let width = ev.width || 0;
 			const columns = [...this.getState().columns];
 			const column = columns.find(a => a.id == id);
@@ -338,57 +368,58 @@ export default class DataStore extends Store<IData> {
 			delete column.flexgrow;
 			this.setState({ columns });
 		});
-		inBus.on(
-			"hide-column",
-			({ id, mode }: IDataMethodsConfig["hide-column"]) => {
-				const columns = [...this.getState().columns];
-				const column = columns.find(a => a.id == id);
-				const visibleColumns = columns.reduce(
-					(p, v) => p + (v.hidden ? 0 : 1),
-					0
-				);
-				if (!mode || visibleColumns > 1) {
-					column.hidden = !column.hidden;
-					this.setState({ columns });
-				}
-			}
-		);
+		inBus.on("hide-column", (ev: IDataMethodsConfig["hide-column"]) => {
+			const { id, mode } = ev;
+			const columns = [...this.getState().columns];
+			const column = columns.find(a => a.id == id);
+			const visibleColumns = columns.reduce(
+				(p, v) => p + (v.hidden ? 0 : 1),
+				0
+			);
+			if (!mode || visibleColumns > 1) {
+				column.hidden = !column.hidden;
+				this.setState({ columns });
+			} else ev.skipUndo = true;
+		});
 		inBus.on("sort-rows", (ev: IDataMethodsConfig["sort-rows"]) => {
-			const sortBy: TSortConfig = {
-				key: ev.key,
-				order: ev.order || "asc",
-			};
+			const { key, add } = ev;
+			let { order = "asc" } = ev;
+
 			const state = this.getState();
-			let sort = state.sort;
-			const { columns, data, tree } = this.getState();
+			let sortMarks = state.sortMarks;
+			const { columns, data, tree } = state;
+			const fields = Object.keys(sortMarks);
+			const fLength = fields.length;
 
-			let index = sort.length;
-			sort.forEach((a, i) => {
-				if (a.key === sortBy.key) {
-					sortBy.order = a.order === "asc" ? "desc" : "asc";
-					index = i;
-				}
-			});
+			if (sortMarks[key])
+				order = sortMarks[key].order === "asc" ? "desc" : "asc";
 
-			columns.forEach(a => {
-				a.$sort = null;
-			});
-
-			if (!ev.add) {
-				sort = [sortBy];
+			if (!add || !fLength || (fLength === 1 && sortMarks[key])) {
+				sortMarks = { [key]: { order } };
 			} else {
-				sort = [...sort];
-				sort[index] = sortBy;
+				if (fLength === 1) {
+					// ensure the first sort field has an index for proper ordering
+					sortMarks[fields[0]] = {
+						...sortMarks[fields[0]],
+						index: 0,
+					};
+				}
+				sortMarks = {
+					...sortMarks,
+					[key]: {
+						order,
+						index: sortMarks[key]?.index ?? fLength,
+					},
+				};
 			}
-			this.setState({ sort });
 
-			sort.forEach((x, i) => {
-				x.index = sort.length === 1 ? 0 : i + 1;
-				columns.find(a => a.id == x.key).$sort = x;
-			});
-			this.setState({ columns });
+			const sortArr = Object.keys(sortMarks)
+				.sort((a, b) => sortMarks[a].index - sortMarks[b].index)
+				.map(k => ({ key: k, order: sortMarks[k].order }));
 
-			const sorter = sortByMany(sort, columns);
+			this.setState({ sortMarks });
+
+			const sorter = sortByMany(sortArr, columns);
 			if (sorter) {
 				const nextData = [...data];
 
@@ -402,16 +433,18 @@ export default class DataStore extends Store<IData> {
 
 		inBus.on("filter-rows", (ev: IDataMethodsConfig["filter-rows"]) => {
 			const { value, key, filter } = ev;
-			let { filterValues } = this.getState();
 
 			// clear all filters
 			if (!Object.keys(ev).length) {
-				this.setState({ filterValues: {}, filter: null });
+				this.setState({ filterValues: {}, _filterIds: null });
 				return;
 			}
 
-			const update: Partial<IData> = {};
+			const state = this.getState();
+			const { data, tree } = state;
+			let filterValues = state.filterValues;
 
+			const update: Partial<IData> = {};
 			if (key) {
 				filterValues = {
 					...filterValues,
@@ -420,7 +453,16 @@ export default class DataStore extends Store<IData> {
 				update.filterValues = filterValues;
 			}
 
-			update.filter = filter ?? this.createFilter(filterValues);
+			const filterFn = filter ?? this.createFilter(filterValues);
+
+			let filterIds: TID[] = [];
+			if (tree) {
+				filterIds = this.filterTree(data, filterFn, filterIds);
+			} else
+				data.forEach(d => {
+					if (filterFn(d)) filterIds.push(d.id);
+				});
+			update._filterIds = filterIds;
 
 			this.setState(update);
 		});
@@ -440,36 +482,31 @@ export default class DataStore extends Store<IData> {
 			}
 		);
 
-		inBus.on(
-			"move-item",
-			({
-				id,
-				target,
-				mode = "after",
-				inProgress,
-			}: IDataMethodsConfig["move-item"]) => {
-				const { data, flatData, tree } = this.getState();
-				const sourceIndex = flatData.findIndex(a => a.id == id);
-				const targetIndex = flatData.findIndex(a => a.id == target);
+		inBus.on("move-item", (ev: IDataMethodsConfig["move-item"]) => {
+			const { id, target, mode = "after", inProgress } = ev;
+			const { data, flatData, tree } = this.getState();
+			const sourceIndex = flatData.findIndex(a => a.id == id);
+			const targetIndex = flatData.findIndex(a => a.id == target);
 
-				if (
-					sourceIndex === -1 ||
-					targetIndex === -1 ||
-					inProgress === false
-				)
-					// event called with inProgress=false is purely informational (indicates that the drag is over)
-					return;
-
-				if (tree) {
-				} else {
-					this.moveItem(id, target, data, mode);
-				}
-
-				this.setState({
-					data: tree ? this.normalizeTreeRows(data) : data,
-				});
+			if (
+				sourceIndex === -1 ||
+				targetIndex === -1 ||
+				inProgress === false
+			) {
+				// event called with inProgress=false is purely informational (indicates that the drag is over)
+				return;
 			}
-		);
+
+			let updatedData;
+			if (tree) {
+			} else {
+				updatedData = this.moveItem(id, target, data, mode);
+			}
+
+			this.setState({
+				data: tree ? this.normalizeTreeRows(updatedData) : updatedData,
+			});
+		});
 
 		inBus.on("open-row", (ev: IDataMethodsConfig["open-row"]) => {
 			const { id, nested } = ev;
@@ -587,12 +624,15 @@ export default class DataStore extends Store<IData> {
 
 							const column = editor.column;
 							let id = editor.id;
-							let col = this.getNextEditor(column);
+							let col = this.getNextEditor(
+								this.getRow(id),
+								this.getColumn(column)
+							);
 							if (!col) {
 								const row = this.getNextRow(id);
 								if (row) {
 									id = row.id;
-									col = this.getNextEditor();
+									col = this.getNextEditor(row);
 								}
 							}
 
@@ -625,12 +665,15 @@ export default class DataStore extends Store<IData> {
 
 							const column = editor.column;
 							let id = editor.id;
-							let col = this.getPrevEditor(column);
+							let col = this.getPrevEditor(
+								this.getRow(id),
+								this.getColumn(column)
+							);
 							if (!col) {
 								const row = this.getPrevRow(id);
 								if (row) {
 									id = row.id;
-									col = this.getPrevEditor();
+									col = this.getPrevEditor(row);
 								}
 							}
 
@@ -679,9 +722,10 @@ export default class DataStore extends Store<IData> {
 						if (!isInput && tree && focusCell) {
 							const column = this.getColumn(focusCell.column);
 							if (column.treetoggle) {
-								const item = this.getRow(focusCell.row);
+								const row = this.getRow(focusCell.row);
+								if (!row.data) return;
 								this.in.exec(
-									item.open ? "close-row" : "open-row",
+									row.open ? "close-row" : "open-row",
 									{
 										id: focusCell.row,
 										nested: true,
@@ -764,6 +808,14 @@ export default class DataStore extends Store<IData> {
 						}
 						break;
 					}
+					case "ctrl+z": {
+						this.in.exec("undo", {});
+						break;
+					}
+					case "ctrl+y": {
+						this.in.exec("redo", {});
+						break;
+					}
 				}
 			}
 		);
@@ -811,6 +863,14 @@ export default class DataStore extends Store<IData> {
 			this.setStateAsync({ _print: null });
 		});
 
+		inBus.on("undo", () => {
+			this._historyManager?.handleUndo();
+		});
+
+		inBus.on("redo", () => {
+			this._historyManager?.handleRedo();
+		});
+
 		this.initOnce();
 	}
 
@@ -834,13 +894,15 @@ export default class DataStore extends Store<IData> {
 
 	initOnce() {
 		const state: Partial<IDataConfig> = {
-			sort: [],
-			filter: null,
+			sortMarks: {},
+			_filterIds: null,
+			data: [],
 			filterValues: {},
 			scroll: null,
 			editor: null,
 			focusCell: null,
 			_print: null,
+			history: { undo: 0, redo: 0 },
 		};
 		this._router.init(state);
 	}
@@ -856,14 +918,32 @@ export default class DataStore extends Store<IData> {
 					a.optionsMap = new Map(a.options.map(x => [x.id, x.label]));
 				}
 			});
+		// perform these changes only if data was reset
+		if (!isSame(this.getState().data, state.data)) {
+			if (state.tree) {
+				this._branches = { 0: { data: state.data } };
+				state.data = this.normalizeTreeRows(state.data);
+			} else state.data = this.normalizeRows(state.data);
 
-		if (state.tree) {
-			this._branches = { 0: { data: state.data } };
-			state.data = this.normalizeTreeRows(state.data);
-		} else state.data = this.normalizeRows(state.data);
+			this.setState({
+				_filterIds: null,
+				filterValues: {},
+				sortMarks: {},
+			});
+			if (this._historyManager) this._historyManager.resetHistory();
+		}
 
-		if (state.split) {
-			if (state.split.right && isCommunity()) state.split.right = 0;
+		if (isCommunity()) {
+			if (state.tree) state.undo = false;
+			if (state.split?.right) state.split.right = 0;
+		}
+
+		if (state.undo && !this._historyManager) {
+			this._historyManager = new HistoryManager(
+				this.in,
+				this.getState.bind(this),
+				this.setState.bind(this)
+			);
 		}
 
 		this._router.init({
@@ -957,22 +1037,29 @@ export default class DataStore extends Store<IData> {
 		return columns[start];
 	}
 
-	getNextEditor(id?: TID): IColumn {
-		let columns = this.getState().columns;
-		if (id) {
-			const index = columns.findIndex(c => c.id == id);
-			columns = columns.slice(index + 1);
-		}
-		return columns.find(c => c.editor && !c.hidden);
+	isCellEditable(row: IRow, column: IColumn) {
+		const { editor, hidden } = column;
+		if (!editor || hidden) return false;
+		if (typeof editor === "function") return editor(row, column);
+		return true;
 	}
 
-	getPrevEditor(id?: TID): IColumn {
+	getNextEditor(row: IRow, column?: IColumn): IColumn {
 		let columns = this.getState().columns;
-		if (id) {
-			const index = columns.findLastIndex(c => c.id == id);
+		if (column) {
+			const index = columns.findIndex(c => c.id == column.id);
+			columns = columns.slice(index + 1);
+		}
+		return columns.find(c => this.isCellEditable(row, c));
+	}
+
+	getPrevEditor(row: IRow, column?: IColumn): IColumn {
+		let columns = this.getState().columns;
+		if (column) {
+			const index = columns.findLastIndex(c => c.id == column.id);
 			columns = columns.slice(0, index);
 		}
-		return columns.findLast(c => c.editor && !c.hidden);
+		return columns.findLast(c => this.isCellEditable(row, c));
 	}
 
 	toggleBranch(id: TID, open: boolean, nested?: boolean) {
@@ -983,7 +1070,7 @@ export default class DataStore extends Store<IData> {
 
 		if (id !== 0) {
 			item = { ...item, open };
-			const update = this.updateTreeCell(item);
+			const update = this.updateTreeRow(item);
 			if (item.$parent === 0) data = update;
 		}
 
@@ -999,7 +1086,7 @@ export default class DataStore extends Store<IData> {
 	toggleKids(item: IRow, open: boolean, nested?: boolean) {
 		item = { ...item, open };
 
-		const data = this.updateTreeCell(item);
+		const data = this.updateTreeRow(item);
 
 		if (nested && item.data?.length) {
 			item.data.forEach((row: IRow) => {
@@ -1009,7 +1096,7 @@ export default class DataStore extends Store<IData> {
 		return data;
 	}
 
-	private updateTreeCell(item: IRow) {
+	private updateTreeRow(item: IRow) {
 		const id = item.id;
 
 		this._branches[id] = item;
@@ -1033,8 +1120,15 @@ export default class DataStore extends Store<IData> {
 				return items.splice(i, 1)[0];
 			}
 			if (items[i].data) {
-				const found = this.findAndRemove(items[i].data, id);
-				if (found) return found;
+				const copy = [...items[i].data];
+				const found = this.findAndRemove(copy, id);
+				if (found) {
+					items[i] = {
+						...items[i],
+						data: copy,
+					};
+					return found;
+				}
 			}
 		}
 		return null;
@@ -1058,7 +1152,10 @@ export default class DataStore extends Store<IData> {
 
 						// open branch - insert as last child of prev. branch (before)
 						if (prevItem?.data && prevItem.open) {
-							prevItem.data.push(item);
+							items[i - 1] = {
+								...prevItem,
+								data: [...prevItem.data, item],
+							};
 						} else {
 							items.splice(insertIndex, 0, item);
 						}
@@ -1067,7 +1164,10 @@ export default class DataStore extends Store<IData> {
 					} else {
 						// open branch - insert as first child of target branch (after)
 						if (targetItem.open) {
-							targetItem.data.unshift(item);
+							items[i] = {
+								...targetItem,
+								data: [item, ...targetItem.data],
+							};
 							return true;
 						}
 					}
@@ -1077,11 +1177,14 @@ export default class DataStore extends Store<IData> {
 				return true;
 			}
 
-			if (
-				items[i].data &&
-				this.insertItem(items[i].data, targetId, item, mode)
-			) {
-				return true;
+			if (items[i].data) {
+				items[i] = {
+					...items[i],
+					data: [...items[i].data],
+				};
+				if (this.insertItem(items[i].data, targetId, item, mode)) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -1093,8 +1196,10 @@ export default class DataStore extends Store<IData> {
 		data: any[],
 		mode: IDataMethodsConfig["move-item"]["mode"]
 	) {
-		const movedItem = this.findAndRemove(data, id);
-		return this.insertItem(data, target, movedItem, mode);
+		const items = [...data];
+		const movedItem = this.findAndRemove(items, id);
+		this.insertItem(items, target, movedItem, mode);
+		return items;
 	}
 
 	private copyColumns(columns: IColumn[]) {
@@ -1168,10 +1273,6 @@ export default class DataStore extends Store<IData> {
 	) {
 		const col = columns[index];
 		if (!col.width) col.width = col.flexgrow ? 17 : sizes.columnWidth;
-
-		if (col.editor && typeof col.editor === "string") {
-			col.editor = { type: col.editor };
-		}
 
 		col._colindex = index + 1;
 
@@ -1275,6 +1376,7 @@ export default class DataStore extends Store<IData> {
 				} else {
 					delete row.data;
 					delete row.$count;
+					delete row.open;
 				}
 			}
 		});
@@ -1290,12 +1392,24 @@ export default class DataStore extends Store<IData> {
 		});
 	}
 
-	flattenRows(data: IRow[], flatData?: IRow[]): IRow[] {
-		const res: IRow[] = flatData || [];
+	filterTree(
+		data: IRow[],
+		filter: (row: IRow) => boolean,
+		filterIds: TID[]
+	): TID[] {
 		data.forEach(row => {
-			res.push(row);
+			if (filter(row)) filterIds.push(row.id);
+			if (row.data) this.filterTree(row.data, filter, filterIds);
+		});
+		return filterIds;
+	}
+
+	flattenRows(data: IRow[], flatData: IRow[], filterIds: TID[]): IRow[] {
+		const res: IRow[] = flatData;
+		data.forEach(row => {
+			if (!filterIds || filterIds.includes(row.id)) res.push(row);
 			if (row.data?.length && row.open !== false) {
-				this.flattenRows(row.data, res);
+				this.flattenRows(row.data, res, filterIds);
 			}
 		});
 		return res;
@@ -1371,11 +1485,15 @@ function uid() {
 	return "temp://" + base++;
 }
 
+interface ISkipUndoAction {
+	skipUndo?: boolean;
+}
 export interface IDataMethodsConfig {
 	["update-cell"]: {
 		id: TID;
 		column: TID;
 		value: string | number | Date;
+		eventSource?: string;
 	};
 	["add-row"]: {
 		id?: TID;
@@ -1383,9 +1501,14 @@ export interface IDataMethodsConfig {
 		after?: TID;
 		row: IRow;
 		select?: boolean;
+		eventSource?: string;
 	};
-	["delete-row"]: { id: TID };
-	["update-row"]: { id: TID; row: Record<string, any> };
+	["delete-row"]: { id: TID; eventSource?: string };
+	["update-row"]: {
+		id: TID;
+		row: Record<string, any>;
+		eventSource?: string;
+	};
 	["select-row"]: {
 		id: TID;
 		toggle?: boolean;
@@ -1399,14 +1522,19 @@ export interface IDataMethodsConfig {
 		width?: number;
 		auto?: boolean | "data" | "header";
 		maxRows?: number;
+		inProgress?: boolean;
+		eventSource?: string;
 	};
-	["hide-column"]: { id: string; mode: boolean };
+	["hide-column"]: {
+		id: string;
+		mode: boolean;
+		eventSource?: string;
+	} & ISkipUndoAction;
 	["sort-rows"]: {
 		key: string;
-		order?: string;
+		order?: "asc" | "desc";
 		add?: boolean;
 	};
-
 	["open-editor"]: {
 		id: string;
 		column?: string;
@@ -1417,44 +1545,42 @@ export interface IDataMethodsConfig {
 	["editor"]: {
 		value: any;
 	};
-
 	["filter-rows"]: {
 		filter?: any;
 		key?: string;
 		value?: any;
 	};
-
 	["collapse-column"]: {
 		id: TID;
 		row: number;
 		mode?: boolean;
+		eventSource?: string;
 	};
-
 	["move-item"]: {
 		id: TID;
 		target: TID;
 		mode: "before" | "after";
 		inProgress?: boolean;
+		eventSource?: string;
 	};
-
 	["open-row"]: {
 		id: TID;
 		nested?: boolean;
+		eventSource?: string;
 	};
 	["close-row"]: {
 		id: TID;
 		nested?: boolean;
+		eventSource?: string;
 	};
 	["export"]: {
 		options: IExportOptions;
 		result: any;
 	};
-
 	["scroll"]: {
 		row?: TID;
 		column?: TID;
 	};
-
 	["hotkey"]: {
 		key: string;
 		event: any;
@@ -1466,4 +1592,6 @@ export interface IDataMethodsConfig {
 		eventSource: string;
 	};
 	["print"]?: IPrintConfig;
+	["undo"]: void;
+	["redo"]: void;
 }

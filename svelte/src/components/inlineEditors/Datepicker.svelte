@@ -7,8 +7,8 @@
 
 	let value = $state(editor.value || new Date());
 
-	let template = $state(editor?.config?.template);
-	let cell = $state(editor?.config?.cell);
+	let template = $state(editor.config?.template);
+	let cell = $state(editor.config?.cell);
 
 	function updateValue({ value }) {
 		actions.updateValue(value);
@@ -42,7 +42,7 @@
 	{:else}<span class="wx-text">{editor.renderedValue}</span>{/if}
 </div>
 <Dropdown width={"auto"}>
-	<Calendar {value} onchange={updateValue} />
+	<Calendar {value} onchange={updateValue} buttons={editor.config?.buttons} />
 </Dropdown>
 
 <style>

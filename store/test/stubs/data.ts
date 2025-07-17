@@ -1,4 +1,10 @@
-type TDataType = "default" | "empty" | "tree" | "tree_short" | "filters";
+type TDataType =
+	| "default"
+	| "empty"
+	| "tree"
+	| "tree_short"
+	| "filters"
+	| "tree_filters";
 
 export const defaultSizes = {
 	rowHeight: 37,
@@ -44,9 +50,36 @@ export const cols = [
 	},
 ];
 
+const filterCols = [
+	{
+		id: "id",
+		header: "",
+	},
+	{
+		id: "name",
+		header: { filter: "text" },
+	},
+	{
+		id: "type",
+		header: { filter: "text" },
+	},
+	{
+		id: "season",
+		header: {
+			filter: "richselect",
+			options: [
+				{ id: 1, label: "winter" },
+				{ id: 2, label: "spring" },
+				{ id: 3, label: "summer" },
+				{ id: 4, label: "autumn" },
+			],
+		},
+	},
+];
+
 const data = {
 	default: {
-		columns: cols,
+		columns: cols.map(c => ({ ...c })),
 		data: [
 			{
 				id: 1,
@@ -81,7 +114,7 @@ const data = {
 		],
 	},
 	empty: {
-		columns: cols,
+		columns: cols.map(c => ({ ...c })),
 		data: [
 			{
 				id: 1,
@@ -126,7 +159,7 @@ const data = {
 	},
 	tree: {
 		tree: true,
-		columns: cols,
+		columns: cols.map(c => ({ ...c })),
 		data: [
 			{
 				id: 1,
@@ -358,39 +391,14 @@ const data = {
 				],
 			},
 			{
-				id: 12,
+				id: 13,
 				name: "Parent 3",
 				type: "Type 2",
 			},
 		],
 	},
 	filters: {
-		columns: [
-			{
-				id: "id",
-				header: "",
-			},
-			{
-				id: "name",
-				header: { filter: "text" },
-			},
-			{
-				id: "type",
-				header: { filter: "text" },
-			},
-			{
-				id: "season",
-				header: {
-					filter: "richselect",
-					options: [
-						{ id: 1, label: "spring" },
-						{ id: 2, label: "spring" },
-						{ id: 3, label: "spring" },
-						{ id: 4, label: "spring" },
-					],
-				},
-			},
-		],
+		columns: filterCols,
 		data: [
 			{
 				id: 1,
@@ -427,6 +435,110 @@ const data = {
 				name: "",
 				type: "Type 2",
 				season: 3,
+			},
+		],
+	},
+	tree_filters: {
+		tree: true,
+		columns: filterCols,
+		data: [
+			{
+				id: 1,
+				name: "Alex",
+				type: "Type 1",
+				season: 1,
+				open: true,
+				data: [
+					{
+						id: 11,
+						name: "Adam",
+						type: "Type 2",
+						season: 1,
+					},
+					{
+						id: 12,
+						name: "Mary",
+						type: "Type 1",
+						season: 2,
+						open: true,
+						data: [
+							{
+								id: 121,
+								name: "Adam",
+								type: "Type 2",
+								season: 1,
+							},
+							{
+								id: 122,
+								name: "Bill",
+								type: "Type 1",
+								season: 4,
+							},
+						],
+					},
+					{
+						id: 13,
+						name: "Bob",
+						type: "Type 1",
+						season: 3,
+					},
+				],
+			},
+			{
+				id: 2,
+				name: "John",
+				type: "Type 2",
+				season: 2,
+				open: true,
+				data: [
+					{
+						id: 21,
+						name: "Mary",
+						type: "Type 2",
+						season: 4,
+					},
+					{
+						id: 22,
+						name: "Tom",
+						type: "Type 1",
+						season: 2,
+					},
+					{
+						id: 23,
+						name: "",
+						type: "Type 2",
+						season: 3,
+						data: [
+							{
+								id: 231,
+								name: "Sam",
+								type: "Type 2",
+								season: 1,
+							},
+							{
+								id: 232,
+								name: "Bill",
+								type: "Type 1",
+								season: 4,
+							},
+						],
+					},
+				],
+			},
+			{
+				id: 3,
+				name: "Bob",
+				type: "Type 1",
+				season: 3,
+				open: true,
+				data: [
+					{
+						id: 31,
+						name: "Ben",
+						type: "Type 1",
+						season: 4,
+					},
+				],
 			},
 		],
 	},

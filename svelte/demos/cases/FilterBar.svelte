@@ -1,54 +1,70 @@
 <script>
 	import { Tabs } from "wx-svelte-core";
-	import { FilterBar, createArrayFilter, getOptions } from "wx-svelte-query";
+	import { FilterBar, createFilter, getOptions } from "wx-svelte-filter";
 
 	import { Grid } from "../../src";
 	import { getData } from "../data";
 	const { data, columns } = getData();
 
-	let fields = $state();
-	let cols = $state();
 	let api = $state();
 
-	function init(api) {
-		fields = [];
-		cols = api.getReactiveState().columns;
-		$cols.forEach(col => {
-			if (col.id !== "id") {
-				fields.push(col.id);
-			}
-		});
-	}
-
-	let filter = $state(1);
-	let filterTabs1 = [
+	let filterId = $state(1);
+	const filterTabs = [
 		{ id: 1, label: "By all" },
 		{ id: 2, label: "By city" },
 		{ id: 3, label: "By the field" },
 	];
 
-	let value = $state();
 	const cities = getOptions(data, "city");
-	const filteredData = $derived(createArrayFilter(value)(data));
+
+	function handleValueChange({ value }) {
+		const filter = createFilter(value);
+		api.exec("filter-rows", { filter });
+	}
+
+	function handleFilterChange({ value }) {
+		filterId = value;
+		api.exec("filter-rows", { filter: null });
+	}
 </script>
 
 <div style="padding: 20px;">
-	<Tabs bind:value={filter} options={filterTabs1} />
+	<h4>Filter grid data executing "filter-rows" action</h4>
 
-	{#if filter === 1 && fields}
-		<FilterBar {fields} onchange={ev => (value = ev.value)} />
-	{:else if filter === 2}
+	<Tabs value={filterId} options={filterTabs} onchange={handleFilterChange} />
+
+	{#if filterId === 1}
 		<FilterBar
-			by={{ type: "select", field: "city", options: cities }}
-			onchange={ev => (value = ev.value)}
+			fields={[
+				{
+					type: "all",
+					by: ["id", "city", "firstName", "lastName", "email"],
+				},
+			]}
+			onchange={handleValueChange}
 		/>
-	{:else if filter === 3}
+	{:else if filterId === 2}
 		<FilterBar
-			by=":dynamic"
-			fields={["city", "firstName", "lastName", "email"]}
-			onchange={ev => (value = ev.value)}
+			fields={[
+				{
+					type: "text",
+					id: "city",
+					options: cities,
+				},
+			]}
+			onchange={handleValueChange}
+		/>
+	{:else if filterId === 3}
+		<FilterBar
+			fields={[
+				{
+					type: "dynamic",
+					by: ["city", "firstName", "lastName", "email"],
+				},
+			]}
+			onchange={handleValueChange}
 		/>
 	{/if}
 
-	<Grid data={filteredData} {columns} bind:this={api} {init} />
+	<Grid {data} {columns} bind:this={api} />
 </div>

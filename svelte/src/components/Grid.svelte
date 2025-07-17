@@ -26,7 +26,6 @@
 		header = true,
 		footer = false,
 		dynamic = null,
-		filter = null,
 		overlay = null,
 		reorder = false,
 		onreorder = null,
@@ -36,8 +35,16 @@
 		tree = false,
 		autoConfig = false,
 		init = null,
+		responsive = null,
+		sortMarks = {},
+		undo = false,
 		...restProps
 	} = $props();
+
+	let clientWidth = $state(0);
+	let clientHeight = $state(0);
+	let responsiveLevel = $state(null);
+	let responsiveConfig = $state(null);
 
 	// init stores
 	const dataStore = new DataStore(writable);
@@ -92,26 +99,49 @@
 	});
 	// auto config columns
 	const finalColumns = $derived.by(() => {
-		let res = columns;
-		if (autoConfig && !res.length && data.length) {
+		if (autoConfig && !columns.length && data.length) {
 			const test = data[0];
+			const autoCols = [];
 
 			for (let key in test) {
-				if (key != "id" && key[0] != "$") {
+				if (key !== "id" && key[0] !== "$") {
 					let col = {
 						id: key,
-						header: key[0].toUpperCase() + key.substring(1),
+						header: key[0].toUpperCase() + key.slice(1),
 					};
 
-					if (typeof autoConfig === "object")
+					if (typeof autoConfig === "object") {
 						col = { ...col, ...autoConfig };
-					columns.push(col);
+					}
+					autoCols.push(col);
 				}
 			}
+
+			return autoCols;
 		}
 
-		return columns;
+		return responsiveConfig?.columns ?? columns;
 	});
+
+	const finalSizes = $derived(responsiveConfig?.sizes ?? sizes);
+
+	function resize(rect) {
+		clientWidth = rect.width;
+		clientHeight = rect.height;
+
+		if (responsive) {
+			const levels = Object.keys(responsive)
+				.map(Number)
+				.sort((a, b) => a - b);
+
+			const newLevel = levels.find(level => clientWidth <= level) ?? null;
+
+			if (newLevel !== responsiveLevel) {
+				responsiveConfig = responsive[newLevel];
+				responsiveLevel = newLevel;
+			}
+		}
+	}
 
 	const isReorderAvailable = $derived.by(() => {
 		let available = !tree;
@@ -121,18 +151,18 @@
 	});
 
 	let _skin = $derived(getContext("wx-theme"));
-
 	let init_once = true;
 	const reinitStore = () => {
 		dataStore.init({
 			data,
 			columns: finalColumns,
 			split,
-			sizes,
+			sizes: finalSizes,
 			selectedRows,
 			dynamic,
-			filter,
 			tree,
+			sortMarks,
+			undo,
 			_skin,
 			_select: select,
 		});
@@ -159,5 +189,9 @@
 		{onreorder}
 		{multiselect}
 		{autoRowHeight}
+		{clientWidth}
+		{clientHeight}
+		{responsiveLevel}
+		{resize}
 	/>
 </Locale>

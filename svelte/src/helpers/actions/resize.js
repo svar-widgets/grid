@@ -27,7 +27,7 @@ export function resize(node, config) {
 		document.body.style.cursor = "";
 		document.body.style.userSelect = "";
 
-		if (config && config.up) config.up();
+		if (config && config.up) config.up(dx);
 
 		window.removeEventListener("mousemove", move);
 		window.removeEventListener("mouseup", up);

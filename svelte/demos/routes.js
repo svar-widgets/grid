@@ -12,9 +12,9 @@ import ExternalEditor from "./cases/ExternalEditor.svelte";
 import ExternalEditorComments from "./cases/ExternalEditorComments.svelte";
 import ExternalEditorTasklist from "./cases/ExternalEditorTasklist.svelte";
 import FillspaceColumns from "./cases/FillspaceColumns.svelte";
-// import FilterBar from "./cases/FilterBar.svelte";
-// import FilterQuery from "./cases/FilterQuery.svelte";
-// import FilterSimpleQuery from "./cases/FilterSimpleQuery.svelte";
+import FilterBar from "./cases/FilterBar.svelte";
+import FilterBuilder from "./cases/FilterBuilder.svelte";
+import FilterSimpleFilterBuilder from "./cases/FilterSimpleFilterBuilder.svelte";
 import Filters from "./cases/Filters.svelte";
 import FiltersCustom from "./cases/FiltersCustom.svelte";
 import FiltersCustomHandler from "./cases/FiltersCustomHandler.svelte";
@@ -22,6 +22,8 @@ import ExternalFilters from "./cases/ExternalFilters.svelte";
 import FixedColumns from "./cases/FixedColumns.svelte";
 import InlineEditors from "./cases/InlineEditors.svelte";
 import InlineEditorsCells from "./cases/InlineEditorsCells.svelte";
+import InlineEditorsHandler from "./cases/InlineEditorsHandler.svelte";
+import InlineEditorsDisabled from "./cases/InlineEditorsDisabled.svelte";
 import MultilineRows from "./cases/MultilineRows.svelte";
 import Overlay from "./cases/Overlay.svelte";
 import Paging from "./cases/Paging.svelte";
@@ -30,6 +32,7 @@ import Reordering from "./cases/Reordering.svelte";
 import RestBackend from "./cases/RestBackend.svelte";
 import RowMultiSelection from "./cases/RowMultiSelection.svelte";
 import RowSelection from "./cases/RowSelection.svelte";
+import ResponsiveMode from "./cases/ResponsiveMode.svelte";
 import ScrollTable from "./cases/ScrollTable.svelte";
 import SelectionCheckboxes from "./cases/SelectionCheckboxes.svelte";
 import SizeToContainer from "./cases/SizeToContainer.svelte";
@@ -46,90 +49,186 @@ import Localization from "./cases/Localization.svelte";
 import TreeTable from "./cases/TreeTable.svelte";
 import Print from "./cases/Print.svelte";
 import PrintWideGrid from "./cases/PrintWideGrid.svelte";
+import UndoRedo from "./cases/UndoRedo.svelte";
 
 
 export const links = [
-	["/base/:skin", "Basic DataGrid", BasicInit],
+	["/base/:skin", "Basic DataGrid", BasicInit, "BasicInit"],
 	[
 		"/auto-config/:skin",
 		"Automatically generated columns",
 		AutoConfigColumns,
+		"AutoConfigColumns",
 	],
-	["/spans/:skin", "Header and footer spans", TableHeaderFooterSpans],
-	["/fillspace/:skin", "Flexible column widths", FillspaceColumns],
-	["/columns-to-content/:skin", "Column widths to content", ColumnsToContent],
-	["/resize/:skin", "Resize columns", Resize],
-	["/collapsible-columns/:skin", "Collapse columns", CollapsibleColumns],
-	["/visibility/:skin", "Hide/show columns", VisibilityColumns],
-	["/fixed/:skin", "Fixed columns", FixedColumns],
+	[
+		"/spans/:skin",
+		"Header and footer spans",
+		TableHeaderFooterSpans,
+		"TableHeaderFooterSpans",
+	],
+	[
+		"/fillspace/:skin",
+		"Flexible column widths",
+		FillspaceColumns,
+		"FillspaceColumns",
+	],
+	[
+		"/columns-to-content/:skin",
+		"Column widths to content",
+		ColumnsToContent,
+		"ColumnsToContent",
+	],
+	["/resize/:skin", "Resize columns", Resize, "Resize"],
+	[
+		"/collapsible-columns/:skin",
+		"Collapse columns",
+		CollapsibleColumns,
+		"CollapsibleColumns",
+	],
+	[
+		"/visibility/:skin",
+		"Hide/show columns",
+		VisibilityColumns,
+		"VisibilityColumns",
+	],
+	["/fixed/:skin", "Fixed columns", FixedColumns, "FixedColumns"],
 	[
 		"/header-vertical/:skin",
 		"Vertical text in header",
 		TableHeaderFooterVertical,
+		"TableHeaderFooterVertical",
 	],
 
-	["/size-container/:skin", "Size to container", SizeToContainer],
-	["/size-content/:skin", "Size to content", SizeToContent],
+	[
+		"/size-container/:skin",
+		"Size to container",
+		SizeToContainer,
+		"SizeToContainer",
+	],
+	["/size-content/:skin", "Size to content", SizeToContent, "SizeToContent"],
+	[
+		"/responsive-mode/:skin",
+		"Responsive mode",
+		ResponsiveMode,
+		"ResponsiveMode",
+	],
 
-	["/styling/:skin", "Styling", Styling],
+	["/styling/:skin", "Styling", Styling, "Styling"],
 
-	["/multiline-row/:skin", "Multi-line rows", MultilineRows],
-	["/selection/:skin", "Row selection", RowSelection],
-	["/multi-selection/:skin", "Multiple row selection", RowMultiSelection],
+	["/multiline-row/:skin", "Multi-line rows", MultilineRows, "MultilineRows"],
+	["/selection/:skin", "Row selection", RowSelection, "RowSelection"],
+	[
+		"/multi-selection/:skin",
+		"Multiple row selection",
+		RowMultiSelection,
+		"RowMultiSelection",
+	],
 	[
 		"/check-selection/:skin",
 		"Selection with checkboxes",
 		SelectionCheckboxes,
+		"SelectionCheckboxes",
 	],
 
-	["/custom/:skin", "Custom cells", CustomCells],
-	["/embedding-actions/:skin", "Custom cell actions", CustomEmbedingActions],
-	["/tooltips/:skin", "Tooltips for data cells", Tooltips],
+	["/custom/:skin", "Custom cells", CustomCells, "CustomCells"],
+	[
+		"/embedding-actions/:skin",
+		"Custom cell actions",
+		CustomEmbedingActions,
+		"CustomEmbedingActions",
+	],
+	["/tooltips/:skin", "Tooltips for data cells", Tooltips, "Tooltips"],
 
-	["/editors/:skin", "Cell editors", InlineEditors],
-	["/editors-custom/:skin", "Custom cell editors", InlineEditorsCells],
-	["/editpanel/:skin", "Editor", ExternalEditor],
+	["/editors/:skin", "Cell editors", InlineEditors, "InlineEditors"],
+	[
+		"/editors-custom/:skin",
+		"Custom cell editors",
+		InlineEditorsCells,
+		"InlineEditorsCells",
+	],
+	[
+		"/editors-different/:skin",
+		"Different editors in a column",
+		InlineEditorsHandler,
+		"InlineEditorsHandler",
+	],
+	[
+		"/editors-disabled/:skin",
+		"Disabled cell inline editors",
+		InlineEditorsDisabled,
+		"InlineEditorsDisabled",
+	],
+	["/editpanel/:skin", "Editor", ExternalEditor, "ExternalEditor"],
 	[
 		"/editpanel-comments/:skin",
 		"Editor with Comments",
 		ExternalEditorComments,
+		"ExternalEditorComments",
 	],
 	[
 		"/editpanel-tasklist/:skin",
 		"Editor with Tasklist",
 		ExternalEditorTasklist,
+		"ExternalEditorTasklist",
 	],
 
-	["/reordering/:skin", "Reordering rows", Reordering],
-	["/sort/:skin", "Sort data", Sort],
-	// ["/filter/:skin", "Filter data with filter bar", FilterBar],
-	// ["/filters/:skin", "Filter data with Simple Query", FilterSimpleQuery],
-	// ["/query/:skin", "Filter data with Full Query", FilterQuery],
-	["/filters/:skin", "Filters", Filters],
-	["/filters-custom/:skin", "Filter settings", FiltersCustom],
+	["/reordering/:skin", "Reordering rows", Reordering, "Reordering"],
+	["/sort/:skin", "Sort data", Sort, "Sort"],
+	["/filters/:skin", "Filters", Filters, "Filters"],
+	[
+		"/filters-custom/:skin",
+		"Filter settings",
+		FiltersCustom,
+		"FiltersCustom",
+	],
 	[
 		"/filters-handler/:skin",
 		"Filters with custom handler",
 		FiltersCustomHandler,
+		"FiltersCustomHandler",
 	],
-	["/filters-external/:skin", "External filters", ExternalFilters],
-	["/pagination/:skin", "Pagination", Paging],
+	[
+		"/filters-external/:skin",
+		"External filters",
+		ExternalFilters,
+		"ExternalFilters",
+	],
+	["/filterbar/:skin", "Filter data with FilterBar", FilterBar, "FilterBar"],
+	[
+		"/filterbuilder/:skin",
+		"Filter data with FilterBuilder",
+		FilterBuilder,
+		"FilterBuilder",
+	],
+	[
+		"/filtered-data/:skin",
+		"Filter data before parsing",
+		FilterSimpleFilterBuilder,
+		"FilterSimpleFilterBuilder",
+	],
+	["/pagination/:skin", "Pagination", Paging, "Paging"],
 
-	["/context/:skin", "Context menu", ContextMenu],
-	["/custom-context/:skin", "Custom context menu", CustomContextMenu],
+	["/context/:skin", "Context menu", ContextMenu, "ContextMenu"],
+	[
+		"/custom-context/:skin",
+		"Custom context menu",
+		CustomContextMenu,
+		"CustomContextMenu",
+	],
 
-	["/overlay/:skin", "Overlay", Overlay],
-	["/bigdata/:skin", "Render big data", StaticData],
-	["/dynamic/:skin", "Dynamic loading", DynamicData],
-	["/rest/:skin", "REST backend", RestBackend],
+	["/overlay/:skin", "Overlay", Overlay, "Overlay"],
+	["/bigdata/:skin", "Render big data", StaticData, "StaticData"],
+	["/dynamic/:skin", "Dynamic loading", DynamicData, "DynamicData"],
+	["/rest/:skin", "REST backend", RestBackend, "RestBackend"],
 
-	["/treetable/:skin", "Tree structure", TreeTable],
+	["/treetable/:skin", "Tree structure", TreeTable, "TreeTable"],
 
 
-	["/api/:skin", "API calls", TableAPI],
-	["/events/:skin", "Event handling", EventHandling],
-	["/scroll/:skin", "Scroll by API", ScrollTable],
-	["/print/:skin", "Print", Print],
-	["/print-wide/:skin", "Print wide grid", PrintWideGrid],
-	["/locale/:skin", "Locales", Localization],
+	["/api/:skin", "API calls", TableAPI, "TableAPI"],
+	["/events/:skin", "Event handling", EventHandling, "EventHandling"],
+	["/scroll/:skin", "Scroll by API", ScrollTable, "ScrollTable"],
+	["/print/:skin", "Print", Print, "Print"],
+	["/print-wide/:skin", "Print wide grid", PrintWideGrid, "PrintWideGrid"],
+	["/locale/:skin", "Locales", Localization, "Localization"],
+	["/undo-redo/:skin", "Undo/redo", UndoRedo, "UndoRedo"],
 ];

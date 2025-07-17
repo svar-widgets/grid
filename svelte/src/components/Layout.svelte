@@ -15,7 +15,7 @@
 	} from "wx-lib-dom";
 
 	import { hotkeys } from "wx-grid-store";
-	import { keys } from "../helpers/hotkeys";
+	import { getKeys } from "../helpers/hotkeys";
 	import { scrollTo } from "wx-grid-store";
 
 	import Cell from "./Cell.svelte";
@@ -35,6 +35,10 @@
 		columnStyle,
 		cellStyle,
 		autoRowHeight,
+		resize,
+		clientWidth,
+		clientHeight,
+		responsiveLevel,
 	} = $props();
 
 	const api = getContext("grid-store");
@@ -52,6 +56,7 @@
 		tree,
 		focusCell,
 		_print,
+		undo,
 	} = api.getReactiveState();
 
 	// will be calculated once, after rendering
@@ -65,9 +70,7 @@
 	});
 
 	const defaultRowHeight = $derived($_sizes.rowHeight);
-	let clientWidth = $state(0),
-		clientHeight = $state(0),
-		tableNode;
+	let tableNode;
 
 	// reorder
 	let dragItem = $state(null),
@@ -344,11 +347,6 @@
 	function onScroll(ev) {
 		scrollTop = ev.target.scrollTop;
 		scrollLeft = ev.target.scrollLeft;
-	}
-
-	function resize(rect) {
-		clientWidth = rect.width;
-		clientHeight = rect.height;
 	}
 
 	function lockSelection(ev) {
@@ -638,7 +636,7 @@
 </script>
 
 <div
-	class="wx-grid"
+	class={`wx-grid ${responsiveLevel ? `wx-responsive-${responsiveLevel}` : ""}`}
 	style="--header-height:{headerHeight}px; --footer-height:{footerHeight}px;--split-left-width:{leftColumns.width}px;
 		--split-right-width:{rightColumns.width}px;"
 >
@@ -655,7 +653,10 @@
 			getReorder: () => reorder,
 			getDraggableInfo: () => ({ hasDraggable: checkDraggable() }),
 		}}
-		use:hotkeys={{ keys, exec: v => api.exec("hotkey", v) }}
+		use:hotkeys={{
+			keys: getKeys({ undo: $undo }),
+			exec: v => api.exec("hotkey", v),
+		}}
 		{style}
 		role={$tree ? "treegrid" : "grid"}
 		aria-colcount={renderColumns.data.length}
@@ -772,6 +773,7 @@
 	.wx-grid {
 		height: 100%;
 	}
+
 	.wx-table-box {
 		outline: none;
 		position: relative;

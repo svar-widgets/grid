@@ -1,3 +1,27 @@
+## 2.2.0
+
+### New features
+
+-   Undo/redo for data and column actions
+-   Ability to tune responsive behaviour
+-   Dynamic inline editors for column cells
+-   Integration with SVAR Filter
+
+### Updates
+
+-   Non-persistent filtering: table is not re-filtered on data changes
+
+### Fixes
+
+-   Inline "date" editor is not closed on Enter key
+-   Shift+tab hotkey makes extra step with inline editors
+-   Enter hotkey calls "open-row" action for non-branches in `tree` mode
+-   Changing any property reverts data in `tree` mode
+
+### Breaking changes
+
+-   `sort` state property renamed to `sortMarks`
+
 ## 2.1.5
 
 ### Fixes

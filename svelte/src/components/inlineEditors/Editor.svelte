@@ -34,6 +34,10 @@
 		}
 	}
 
+	function keyHandler(ev) {
+		if (ev.key === "Enter" && $editor) cancel();
+	}
+
 	let style = $derived(
 		getStyle(
 			column.width,
@@ -44,7 +48,12 @@
 		)
 	);
 
-	const SvelteComponent = $derived(editors[column.editor.type]);
+	const SvelteComponent = $derived.by(() => {
+		let editor = column.editor;
+		if (typeof editor === "function") editor = editor(row, column);
+		let type = typeof editor === "string" ? editor : editor.type;
+		return editors[type];
+	});
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -61,6 +70,7 @@
 	tabindex="-1"
 	onclick={ev => ev.stopPropagation()}
 	ondblclick={ev => ev.stopPropagation()}
+	onkeydown={keyHandler}
 	use:clickOutside={() => save(true)}
 >
 	<SvelteComponent

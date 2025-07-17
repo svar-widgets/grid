@@ -26,11 +26,12 @@ export function getEditorConfig(columns: IColumn[]) {
 				label: col.header,
 			};
 			if (col.options) obj.options = col.options;
-
-			if (typeof col.editor === "object") {
-				obj = { ...obj, ...col.editor };
-				obj.comp = col.editor.type;
-			} else obj.comp = col.editor;
+			let editor = col.editor;
+			if (typeof editor === "function") editor = editor();
+			if (typeof editor === "object") {
+				obj = { ...obj, ...editor };
+				obj.comp = editor.type;
+			} else obj.comp = editor;
 
 			return obj;
 		});
