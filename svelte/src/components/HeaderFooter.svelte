@@ -2,7 +2,7 @@
 	import { getContext } from "svelte";
 	import HeaderCell from "./HeaderCell.svelte";
 	import FooterCell from "./FooterCell.svelte";
-	import { isCommunity } from "wx-grid-store";
+	import { isCommunity } from "@svar-ui/grid-store";
 
 	let {
 		deltaLeft,

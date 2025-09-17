@@ -3,7 +3,7 @@
 		FilterBuilder,
 		createArrayFilter,
 		getOptions,
-	} from "wx-svelte-filter";
+	} from "@svar-ui/svelte-filter";
 	import { getData } from "../data";
 	import { Grid } from "../../src";
 

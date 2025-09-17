@@ -2,7 +2,7 @@
 	import { getContext } from "svelte";
 	import { getData } from "../data";
 	import { Grid } from "../../src/";
-	import { ContextMenu } from "wx-svelte-menu";
+	import { ContextMenu } from "@svar-ui/svelte-menu";
 
 	const { data, flexibleColumns: columns } = getData();
 

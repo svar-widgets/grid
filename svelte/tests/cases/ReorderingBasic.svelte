@@ -1,6 +1,6 @@
 <script>
 	import { Grid } from "../../src";
-	import { Willow, Locale } from "wx-svelte-core";
+	import { Willow, Locale } from "@svar-ui/svelte-core";
 	import { repeatData, repeatColumns } from "../data";
 
 	const rows = 100;

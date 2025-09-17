@@ -1,5 +1,5 @@
 {
-	"name": "wx-site-svelte-grid",
+	"name": "@svar-ui/site-svelte-grid",
 	"version": "2.2.0",
 	"type": "module",
 	"scripts": {
@@ -9,7 +9,7 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"wx-svelte-grid": "2.2.0",
-		"wx-svelte-core": "2.1.0"
+		"@svar-ui/svelte-grid": "2.2.0",
+		"@svar-ui/svelte-core": "2.2.1"
 	}
 }

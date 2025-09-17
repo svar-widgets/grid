@@ -1,6 +1,6 @@
 <script>
 	import { getData, repeatColumns } from "../data";
-	import { Button } from "wx-svelte-core";
+	import { Button } from "@svar-ui/svelte-core";
 	import { Grid } from "../../src/";
 
 	const { data } = getData();

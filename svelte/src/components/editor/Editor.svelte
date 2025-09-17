@@ -8,7 +8,7 @@
 		Area,
 		Checkbox,
 		Switch,
-	} from "wx-svelte-core";
+	} from "@svar-ui/svelte-core";
 
 	let { editors, data = null } = $props();
 </script>

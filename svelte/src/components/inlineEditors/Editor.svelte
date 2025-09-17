@@ -1,7 +1,7 @@
 <script>
 	import { getContext } from "svelte";
 	import { getStyle } from "../../helpers/columnWidth";
-	import { clickOutside } from "wx-lib-dom";
+	import { clickOutside } from "@svar-ui/lib-dom";
 	import { editors } from "./editors";
 
 	let { column, row } = $props();

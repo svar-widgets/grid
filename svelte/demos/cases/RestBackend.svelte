@@ -1,6 +1,6 @@
 <script>
-	import { Button } from "wx-svelte-core";
-	import { RestDataProvider } from "wx-grid-data-provider";
+	import { Button } from "@svar-ui/svelte-core";
+	import { RestDataProvider } from "@svar-ui/grid-data-provider";
 	import { Grid } from "../../src/";
 
 	const columns = [

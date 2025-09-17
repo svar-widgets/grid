@@ -4,12 +4,12 @@
 	import { writable } from "svelte/store";
 
 	// core widgets lib
-	import { Locale } from "wx-svelte-core";
-	import { en } from "wx-grid-locales";
+	import { Locale } from "@svar-ui/svelte-core";
+	import { en } from "@svar-ui/grid-locales";
 
 	// stores
-	import { EventBusRouter } from "wx-lib-state";
-	import { DataStore, isCommunity } from "wx-grid-store";
+	import { EventBusRouter } from "@svar-ui/lib-state";
+	import { DataStore, isCommunity } from "@svar-ui/grid-store";
 
 	// ui
 	import Layout from "./Layout.svelte";

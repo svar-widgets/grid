@@ -1,5 +1,5 @@
-import { Store, EventBus, DataRouter, isSame } from "wx-lib-state";
-import type { TDataConfig, TWritableCreator, TID } from "wx-lib-state";
+import { Store, EventBus, DataRouter, isSame } from "@svar-ui/lib-state";
+import type { TDataConfig, TWritableCreator, TID } from "@svar-ui/lib-state";
 import { getValue, setValue } from "./editors";
 import { download, getRenderValue } from "./export";
 import { getCsvData } from "./export/csv";

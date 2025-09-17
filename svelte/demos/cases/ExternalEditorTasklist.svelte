@@ -1,7 +1,7 @@
 <script>
-	import { RichSelect } from "wx-svelte-core";
-	import { Editor, registerEditorItem } from "wx-svelte-editor";
-	import { Tasklist } from "wx-svelte-tasklist";
+	import { RichSelect } from "@svar-ui/svelte-core";
+	import { Editor, registerEditorItem } from "@svar-ui/svelte-editor";
+	import { Tasklist } from "@svar-ui/svelte-tasklist";
 
 	import { Grid, getEditorConfig } from "../../src";
 	import { getData } from "../data";

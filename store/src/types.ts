@@ -1,4 +1,4 @@
-import type { TID, IEventBus, IPublicWritable } from "wx-lib-state";
+import type { TID, IEventBus, IPublicWritable } from "@svar-ui/lib-state";
 import type { IDataMethodsConfig } from "./DataStore";
 import type DataStore from "./DataStore";
 

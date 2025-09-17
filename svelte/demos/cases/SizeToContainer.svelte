@@ -1,5 +1,5 @@
 <script>
-	import { Slider, Field, Checkbox } from "wx-svelte-core";
+	import { Slider, Field, Checkbox } from "@svar-ui/svelte-core";
 	import { Grid } from "../../src";
 
 	import { getData, repeatColumns } from "../data";

@@ -8,10 +8,10 @@ import Material from "./themes/Material.svelte";
 import Willow from "./themes/Willow.svelte";
 import WillowDark from "./themes/WillowDark.svelte";
 
-export { getEditorConfig } from "wx-grid-store";
+export { getEditorConfig } from "@svar-ui/grid-store";
 
-import { setEnv } from "wx-lib-dom";
-import { env } from "wx-lib-svelte";
+import { setEnv } from "@svar-ui/lib-dom";
+import { env } from "@svar-ui/lib-svelte";
 setEnv(env);
 
 export {

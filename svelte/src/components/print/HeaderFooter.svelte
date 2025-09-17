@@ -1,6 +1,6 @@
 <script>
 	import { getContext } from "svelte";
-	import { getPrintCellStyle, getPrintFilterValue } from "wx-grid-store";
+	import { getPrintCellStyle, getPrintFilterValue } from "@svar-ui/grid-store";
 
 	let { columns, type, columnStyle } = $props();
 

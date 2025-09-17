@@ -1,5 +1,5 @@
 <script>
-	import { Field, DateRangePicker, Text } from "wx-svelte-core";
+	import { Field, DateRangePicker, Text } from "@svar-ui/svelte-core";
 	import { Grid } from "../../src";
 	import { getData } from "../data";
 

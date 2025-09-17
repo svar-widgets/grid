@@ -1,5 +1,5 @@
 <script>
-	import { Checkbox } from "wx-svelte-core";
+	import { Checkbox } from "@svar-ui/svelte-core";
 
 	let { row, api } = $props();
 

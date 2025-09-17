@@ -1,7 +1,7 @@
 <script>
 	import { getContext } from "svelte";
 	import { Grid, defaultMenuOptions } from "../../src";
-	import { ActionMenu } from "wx-svelte-menu";
+	import { ActionMenu } from "@svar-ui/svelte-menu";
 
 	import { getData } from "../data";
 

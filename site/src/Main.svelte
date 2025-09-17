@@ -1,5 +1,5 @@
 <script>
-	import { Grid } from "wx-svelte-grid";
+	import { Grid } from "@svar-ui/svelte-grid";
 	import { getData } from "./data/index";
 	import CheckboxCell from "./components/CheckboxCell.svelte";
 	import StatusCell from "./components/StatusCell.svelte";

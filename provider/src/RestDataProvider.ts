@@ -1,6 +1,6 @@
-import { Rest } from "wx-lib-data-provider";
-import type { ActionMap } from "wx-lib-data-provider";
-import type { TMethodsConfig } from "wx-grid-store";
+import { Rest } from "@svar-ui/lib-data-provider";
+import type { ActionMap } from "@svar-ui/lib-data-provider";
+import type { TMethodsConfig } from "@svar-ui/grid-store";
 
 export default class RestDataProvider<T> extends Rest<TMethodsConfig> {
 	private _normalize: any;

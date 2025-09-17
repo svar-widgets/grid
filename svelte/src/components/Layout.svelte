@@ -12,11 +12,11 @@
 		locateAttr,
 		locate,
 		id,
-	} from "wx-lib-dom";
+	} from "@svar-ui/lib-dom";
 
-	import { hotkeys } from "wx-grid-store";
+	import { hotkeys } from "@svar-ui/grid-store";
 	import { getKeys } from "../helpers/hotkeys";
-	import { scrollTo } from "wx-grid-store";
+	import { scrollTo } from "@svar-ui/grid-store";
 
 	import Cell from "./Cell.svelte";
 	import HeaderFooter from "./HeaderFooter.svelte";

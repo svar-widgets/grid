@@ -1,4 +1,4 @@
-import { deepCopy, EventBus, TID, isSame } from "wx-lib-state";
+import { deepCopy, EventBus, TID, isSame } from "@svar-ui/lib-state";
 import type { IDataMethodsConfig } from "./DataStore";
 import { getValue } from "./editors";
 import { IColumn, IData, IRow, TMethodsConfig } from "./types";

@@ -1,5 +1,5 @@
 <script>
-	import { Pager } from "wx-svelte-core";
+	import { Pager } from "@svar-ui/svelte-core";
 	import { Grid } from "../../src";
 
 	import { getData } from "../data";

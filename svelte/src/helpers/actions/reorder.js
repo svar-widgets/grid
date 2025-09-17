@@ -1,4 +1,4 @@
-import { locate, id } from "wx-lib-dom";
+import { locate, id } from "@svar-ui/lib-dom";
 
 const SHIFT = 5;
 const LONG_TOUCH_DELAY = 700;

@@ -1,5 +1,5 @@
 <script>
-	import { FilterBuilder, createFilter, getOptions } from "wx-svelte-filter";
+	import { FilterBuilder, createFilter, getOptions } from "@svar-ui/svelte-filter";
 
 	import { getData } from "../data";
 	import { Grid } from "../../src";

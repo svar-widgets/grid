@@ -1,9 +1,9 @@
 <script>
 	import { getData } from "../data";
 	import { Grid } from "../../src/";
-	import { ContextMenu } from "wx-svelte-menu";
+	import { ContextMenu } from "@svar-ui/svelte-menu";
 	import { getContext } from "svelte";
-	import { Willow, Locale } from "wx-svelte-core";
+	import { Willow, Locale } from "@svar-ui/svelte-core";
 
 	const { data } = getData();
 

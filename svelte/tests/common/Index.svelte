@@ -8,7 +8,7 @@
 	import ListRoutes from "./ListRoutes.svelte";
 
 	import { Willow, WillowDark } from "../../src";
-	import { Globals, Locale, popupContainer } from "wx-svelte-core";
+	import { Globals, Locale, popupContainer } from "@svar-ui/svelte-core";
 
 	const defRoute = links[0][0].replace(/\/:skin$/, "/willow");
 	const routes = $state({

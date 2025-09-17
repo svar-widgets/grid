@@ -1,11 +1,10 @@
 <script>
-	import { ContextMenu } from "wx-svelte-menu";
+	import { ContextMenu } from "@svar-ui/svelte-menu";
 	import { getContext } from "svelte";
 	import { defaultMenuOptions } from "../../../src";
 
 	let {
 		api,
-		handler,
 		options = defaultMenuOptions,
 		at = "point",
 		resolver = getItem,
@@ -62,7 +61,6 @@
 	{at}
 	{dataKey}
 	options={localize(options)}
-	{handler}
 	{resolver}
 	{filter}
 	onclick={handleClicks}

@@ -1,5 +1,5 @@
 <script>
-	import { Button } from "wx-svelte-core";
+	import { Button } from "@svar-ui/svelte-core";
 	import { Grid } from "../../src";
 	import { repeatData, repeatColumns } from "../data";
 

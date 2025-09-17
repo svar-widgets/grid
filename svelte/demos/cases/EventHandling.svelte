@@ -1,7 +1,7 @@
 <script>
-	import { Field, Switch, Button } from "wx-svelte-core";
-	import { EventResolver } from "wx-lib-state";
-	import { RestDataProvider } from "wx-grid-data-provider";
+	import { Field, Switch, Button } from "@svar-ui/svelte-core";
+	import { EventResolver } from "@svar-ui/lib-state";
+	import { RestDataProvider } from "@svar-ui/grid-data-provider";
 
 	import { getContext } from "svelte";
 	import { getBackend } from "../data";

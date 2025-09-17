@@ -1,5 +1,5 @@
 {
-	"name": "wx-grid-locales",
+	"name": "@svar-ui/grid-locales",
 	"version": "2.2.0",
 	"description": "Locales for WX Grid widget",
 	"type": "module",

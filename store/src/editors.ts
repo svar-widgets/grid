@@ -1,6 +1,6 @@
 import type { IColumn, IRow, Value, ValueGetter, ValueSetter } from "./types";
 
-import { uid } from "wx-lib-state";
+import { uid } from "@svar-ui/lib-state";
 
 function rawGetter(key: string): ValueGetter {
 	return obj => obj[key];

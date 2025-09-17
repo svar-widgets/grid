@@ -1,7 +1,7 @@
 <script>
 	import { onDestroy, getContext } from "svelte";
 	import { getStyle } from "../helpers/columnWidth";
-	import { getRenderValue } from "wx-grid-store";
+	import { getRenderValue } from "@svar-ui/grid-store";
 
 	let {
 		row,

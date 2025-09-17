@@ -1,7 +1,7 @@
 <script>
 	import { getContext } from "svelte";
 	import { Grid } from "../../src";
-	import { Button } from "wx-svelte-core";
+	import { Button } from "@svar-ui/svelte-core";
 
 	import { getData } from "../data";
 	const { allData } = getData();

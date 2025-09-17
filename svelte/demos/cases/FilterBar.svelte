@@ -1,6 +1,6 @@
 <script>
-	import { Tabs } from "wx-svelte-core";
-	import { FilterBar, createFilter, getOptions } from "wx-svelte-filter";
+	import { Tabs } from "@svar-ui/svelte-core";
+	import { FilterBar, createFilter, getOptions } from "@svar-ui/svelte-filter";
 
 	import { Grid } from "../../src";
 	import { getData } from "../data";

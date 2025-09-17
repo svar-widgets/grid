@@ -1,7 +1,7 @@
 <script>
 	import { getContext } from "svelte";
-	import { RichSelect } from "wx-svelte-core";
-	import { getValue } from "wx-grid-store";
+	import { RichSelect } from "@svar-ui/svelte-core";
+	import { getValue } from "@svar-ui/grid-store";
 
 	let { filter, column, action, filterValue } = $props();
 

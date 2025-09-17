@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from "svelte";
 
-	import { Calendar, Dropdown } from "wx-svelte-core";
+	import { Calendar, Dropdown } from "@svar-ui/svelte-core";
 
 	let { actions, editor, onaction } = $props();
 

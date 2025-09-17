@@ -6,7 +6,7 @@ export type HotkeyHandler = (params: {
 	isInput: boolean;
 }) => void;
 
-import { locate } from "wx-lib-dom";
+import { locate } from "@svar-ui/lib-dom";
 
 export function hotkeys(
 	node: HTMLElement,

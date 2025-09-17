@@ -4,8 +4,8 @@
 		Switch,
 		DatePicker,
 		MultiCombo,
-	} from "wx-svelte-core";
-	import { Editor, registerEditorItem } from "wx-svelte-editor";
+	} from "@svar-ui/svelte-core";
+	import { Editor, registerEditorItem } from "@svar-ui/svelte-editor";
 
 	import { Grid, getEditorConfig } from "../../src";
 	import { getData } from "../data";

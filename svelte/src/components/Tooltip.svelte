@@ -1,5 +1,5 @@
 <script>
-	import { getRenderValue } from "wx-grid-store";
+	import { getRenderValue } from "@svar-ui/grid-store";
 
 	let { content: Content = null, api, children } = $props();
 

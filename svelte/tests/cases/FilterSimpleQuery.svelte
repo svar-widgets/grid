@@ -1,9 +1,9 @@
 <script>
-	import { getOptions } from "wx-query-store";
-	import { Query, createArrayFilter } from "wx-svelte-query";
+	import { getOptions } from "@svar-ui/query-store";
+	import { Query, createArrayFilter } from "@svar-ui/svelte-query";
 	import { getData } from "../data";
 	import { Grid } from "../../src/";
-	import { Willow, Locale } from "wx-svelte-core";
+	import { Willow, Locale } from "@svar-ui/svelte-core";
 
 	const { data, columns } = getData();
 

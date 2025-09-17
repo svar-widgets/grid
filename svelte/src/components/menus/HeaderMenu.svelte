@@ -1,5 +1,5 @@
 <script>
-	import { ContextMenu, registerMenuItem } from "wx-svelte-menu";
+	import { ContextMenu, registerMenuItem } from "@svar-ui/svelte-menu";
 	import HeaderMenuItem from "./HeaderMenuItem.svelte";
 
 	let { columns = null, api, children } = $props();

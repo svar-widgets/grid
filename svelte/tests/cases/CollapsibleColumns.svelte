@@ -1,7 +1,7 @@
 <script>
 	import { getData } from "../data";
 	import { Grid } from "../../src";
-	import { Willow, Locale } from "wx-svelte-core";
+	import { Willow, Locale } from "@svar-ui/svelte-core";
 
 	const { data, collapsibleColumns } = getData();
 </script>

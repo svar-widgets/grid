@@ -1,7 +1,7 @@
 <script>
 	import { tick } from "svelte";
 
-	import { Slider, Button } from "wx-svelte-core";
+	import { Slider, Button } from "@svar-ui/svelte-core";
 	import { Grid } from "../../src";
 	import { repeatData, repeatColumns } from "../data";
 	import { timer, timerEnd } from "../custom/timers";

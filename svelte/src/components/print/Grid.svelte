@@ -4,7 +4,7 @@
 		getRenderValue,
 		getHeaderFooterPrintColumns,
 		getPrintCellStyle,
-	} from "wx-grid-store";
+	} from "@svar-ui/grid-store";
 	import HeaderFooter from "./HeaderFooter.svelte";
 
 	let { columns, rowStyle, columnStyle, cellStyle, header, footer, reorder } =

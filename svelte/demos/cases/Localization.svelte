@@ -1,9 +1,9 @@
 <script>
 	import { getData } from "../data";
 	import { Grid, ContextMenu, HeaderMenu } from "../../src";
-	import { Locale, Segmented } from "wx-svelte-core";
-	import { en, cn } from "wx-grid-locales";
-	import { en as enCore, cn as cnCore } from "wx-core-locales";
+	import { Locale, Segmented } from "@svar-ui/svelte-core";
+	import { en, cn } from "@svar-ui/grid-locales";
+	import { en as enCore, cn as cnCore } from "@svar-ui/core-locales";
 
 	const { allData: data, countries, users } = getData();
 	let table = $state();

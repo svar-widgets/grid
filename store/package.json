@@ -1,5 +1,5 @@
 {
-	"name": "wx-grid-store",
+	"name": "@svar-ui/grid-store",
 	"version": "2.2.0",
 	"type": "module",
 	"main": "dist/index.js",
@@ -18,6 +18,6 @@
 		"license.txt"
 	],
 	"dependencies": {
-		"wx-lib-state": "1.9.3"
+		"@svar-ui/lib-state": "1.9.6"
 	}
 }

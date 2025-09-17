@@ -1,6 +1,6 @@
 <script>
 	import { Grid } from "../../src";
-	import { Button, Field, RadioButtonGroup } from "wx-svelte-core";
+	import { Button, Field, RadioButtonGroup } from "@svar-ui/svelte-core";
 	import { repeatData, repeatColumns } from "../data";
 
 	const data = repeatData(100);

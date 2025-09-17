@@ -1,6 +1,6 @@
 <script>
-	import { Willow, Locale, Tabs } from "wx-svelte-core";
-	import { FilterBar, createArrayFilter } from "wx-svelte-query";
+	import { Willow, Locale, Tabs } from "@svar-ui/svelte-core";
+	import { FilterBar, createArrayFilter } from "@svar-ui/svelte-query";
 
 	import { Grid } from "../../src";
 	import { getData } from "../data";

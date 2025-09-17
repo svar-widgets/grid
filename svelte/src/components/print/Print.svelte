@@ -1,7 +1,7 @@
 <script>
 	import { getContext, onMount } from "svelte";
 	import Grid from "./Grid.svelte";
-	import { getPrintColumns } from "wx-grid-store";
+	import { getPrintColumns } from "@svar-ui/grid-store";
 
 	let { config, ...restProps } = $props();
 

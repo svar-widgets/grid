@@ -13,7 +13,7 @@ import type {
 } from "../types";
 import { getRenderValue } from "./index";
 import { getValue } from "../editors";
-import { isSame } from "wx-lib-state";
+import { isSame } from "@svar-ui/lib-state";
 
 export function getExcelData(
 	state: Partial<IData>,

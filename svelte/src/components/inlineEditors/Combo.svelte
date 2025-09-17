@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from "svelte";
-	import { SuggestDropdown } from "wx-svelte-core";
+	import { SuggestDropdown } from "@svar-ui/svelte-core";
 
 	let { actions, editor, onaction } = $props();
 
