@@ -1,4 +1,9 @@
-import type { TID, IEventBus, IPublicWritable } from "@svar-ui/lib-state";
+import type {
+	TID,
+	IEventBus,
+	IPublicWritable,
+	IEventConfig,
+} from "@svar-ui/lib-state";
 import type { IDataMethodsConfig } from "./DataStore";
 import type DataStore from "./DataStore";
 
@@ -27,6 +32,7 @@ export interface IColumnEditor {
 		template?: (v: any) => string;
 		cell?: any;
 		options?: IOption[];
+		buttons?: ["clear" | "today"];
 	};
 }
 export type TEditorHandler = (
@@ -34,73 +40,69 @@ export type TEditorHandler = (
 	column?: IColumn
 ) => TEditorType | IColumnEditor | null;
 
-export interface IDataConfig {
-	data: any[];
-	columns: IColumn[];
-	sortMarks: ISortMarks;
-	_filterIds?: TID[];
-	tree?: boolean;
-	scroll?: null;
-	editor?: TEditorConfig;
+export interface IConfig {
+	data?: IRow[];
+	sortMarks?: ISortMarks;
+	selectedRows?: TID[];
 	dynamic?: TDynamicConfig;
+	sizes?: ISizeConfig;
+	split?: {
+		left?: number;
+	};
+	tree?: boolean;
+	undo?: boolean;
+	select?: TSelect;
+}
+
+interface IProConfig extends IConfig {
+	split?: ISplitConfig;
+}
+
+export interface IDataConfig extends IProConfig {
+	_filterIds?: TID[];
+	_print?: IPrintConfig;
+	_skin: TSkinName;
+	columns?: IColumn[];
+	scroll?: TScrollConfig;
+	editor?: TEditorConfig;
+	filterValues: IFilterValues;
 	focusCell?: {
 		row: TID;
 		column: TID;
 	};
-	filterValues: IFilterValues;
-	_print?: IPrintConfig;
-	split: {
-		left?: number;
-		right?: number;
-	};
-	undo?: boolean;
 	history?: {
 		undo: number;
 		redo: number;
 	};
 }
 
-export interface IData {
-	data: IRow[];
+export interface IData extends IDataConfig {
 	flatData: IRow[];
-	selectedRows: TID[];
-	sizes: ISizeConfig;
 	_sizes: IRenderSizes;
-	columns: IColumn[];
 	_columns: IRenderColumn[];
-	sortMarks: ISortMarks;
-	_filterIds?: TID[];
-	editor?: TEditorConfig;
-	tree?: boolean;
-	scroll?: TScrollConfig;
-	_skin: TSkinName;
-	_select?: TSelect;
-	split: {
-		left?: number;
-		right?: number;
-	};
-	dynamic?: TDynamicConfig;
-	exportStyles?: TExportStyles;
-	focusCell?: {
-		row: TID;
-		column: TID;
-	};
-	filterValues: IFilterValues;
-	_print?: IPrintConfig;
-	undo?: boolean;
-	history?: {
-		undo: number;
-		redo: number;
-	};
 }
 
 export interface IApi {
-	exec: (action: keyof TMethodsConfig, params: any) => Promise<any>;
-	on: (action: keyof TMethodsConfig, callback: (config: any) => any) => void;
-	intercept: (
-		action: keyof TMethodsConfig,
-		callback: (config: any) => any
+	exec: <A extends keyof TMethodsConfig | (string & {})>(
+		action: A,
+		params?: A extends keyof TMethodsConfig ? TMethodsConfig[A] : any
+	) => Promise<any>;
+	on: <A extends keyof TMethodsConfig | (string & {})>(
+		action: A,
+		callback: (
+			config: A extends keyof TMethodsConfig ? TMethodsConfig[A] : any
+		) => any,
+		config?: IEventConfig
 	) => void;
+	intercept: <A extends keyof TMethodsConfig | (string & {})>(
+		action: A,
+		callback: (
+			config: A extends keyof TMethodsConfig ? TMethodsConfig[A] : any
+		) => any,
+		config?: IEventConfig
+	) => void;
+	detach: (tag: IEventConfig["tag"]) => void;
+
 	getState: () => IData;
 	getReactiveState: () => {
 		[Key in keyof IData]: IPublicWritable<IData[Key]>;
@@ -116,39 +118,42 @@ export interface IDataHash<T> {
 }
 
 export interface IColumn {
-	id: string;
-	width: number;
+	id?: string;
+	width?: number;
 	flexgrow?: number;
 	sort?: boolean;
 	left?: number;
+	right?: number;
+	fixed?: number | { left?: number; right?: number };
 	editor?: TEditorType | IColumnEditor | TEditorHandler;
 	setter?: ValueSetter;
 	getter?: ValueGetter;
 	hidden?: boolean;
+	resize?: boolean;
 	options?: IOption[];
 	optionsMap?: Map<TID, string>;
 	header?: TColumnHeader;
 	footer?: TColumnHeader;
 	cell?: any;
 	css?: string;
-	template?: any;
+	template?: (value: any, row: IRow, col: IColumn) => string;
 	treetoggle?: boolean;
 	draggable?: boolean | ((row: IRow, column: IColumn) => boolean);
 }
 
-export type TColumnHeader = string | string[] | IHeaderConfig | IHeaderConfig[];
+export type TColumnHeader = string | IHeaderCell | (string | IHeaderCell)[];
 
 export interface IRenderColumn extends IColumn {
-	header?: IRenderHeaderConfig[];
-	footer?: IRenderHeaderConfig[];
+	header?: IRenderHeaderCell[];
+	footer?: IRenderHeaderCell[];
 	collapsed?: boolean;
 	_colindex: number;
 	editor?: IColumnEditor;
 }
 
-export interface IHeaderConfig {
-	id: string;
-	text?: "";
+export interface IHeaderCell {
+	id?: string;
+	text?: string;
 	cell?: any;
 	css?: string;
 	rowspan?: number;
@@ -160,7 +165,7 @@ export interface IHeaderConfig {
 	filter?: TFilterType | IHeaderFilter;
 }
 
-export interface IRenderHeaderConfig extends IHeaderConfig {
+export interface IRenderHeaderCell extends IHeaderCell {
 	width: number;
 	height?: number;
 	flexgrow?: number;
@@ -172,6 +177,11 @@ export interface ISizeConfig {
 	headerHeight?: number;
 	footerHeight?: number;
 	columnWidth?: number;
+}
+
+export interface ISplitConfig {
+	left?: number;
+	right?: number;
 }
 
 export interface IRenderSizes extends ISizeConfig {
@@ -284,16 +294,17 @@ export type TSortObject = any;
 export type TSkinName = "material" | "willow" | "willow-dark";
 
 export type TDynamicConfig = {
-	rowCount: number;
-	columnCount: number;
+	rowCount?: number;
+	columnCount?: number;
 };
 
-interface IHeaderFilter {
+export interface IHeaderFilter {
 	type: TFilterType;
 	config?: {
-		template?: (opt: any) => string;
-		options?: { id: TID; label: "string" }[];
+		template?: (opt: IOption) => string;
+		options?: IOption[];
 		handler?: TFilterHandler;
+		placeholder?: string;
 	};
 }
 export interface IFilterValues {

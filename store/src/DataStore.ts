@@ -13,7 +13,7 @@ import type {
 	IRenderColumn,
 	IData,
 	IDataConfig,
-	IRenderHeaderConfig,
+	IRenderHeaderCell,
 	IRow,
 	TMethodsConfig,
 	ISizeConfig,
@@ -191,7 +191,7 @@ export default class DataStore extends Store<IData> {
 		inBus.on("add-row", (ev: IDataMethodsConfig["add-row"]) => {
 			const state = this.getState();
 			let { data } = state;
-			const { _select: select, _filterIds: filterIds } = state;
+			const { select, _filterIds: filterIds } = state;
 			const { row, before, after, select: selectForce } = ev;
 			ev.id = row.id = ev.id || row.id || uid();
 
@@ -525,7 +525,7 @@ export default class DataStore extends Store<IData> {
 						const {
 							flatData: data,
 							focusCell,
-							_select: select,
+							select,
 						} = this.getState();
 						event.preventDefault();
 						if (isInput) return;
@@ -551,7 +551,7 @@ export default class DataStore extends Store<IData> {
 						const {
 							flatData: data,
 							focusCell,
-							_select: select,
+							select,
 						} = this.getState();
 						event.preventDefault();
 						if (isInput) return;
@@ -614,11 +614,7 @@ export default class DataStore extends Store<IData> {
 						break;
 					}
 					case "tab": {
-						const {
-							editor,
-							focusCell,
-							_select: select,
-						} = this.getState();
+						const { editor, focusCell, select } = this.getState();
 						if (editor) {
 							event.preventDefault();
 
@@ -655,11 +651,7 @@ export default class DataStore extends Store<IData> {
 						break;
 					}
 					case "shift+tab": {
-						const {
-							editor,
-							focusCell,
-							_select: select,
-						} = this.getState();
+						const { editor, focusCell, select } = this.getState();
 						if (editor) {
 							event.preventDefault();
 
@@ -753,7 +745,7 @@ export default class DataStore extends Store<IData> {
 							editor,
 							focusCell,
 							flatData: data,
-							_select: select,
+							select,
 						} = this.getState();
 						if (!editor && focusCell) {
 							event.preventDefault();
@@ -790,7 +782,7 @@ export default class DataStore extends Store<IData> {
 							editor,
 							focusCell,
 							flatData: data,
-							_select: select,
+							select,
 						} = this.getState();
 						if (!editor && focusCell) {
 							event.preventDefault();
@@ -1277,11 +1269,11 @@ export default class DataStore extends Store<IData> {
 		col._colindex = index + 1;
 
 		// normalize header and footer config
-		const config: IRenderHeaderConfig[] = col[type];
+		const config: IRenderHeaderCell[] = col[type];
 		const rowHeights = sizes[`${type}RowHeights`];
 
 		for (let i = 0; i < rowsCount; i++) {
-			const row: IRenderHeaderConfig = config[i];
+			const row: IRenderHeaderCell = config[i];
 
 			row.id = col.id;
 
@@ -1488,110 +1480,126 @@ function uid() {
 interface ISkipUndoAction {
 	skipUndo?: boolean;
 }
-export interface IDataMethodsConfig {
-	["update-cell"]: {
-		id: TID;
-		column: TID;
-		value: string | number | Date;
-		eventSource?: string;
-	};
-	["add-row"]: {
-		id?: TID;
-		before?: TID;
-		after?: TID;
-		row: IRow;
-		select?: boolean;
-		eventSource?: string;
-	};
-	["delete-row"]: { id: TID; eventSource?: string };
-	["update-row"]: {
-		id: TID;
-		row: Record<string, any>;
-		eventSource?: string;
-	};
-	["select-row"]: {
-		id: TID;
-		toggle?: boolean;
-		range?: boolean;
-		mode?: boolean;
-		show?: boolean;
-		column?: TID;
-	};
-	["resize-column"]: {
-		id: TID;
-		width?: number;
-		auto?: boolean | "data" | "header";
-		maxRows?: number;
-		inProgress?: boolean;
-		eventSource?: string;
-	};
-	["hide-column"]: {
-		id: string;
-		mode: boolean;
-		eventSource?: string;
-	} & ISkipUndoAction;
-	["sort-rows"]: {
-		key: string;
-		order?: "asc" | "desc";
-		add?: boolean;
-	};
-	["open-editor"]: {
-		id: string;
-		column?: string;
-	};
-	["close-editor"]: {
-		ignore?: boolean;
-	};
-	["editor"]: {
-		value: any;
-	};
-	["filter-rows"]: {
-		filter?: any;
-		key?: string;
-		value?: any;
-	};
-	["collapse-column"]: {
-		id: TID;
-		row: number;
-		mode?: boolean;
-		eventSource?: string;
-	};
-	["move-item"]: {
-		id: TID;
-		target: TID;
-		mode: "before" | "after";
-		inProgress?: boolean;
-		eventSource?: string;
-	};
-	["open-row"]: {
-		id: TID;
-		nested?: boolean;
-		eventSource?: string;
-	};
-	["close-row"]: {
-		id: TID;
-		nested?: boolean;
-		eventSource?: string;
-	};
-	["export"]: {
-		options: IExportOptions;
-		result: any;
-	};
-	["scroll"]: {
-		row?: TID;
-		column?: TID;
-	};
-	["hotkey"]: {
-		key: string;
-		event: any;
-		isInput: boolean;
-	};
-	["focus-cell"]: {
-		row?: TID;
-		column?: TID;
-		eventSource: string;
-	};
-	["print"]?: IPrintConfig;
-	["undo"]: void;
-	["redo"]: void;
-}
+
+type CombineTypes<T, N> = {
+	[P in keyof T]: T[P] & N;
+};
+
+export type IDataMethodsConfig = CombineTypes<
+	{
+		["update-cell"]: {
+			id: TID;
+			column: TID;
+			value: string | number | Date;
+			eventSource?: string;
+		};
+		["add-row"]: {
+			id?: TID;
+			before?: TID;
+			after?: TID;
+			row: IRow;
+			select?: boolean;
+			eventSource?: string;
+		};
+		["delete-row"]: { id: TID; eventSource?: string };
+		["update-row"]: {
+			id: TID;
+			row: Record<string, any>;
+			eventSource?: string;
+		};
+		["select-row"]: {
+			id: TID;
+			toggle?: boolean;
+			range?: boolean;
+			mode?: boolean;
+			show?: boolean;
+			column?: TID;
+		};
+		["resize-column"]: {
+			id: TID;
+			width?: number;
+			auto?: boolean | "data" | "header";
+			maxRows?: number;
+			inProgress?: boolean;
+			eventSource?: string;
+		};
+		["hide-column"]: {
+			id: string;
+			mode?: boolean;
+			eventSource?: string;
+		} & ISkipUndoAction;
+		["sort-rows"]: {
+			key: string;
+			order?: "asc" | "desc";
+			add?: boolean;
+		};
+		["open-editor"]: {
+			id: string;
+			column?: string;
+		};
+		["close-editor"]: {
+			ignore?: boolean;
+		};
+		["editor"]: {
+			value: any;
+		};
+		["filter-rows"]: {
+			filter?: any;
+			key?: string;
+			value?: any;
+		};
+		["collapse-column"]: {
+			id: TID;
+			row?: number;
+			mode?: boolean;
+			eventSource?: string;
+		};
+		["move-item"]: {
+			id: TID;
+			target: TID;
+			mode?: "before" | "after";
+			inProgress?: boolean;
+			eventSource?: string;
+		};
+		["open-row"]: {
+			id: TID;
+			nested?: boolean;
+			eventSource?: string;
+		};
+		["close-row"]: {
+			id: TID;
+			nested?: boolean;
+			eventSource?: string;
+		};
+		["export"]: {
+			options?: IExportOptions;
+			result?: any;
+		};
+		["scroll"]: {
+			row?: TID;
+			column?: TID;
+		};
+		["hotkey"]: {
+			key: string;
+			event: any;
+			isInput?: boolean;
+		};
+		["focus-cell"]: {
+			row?: TID;
+			column?: TID;
+			eventSource?: string;
+		};
+		["print"]?: IPrintConfig;
+		["undo"]: void;
+		["redo"]: void;
+		["request-data"]: {
+			row: {
+				start: number;
+				end: number;
+			};
+		};
+	},
+	{
+		[key: string]: any;
+	}
+>;

@@ -93,7 +93,7 @@ Cypress.Commands.add(
 			case "menu":
 				return subject.get(".wx-menu");
 			case "menu-item":
-				return subject.get(".wx-menu .wx-item[data-id='" + id + "']");
+				return subject.get(".wx-menu .wx-option[data-id='" + id + "']");
 			case "header-rows":
 				return subject.get(".wx-h-row");
 			case "header-row":

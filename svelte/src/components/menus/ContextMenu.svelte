@@ -2,6 +2,8 @@
 	import { ContextMenu } from "@svar-ui/svelte-menu";
 	import { getContext } from "svelte";
 	import { defaultMenuOptions } from "../../../src";
+	import { locale } from "@svar-ui/lib-dom";
+	import { en } from "@svar-ui/grid-locales";
 
 	let {
 		api,
@@ -15,7 +17,8 @@
 		onclick,
 	} = $props();
 
-	const _ = getContext("wx-i18n").getGroup("grid");
+	const _ =
+		getContext("wx-i18n")?.getGroup("grid") || locale(en).getGroup("grid");
 
 	const localize = options => {
 		return options.map(o => {

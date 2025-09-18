@@ -14,7 +14,7 @@
 		},
 		{ id: "copy", text: "Copy", icon: "wxi-content-copy" },
 		{ id: "delete", text: "Delete", icon: "wxi-delete-outline" },
-		{ type: "separator" },
+		{ comp: "separator" },
 		{ id: "info", text: "Info", icon: "wxi-alert" },
 		{ id: "view", text: "View", icon: "wxi-external" },
 	];

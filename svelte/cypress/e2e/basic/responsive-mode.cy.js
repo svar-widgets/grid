@@ -5,7 +5,7 @@ context("Responsive mode functionality", () => {
 		cy.viewport(1440, 800);
 		cy.get(".wx-grid.wx-responsive-1000").should("not.exist");
 		cy.get(".wx-grid.wx-responsive-600").should("not.exist");
-		cy.shot(`width:100%`);
+		cy.shot(`responsive-width-100-percent`);
 	});
 
 	it("resizes to 600px and verifies hidden columns and styles", () => {

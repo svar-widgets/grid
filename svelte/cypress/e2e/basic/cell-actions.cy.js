@@ -9,6 +9,7 @@ context("Custom cell and header actions", () => {
 		cy.wxT("menu-item", "copy").click();
 		cy.wxT("table-rows").should("have.length", 11);
 		cy.get(".wx-notice .wxi-close").click();
+		cy.wait(500);
 		cy.shot("embedding-actions-copy");
 
 		cy.wxT("header").wxT("header-row", 0).find(".wx-button").click();
@@ -29,7 +30,7 @@ context("Custom cell and header actions", () => {
 			.should("have.length", 0);
 
 		cy.get(".wx-notice .wxi-close").click({ multiple: true });
-
+		cy.wait(500);
 		cy.shot("embedding-actions-header-uncheck");
 	});
 });

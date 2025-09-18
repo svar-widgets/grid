@@ -12,9 +12,9 @@
 
 <div align="center">
 
-[![npm](https://img.shields.io/npm/v/wx-svelte-grid.svg)](https://www.npmjs.com/package/wx-svelte-grid)
+[![npm](https://img.shields.io/npm/v/@svar-ui/svelte-grid.svg)](https://www.npmjs.com/package/@svar-ui/svelte-grid)
 [![License](https://img.shields.io/github/license/svar-widgets/grid)](https://github.com/svar-widgets/grid/blob/main/license.txt)
-[![npm downloads](https://img.shields.io/npm/dm/wx-svelte-grid.svg)](https://www.npmjs.com/package/wx-svelte-grid)
+[![npm downloads](https://img.shields.io/npm/dm/@svar-ui/svelte-grid.svg)](https://www.npmjs.com/package/@svar-ui/svelte-grid)
 [![Last Commit](https://img.shields.io/github/last-commit/svar-widgets/grid)](https://github.com/svar-widgets/grid)
 
 </div>
@@ -52,7 +52,7 @@ To use SVAR DataGrid, simply import the package and include the component in you
 
 ```svelte
 <script>
-	import { Grid } from "wx-svelte-grid";
+	import { Grid } from "@svar-ui/svelte-grid";
 
 	const data = [
 		{

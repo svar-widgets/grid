@@ -1,3 +1,13 @@
+## 2.3.0
+
+### New features
+
+-   TypeScript definitions
+
+### Fixes
+
+-   Default locale is not applied to ContextMenu
+
 ## 2.2.0
 
 ### New features

@@ -2,7 +2,7 @@ import type {
 	IFilterValues,
 	IPrintConfig,
 	IRenderColumn,
-	IRenderHeaderConfig,
+	IRenderHeaderCell,
 	TColumnType,
 } from "./types";
 
@@ -52,8 +52,8 @@ export function getHeaderFooterPrintColumns(
 	columns: IRenderColumn[],
 	type: TColumnType,
 	rowsHeights: number[]
-): IRenderHeaderConfig[][] {
-	const result: IRenderHeaderConfig[][] = [];
+): IRenderHeaderCell[][] {
+	const result: IRenderHeaderCell[][] = [];
 
 	columns.forEach((col, c) => {
 		const header = col[type];
@@ -152,7 +152,7 @@ export function normalizePrintConfig(config: IPrintConfig = {}) {
 }
 
 export function getPrintCellStyle(
-	cell: IRenderHeaderConfig,
+	cell: IRenderHeaderCell,
 	columnWidth: number
 ) {
 	if (cell.flexgrow) return `min-width:${columnWidth}px;width:auto`;
@@ -162,7 +162,7 @@ export function getPrintCellStyle(
 export function getPrintFilterValue(
 	filterValues: IFilterValues,
 	columns: IRenderColumn[],
-	cell: IRenderHeaderConfig
+	cell: IRenderHeaderCell
 ) {
 	let value = filterValues[cell.id];
 	if (cell.filter.type === "richselect" && value) {

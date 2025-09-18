@@ -21,7 +21,7 @@
 	];
 
 	const responsive = {
-		1000: {
+		"1000": {
 			columns: [
 				{
 					id: "id",
@@ -47,7 +47,7 @@
 				footerHeight: 40,
 			},
 		},
-		600: {
+		"600": {
 			columns: [
 				{
 					id: "id",

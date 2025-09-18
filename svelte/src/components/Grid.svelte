@@ -162,9 +162,9 @@
 			dynamic,
 			tree,
 			sortMarks,
+			select,
 			undo,
 			_skin,
-			_select: select,
 		});
 
 		if (init_once && init) {

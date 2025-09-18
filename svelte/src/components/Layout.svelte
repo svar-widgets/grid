@@ -50,7 +50,7 @@
 		split,
 		_sizes,
 		selectedRows,
-		_select: select,
+		select,
 		editor,
 		scroll,
 		tree,
