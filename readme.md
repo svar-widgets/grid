@@ -18,7 +18,7 @@
 
 </div>
 
-**SVAR DataGrid** is a powerful and flexible Svelte component for building high-performance, feature-rich data grids. Designed to handle large datasets efficiently, it supports virtual scrolling, inline editing, sorting, filtering, and full customization to fit complex project needs.
+**SVAR Svelte DataGrid** is a powerful and flexible Svelte component for building high-performance, feature-rich data grids. Designed to handle large datasets efficiently, it supports virtual scrolling, inline editing, sorting, filtering, and full customization to fit complex project needs.
 
 <div align="center">
   <img src="https://cdn.svar.dev/public/react-grid.png" alt="SVAR Svelte DataGrid - Screenshot" width="700">
@@ -44,6 +44,7 @@
 -   Keyboard navigation
 -   RestDataProvider for easy backend data binding
 -   Dark and light skins
+-   Full TypeScript support
 
 ### :wrench: Svelte 4 and Svelte 5 versions
 
