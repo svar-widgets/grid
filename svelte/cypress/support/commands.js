@@ -59,6 +59,17 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add(
+	"keyDown",
+	{
+		prevSubject: "optional",
+	},
+	(subject, code) => {
+		subject = subject ? cy.wrap(subject) : cy.root();
+		subject.trigger("keydown", { key: code, code });
+	}
+);
+
+Cypress.Commands.add(
 	"wxT",
 	{
 		prevSubject: "optional",
@@ -120,6 +131,10 @@ Cypress.Commands.add(
 				return subject.get(".value").contains(id);
 			case "query-delete-icon":
 				return subject.get(".wxi-delete").first();
+			case "toolbar":
+				return subject.get(".wx-toolbar");
+			case "toolbar-button":
+				return subject.get(".wx-toolbar .wx-tb-element button").eq(id);
 
 			default:
 				throw `not supported arguments for wxT: ${type}, ${id}`;

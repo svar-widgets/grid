@@ -1,3 +1,22 @@
+## 2.4.0
+
+### New features
+
+-   Toolbar for common operations
+-   Ability to define custom row height
+-   Ability to provide a custom function for sorting rows
+
+### Updates
+
+-   Extra options for ContextMenu: Copy/Cut/Paste, Move up and down
+
+### Fixes
+
+-   Switching ContextMenu locale
+-   Correct triggers for select and focus action
+-   Print view contains initial HTML
+-   Performance enhancements
+
 ## 2.3.0
 
 ### New features

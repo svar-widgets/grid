@@ -1,10 +1,12 @@
 type TDataType =
 	| "default"
+	| "with_subtype"
 	| "empty"
 	| "tree"
 	| "tree_short"
 	| "filters"
-	| "tree_filters";
+	| "tree_filters"
+	| "with_sort_weight";
 
 export const defaultSizes = {
 	rowHeight: 37,
@@ -77,7 +79,7 @@ const filterCols = [
 	},
 ];
 
-const data = {
+const data: Record<TDataType, object> = {
 	default: {
 		columns: cols.map(c => ({ ...c })),
 		data: [
@@ -110,6 +112,52 @@ const data = {
 				id: 6,
 				name: "Item 6",
 				type: "Type 2",
+			},
+		],
+	},
+	with_subtype: {
+		columns: [
+			...cols.map(c => ({
+				...c,
+			})),
+			{ id: "subtype", header: "subtype" },
+		],
+		data: [
+			{
+				id: 1,
+				name: "Item 1",
+				type: "Type 1",
+				subtype: "Subtype 2",
+			},
+			{
+				id: 2,
+				name: "Item 2",
+				type: "Type 1",
+				subtype: "Subtype 2",
+			},
+			{
+				id: 3,
+				name: "Item 3",
+				type: "Type 1",
+				subtype: "Subtype 1",
+			},
+			{
+				id: 4,
+				name: "Item 4",
+				type: "Type 2",
+				subtype: "Subtype 2",
+			},
+			{
+				id: 5,
+				name: "Item 5",
+				type: "Type 2",
+				subtype: "Subtype 2",
+			},
+			{
+				id: 6,
+				name: "Item 6",
+				type: "Type 2",
+				subtype: "Subtype 1",
 			},
 		],
 	},
@@ -542,4 +590,47 @@ const data = {
 			},
 		],
 	},
+	with_sort_weight: {
+		columns: cols.map(c => ({ ...c })), //sort weight column assigned in test case due to cloning function limitations
+		data: [
+			{
+				id: 1,
+				name: "Item 1",
+				type: "Type 1",
+				sortWeight: "1",
+			},
+			{
+				id: 2,
+				name: "Item 2",
+				type: "Type 1",
+				sortWeight: "2",
+			},
+			{
+				id: 3,
+				name: "Item 3",
+				type: "Type 1",
+				sortWeight: "3",
+			},
+			{
+				id: 4,
+				name: "Item 4",
+				type: "Type 2",
+				sortWeight: "4",
+			},
+			{
+				id: 5,
+				name: "Item 5",
+				type: "Type 2",
+				sortWeight: "5",
+			},
+			{
+				id: 6,
+				name: "Item 6",
+				type: "Type 2",
+				sortWeight: "6",
+			},
+		],
+	},
 };
+
+export const sortByWeight = (a, b) => a.sortWeight - b.sortWeight;

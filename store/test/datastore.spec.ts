@@ -1,7 +1,7 @@
 /* eslint-disable vitest/valid-expect */
 import { describe, expect, vi, beforeEach, afterEach, test } from "vitest";
-import { DataStore, IHeaderConfig } from "../src/index";
-import { getData, shuffle } from "./stubs/data";
+import { DataStore, IHeaderCell, ISearchValue, IRow } from "../src/index";
+import { getData, shuffle, sortByWeight } from "./stubs/data";
 import { writable } from "./stubs/writable";
 import {
 	findById,
@@ -123,13 +123,13 @@ describe("datastore", () => {
 
 			({ sortMarks } = store.getState());
 
-			expect(sortMarks[key]).to.deep.equal({ order: "desc" });
+			expect(sortMarks[key]).to.deep.equal({ order: "asc" });
 
-			store.in.exec("sort-rows", { key, add: true });
+			store.in.exec("sort-rows", { key, order: "desc", add: true });
 
 			({ sortMarks } = store.getState());
 
-			expect(sortMarks[key]).to.deep.equal({ order: "asc" });
+			expect(sortMarks[key]).to.deep.equal({ order: "desc" });
 		});
 
 		test("can set sortMarks correctly for multiple keys", () => {
@@ -154,18 +154,18 @@ describe("datastore", () => {
 			({ sortMarks } = store.getState());
 
 			expect(sortMarks).to.deep.equal({
-				name: { order: "desc", index: 0 },
+				name: { order: "asc", index: 0 },
 				type: { order: "asc", index: 1 },
 			});
 
-			store.in.exec("sort-rows", { key: "id", add: true });
+			store.in.exec("sort-rows", { key: "id", add: true, order: "desc" });
 
 			({ sortMarks } = store.getState());
 
 			expect(sortMarks).to.deep.equal({
-				name: { order: "desc", index: 0 },
+				name: { order: "asc", index: 0 },
 				type: { order: "asc", index: 1 },
-				id: { order: "asc", index: 2 },
+				id: { order: "desc", index: 2 },
 			});
 		});
 
@@ -761,6 +761,73 @@ describe("datastore", () => {
 				["Kid 5", "Type 3"],
 				["Kid 7", "Type 2"],
 				["Kid 6", "Type 1"],
+			]);
+		});
+		test("can sort data with column sort function", () => {
+			const d = getData("with_sort_weight");
+			resetState({
+				...d,
+				columns: [
+					...d.columns,
+					{
+						id: "sortWeight",
+						sort: sortByWeight,
+					},
+				],
+				data: shuffle(d.data),
+			});
+			store.in.exec("sort-rows", { key: "sortWeight", order: "asc" });
+
+			const { data } = store.getState();
+
+			expect(data).to.deep.eq(getData("with_sort_weight").data);
+		});
+		test("can sort data with function provided by sort api call", () => {
+			const d = getData("with_sort_weight");
+			resetState({
+				...d,
+				columns: [
+					...d.columns,
+					{
+						id: "sortWeight",
+					},
+				],
+				data: shuffle(d.data),
+			});
+			store.in.exec("sort-rows", {
+				key: "sortWeight",
+				order: "asc",
+				sort: sortByWeight,
+			});
+
+			const { data } = store.getState();
+
+			expect(data).to.deep.eq(getData("with_sort_weight").data);
+		});
+		test("can apply sort index via api call 'add' argument", () => {
+			const d = getData("with_subtype");
+			resetState({ ...d, data: shuffle(d.data) });
+
+			store.in.exec("sort-rows", { key: "type", order: "desc" });
+			store.in.exec("sort-rows", {
+				key: "name",
+				order: "asc",
+			});
+			store.in.exec("sort-rows", {
+				key: "subtype",
+				order: "asc",
+				add: 0,
+			});
+
+			const { data } = store.getState();
+
+			expect(data.map(x => [x.name, x.type, x.subtype])).to.deep.eq([
+				["Item 3", "Type 1", "Subtype 1"],
+				["Item 6", "Type 2", "Subtype 1"],
+				["Item 1", "Type 1", "Subtype 2"],
+				["Item 2", "Type 1", "Subtype 2"],
+				["Item 4", "Type 2", "Subtype 2"],
+				["Item 5", "Type 2", "Subtype 2"],
 			]);
 		});
 	});
@@ -1432,36 +1499,35 @@ describe("datastore", () => {
 			store.in.exec("collapse-column", { id: "type" });
 			let { columns } = store.getState();
 			expect(
-				columns.filter(c => (c.header as IHeaderConfig)?.collapsed)
-					.length
+				columns.filter(c => (c.header as IHeaderCell)?.collapsed).length
 			).to.eq(2);
 
 			store.in.exec("undo");
 			({ columns } = store.getState());
 			expect(
-				(findColumnById(columns, "type")?.header as IHeaderConfig)
+				(findColumnById(columns, "type")?.header as IHeaderCell)
 					?.collapsed
 			).to.eq(false);
 			expect(
-				(findColumnById(columns, "name")?.header as IHeaderConfig)
+				(findColumnById(columns, "name")?.header as IHeaderCell)
 					?.collapsed
 			).to.eq(true);
 
 			store.in.exec("undo");
 			({ columns } = store.getState());
 			expect(
-				(findColumnById(columns, "name")?.header as IHeaderConfig)
+				(findColumnById(columns, "name")?.header as IHeaderCell)
 					?.collapsed
 			).to.eq(false);
 
 			store.in.exec("redo");
 			({ columns } = store.getState());
 			expect(
-				(findColumnById(columns, "name")?.header as IHeaderConfig)
+				(findColumnById(columns, "name")?.header as IHeaderCell)
 					?.collapsed
 			).to.eq(true);
 			expect(
-				(findColumnById(columns, "type")?.header as IHeaderConfig)
+				(findColumnById(columns, "type")?.header as IHeaderCell)
 					?.collapsed
 			).to.eq(false);
 		});
@@ -1756,6 +1822,391 @@ describe("datastore", () => {
 			store.in.exec("undo");
 			({ flatData } = store.getState());
 			expect(flatData.map(d => d.id)).to.deep.eq(testIds[1]);
+		});
+		test("can undo/redo after copying items", () => {
+			const initData = getData();
+			resetState({
+				...initData,
+				undo: true,
+			});
+
+			store.in.exec("copy-row", { id: 1, target: 5 });
+			store.in.exec("copy-row", { id: 3, target: 1, mode: "before" });
+
+			let data = store.getState().data as IRow[];
+
+			const copiedRow1 = data[6];
+			const copiedRow2 = data[0];
+
+			const testIds = [
+				[1, 2, 3, 4, 5, 6],
+				[1, 2, 3, 4, 5, copiedRow1.id, 6],
+				[copiedRow2.id, 1, 2, 3, 4, 5, copiedRow1.id, 6],
+			];
+
+			store.in.exec("undo");
+			data = store.getState().data as IRow[];
+			expect(data.map(d => d.id)).to.deep.eq(testIds[1]);
+
+			store.in.exec("undo");
+			data = store.getState().data as IRow[];
+			expect(data.map(d => d.id)).to.deep.eq(testIds[0]);
+
+			store.in.exec("redo");
+			store.in.exec("redo");
+			data = store.getState().data as IRow[];
+			expect(data.map(d => d.id)).to.deep.eq(testIds[2]);
+			expect(data[0].name).to.eq(data[3].name);
+			expect(data[6].name).to.eq(data[1].name);
+		});
+	});
+
+	describe("search-rows", () => {
+		test("should search rows with basic text search", () => {
+			resetState();
+
+			store.in.exec("search-rows", { search: "It" });
+
+			let search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("It");
+			for (let i = 1; i <= 6; i++) {
+				expect(search.rows[i]).to.deep.equal({ name: true });
+			}
+
+			store.in.exec("search-rows", { search: "1" });
+
+			search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("1");
+			expect(search.rows[1]).to.deep.equal({
+				id: true,
+				name: true,
+				type: true,
+			});
+			[2, 3].forEach(id => {
+				expect(search.rows[id]).to.deep.equal({ type: true });
+			});
+
+			store.in.exec("search-rows", { search: "2" });
+
+			search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("2");
+			expect(search.rows[2]).to.deep.equal({ id: true, name: true });
+			[4, 5, 6].forEach(id => {
+				expect(search.rows[id]).to.deep.equal({ type: true });
+			});
+
+			store.in.exec("search-rows", { search: "Item 2" });
+
+			search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("Item 2");
+			expect(search.rows).to.deep.equal({ 2: { name: true } });
+
+			store.in.exec("search-rows", { search: "items" });
+
+			search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("items");
+			expect(search.rows).to.deep.equal({});
+		});
+
+		test("should search rows with specific column", () => {
+			resetState();
+
+			store.in.exec("search-rows", {
+				search: "item",
+				columns: { name: true },
+			});
+
+			let search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("item");
+			for (let i = 1; i <= 6; i++) {
+				expect(search.rows[i]).to.deep.equal({ name: true });
+			}
+
+			store.in.exec("search-rows", {
+				search: "item",
+				columns: { type: true },
+			});
+
+			search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("item");
+			expect(search.rows).to.deep.equal({});
+		});
+
+		test("should search rows with multiple specific columns", () => {
+			resetState();
+
+			store.in.exec("search-rows", {
+				search: "t",
+				columns: { name: true, type: true },
+			});
+
+			let search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("t");
+			for (let i = 1; i <= 6; i++) {
+				expect(search.rows[i]).to.deep.equal({
+					name: true,
+					type: true,
+				});
+			}
+
+			store.in.exec("search-rows", {
+				search: "ty",
+				columns: { name: true, type: true },
+			});
+
+			search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("ty");
+			for (let i = 1; i <= 6; i++) {
+				expect(search.rows[i]).to.deep.equal({ type: true });
+			}
+
+			store.in.exec("search-rows", {
+				search: "tyyy",
+				columns: { name: true, type: true },
+			});
+
+			search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("tyyy");
+			expect(search.rows).to.deep.equal({});
+		});
+
+		test("should handle case-insensitive search", () => {
+			resetState();
+
+			store.in.exec("search-rows", { search: "ITEM 1" });
+
+			let search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("ITEM 1");
+			expect(search.rows).to.deep.equal({ 1: { name: true } });
+
+			store.in.exec("search-rows", {
+				search: "TyPe 2",
+				columns: { name: true, type: true },
+			});
+
+			search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("TyPe 2");
+			[4, 5, 6].forEach(id => {
+				expect(search.rows[id]).to.deep.equal({ type: true });
+			});
+		});
+
+		test("should handle empty search string", () => {
+			resetState();
+
+			store.in.exec("search-rows", { search: "" });
+
+			let search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("");
+			expect(search.rows).to.deep.equal({});
+
+			store.in.exec("search-rows", {
+				search: "",
+				column: { name: true },
+			});
+
+			search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("");
+			expect(search.rows).to.deep.equal({});
+		});
+
+		test("should handle whitespace-only search", () => {
+			resetState();
+
+			store.in.exec("search-rows", { search: "  Item   " });
+
+			let search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("  Item   ");
+			for (let i = 1; i <= 6; i++) {
+				expect(search.rows[i]).to.deep.equal({ name: true });
+			}
+
+			store.in.exec("search-rows", {
+				search: "  pe 1   ",
+				columns: { name: true, type: true },
+			});
+
+			search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("  pe 1   ");
+			[1, 2, 3].forEach(id => {
+				expect(search.rows[id]).to.deep.equal({ type: true });
+			});
+		});
+
+		test("should handle data with empty values", () => {
+			resetState(getData("empty"));
+
+			store.in.exec("search-rows", { search: "em" });
+
+			let search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("em");
+			[1, 4, 5, 8].forEach(id =>
+				expect(search.rows[id]).to.deep.equal({ name: true })
+			);
+
+			store.in.exec("search-rows", {
+				search: "1",
+				columns: { name: true, type: true },
+			});
+
+			search = store.getState().search as ISearchValue;
+
+			expect(search.value).to.eq("1");
+			expect(search.rows).to.deep.equal({
+				1: { name: true, type: true },
+				2: { type: true },
+				3: { type: true },
+			});
+		});
+	});
+
+	describe("copy-row", () => {
+		test("should copy row after target", () => {
+			resetState();
+
+			store.in.exec("copy-row", { id: 2, target: 5 });
+
+			const data = store.getState().data as IRow[];
+
+			expect(data.length).to.eq(7);
+			const targetRow = data[1];
+			const copiedRow = data[5];
+			expect(copiedRow.id !== 2).to.eq(true);
+			expect(copiedRow.name).to.eq(targetRow.name);
+			expect(copiedRow.type).to.eq(targetRow.type);
+		});
+
+		test("should copy row before target", () => {
+			resetState();
+
+			store.in.exec("copy-row", { id: 4, target: 1, mode: "before" });
+
+			const data = store.getState().data as IRow[];
+
+			expect(data.length).to.eq(7);
+			const targetRow = data[4];
+			const copiedRow = data[0];
+			expect(copiedRow.id !== 4).to.eq(true);
+			expect(copiedRow.name).to.eq(targetRow.name);
+			expect(copiedRow.type).to.eq(targetRow.type);
+		});
+
+		test("should copy row after self", () => {
+			resetState();
+
+			store.in.exec("copy-row", { id: 1, target: 1 });
+
+			const data = store.getState().data as IRow[];
+
+			expect(data.length).to.eq(7);
+			const targetRow = data[0];
+			const copiedRow = data[1];
+			expect(copiedRow.id !== 1).to.eq(true);
+			expect(copiedRow.name).to.eq(targetRow.name);
+			expect(copiedRow.type).to.eq(targetRow.type);
+		});
+
+		test("should copy row before self", () => {
+			resetState();
+
+			store.in.exec("copy-row", { id: 1, target: 1, mode: "before" });
+
+			const data = store.getState().data as IRow[];
+
+			expect(data.length).to.eq(7);
+			const targetRow = data[1];
+			const copiedRow = data[0];
+			expect(copiedRow.id !== 1).to.eq(true);
+			expect(copiedRow.name).to.eq(targetRow.name);
+			expect(copiedRow.type).to.eq(targetRow.type);
+		});
+
+		test("should not perform copy with a wrong ID specified", () => {
+			resetState();
+
+			store.in.exec("copy-row", {
+				id: "someId",
+				target: 4,
+			});
+
+			const data = store.getState().data as IRow[];
+
+			expect(data.map(x => x.id)).to.deep.eq([1, 2, 3, 4, 5, 6]);
+		});
+
+		test("should not perform copy with a wrong target specified", () => {
+			resetState();
+
+			store.in.exec("copy-row", {
+				id: 4,
+				target: "someId",
+			});
+
+			const data = store.getState().data as IRow[];
+
+			expect(data.map(x => x.id)).to.deep.eq([1, 2, 3, 4, 5, 6]);
+		});
+
+		test.skip("should copy row after target in tree mode", () => {
+			resetState(getData("tree_short"));
+
+			store.in.exec("copy-row", { id: 2, target: 5 });
+
+			const { flatData } = store.getState();
+
+			expect(flatData.length).to.eq(14);
+			const targetRow = flatData[1];
+			const copiedRow = flatData[5];
+			expect(copiedRow.id !== targetRow.id).to.eq(true);
+			expect(copiedRow.name).to.eq(targetRow.name);
+			expect(copiedRow.type).to.eq(targetRow.type);
+			expect(copiedRow.parent).to.eq(3);
+			expect(flatData[3].data.length).to.eq(4);
+			expect(flatData[3].data[1].id).to.eq(copiedRow.id);
+		});
+
+		test.skip("should copy row with children after target in tree mode", () => {
+			resetState(getData("tree_short"));
+
+			store.in.exec("copy-row", { id: 1, target: 10 });
+
+			const { flatData } = store.getState();
+
+			expect(flatData.length).to.eq(4);
+			const targetRow = flatData[0];
+			const copiedRow = flatData[10];
+			expect(copiedRow.id !== targetRow.id).to.eq(true);
+			expect(copiedRow.name).to.eq(targetRow.name);
+			expect(copiedRow.type).to.eq(targetRow.type);
+			expect(copiedRow.data.length).to.eq(targetRow.data.length);
+			for (let i = 0; i < copiedRow.data.length; i++) {
+				const tc = targetRow.data[i];
+				const cc = copiedRow.data[i];
+				expect(tc.id !== cc.id).to.eq(true);
+				expect(tc.name).to.eq(cc.name);
+				expect(tc.type).to.eq(cc.type);
+				expect(cc.parent).to.eq(copiedRow.id);
+			}
+			expect(copiedRow.parent).to.eq(3);
+			expect(flatData[3].data.length).to.eq(4);
+			expect(flatData[3].data[1].id).to.eq(copiedRow.id);
 		});
 	});
 });

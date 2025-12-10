@@ -44,7 +44,14 @@
 
 	function sort(ev) {
 		if (!column.sort || cell.filter) return;
-		api.exec("sort-rows", { key: cell.id, add: ev.ctrlKey });
+		if (sortMark?.order) {
+			sortMark.order = sortMark?.order === "asc" ? "desc" : "asc";
+		}
+		api.exec("sort-rows", {
+			key: cell.id,
+			add: ev.ctrlKey,
+			order: sortMark?.order,
+		});
 	}
 	function collapse(ev) {
 		if (ev) ev.stopPropagation();

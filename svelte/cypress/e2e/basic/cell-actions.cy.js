@@ -6,11 +6,11 @@ context("Custom cell and header actions", () => {
 
 		cy.wxT("table-row", 11).find(".table_icon").click();
 		cy.wxT("menu").should("be.visible");
-		cy.wxT("menu-item", "copy").click();
+		cy.wxT("menu-item", "duplicate-row").click();
 		cy.wxT("table-rows").should("have.length", 11);
 		cy.get(".wx-notice .wxi-close").click();
 		cy.wait(500);
-		cy.shot("embedding-actions-copy");
+		cy.shot("embedding-actions-duplicate");
 
 		cy.wxT("header").wxT("header-row", 0).find(".wx-button").click();
 		cy.wxT("table-rows").should("have.length", 12);

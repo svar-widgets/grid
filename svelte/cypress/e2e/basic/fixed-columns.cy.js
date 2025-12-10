@@ -23,7 +23,7 @@ context("Fixed columns visibility", () => {
 	});
 
 	it("Fixed right columns", () => {
-		cy.visit(`/index.html#/fixed-right-columns/willow`);
+		cy.visit(`/index.html#/fixed-right/willow`);
 		cy.wait(1000);
 		cy.shot(`fixed-right-columns`);
 
@@ -58,7 +58,7 @@ context("Fixed columns visibility", () => {
 	});
 
 	it("Fixed left and right columns", () => {
-		cy.visit(`/index.html#/fixed-right-columns/willow`);
+		cy.visit(`/index.html#/fixed-right/willow`);
 		cy.viewport(1300, 975);
 		cy.wait(1000);
 		cy.shot(`fixed-left-right-columns`);

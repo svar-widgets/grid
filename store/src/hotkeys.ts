@@ -1,51 +1,72 @@
-export type hotkeysConfig = { [key: string]: HotkeyHandler | boolean };
+export type hotkeysConfig = {
+	[key: string]: ((event: KeyboardEvent) => void) | boolean;
+};
 export type HotkeyHandler = (params: {
 	key: string;
 	event: KeyboardEvent;
-	node: HTMLElement;
 	isInput: boolean;
 }) => void;
 
-import { locate } from "@svar-ui/lib-dom";
+import { locate, hotkeys as libHotkeys } from "@svar-ui/lib-dom";
+
+export const defaultHotkeys: hotkeysConfig = {
+	tab: true,
+	"shift+tab": true,
+	arrowup: true,
+	arrowdown: true,
+	arrowright: true,
+	arrowleft: true,
+	enter: true,
+	escape: true,
+	f2: true,
+	home: true,
+	end: true,
+	"ctrl+home": true,
+	"ctrl+end": true,
+	"ctrl+z": true,
+	"ctrl+y": true,
+};
 
 export function hotkeys(
 	node: HTMLElement,
-	{ keys, exec }: { keys: hotkeysConfig; exec: HotkeyHandler }
+	{ keys, exec }: { keys: hotkeysConfig | false; exec: HotkeyHandler }
 ) {
-	for (const key in keys) {
-		const fixed = key.toLowerCase().replace(/ /g, "");
-		if (fixed !== key) {
-			keys[fixed] = keys[key];
-		}
+	if (!keys) return;
+	function isTargetInput(event: KeyboardEvent) {
+		const target = event.target as Element;
+
+		return (
+			target.tagName === "INPUT" ||
+			target.tagName === "TEXTAREA" ||
+			locate(target, "data-header-id")?.classList.contains("wx-filter") ||
+			!!target.closest(".wx-cell.wx-editor")
+		);
 	}
-	function handleKeydown(event: any) {
-		let code = event.code.replace("Key", "").toLowerCase();
-		if (code === " ") code = "space";
-		const key = `${event.ctrlKey || event.metaKey ? "ctrl+" : ""}${
-			event.shiftKey ? "shift+" : ""
-		}${event.altKey ? "alt+" : ""}${code.replace(/^key/, "")}`;
+
+	const config: { [key: string]: (event: KeyboardEvent) => void } = {};
+
+	for (const key in keys) {
 		const handler = keys[key];
 
 		if (typeof handler !== "undefined") {
-			const isInput =
-				event.target.tagName === "INPUT" ||
-				event.target.tagName === "TEXTAREA" ||
-				locate(event.target, "data-header-id")?.classList.contains(
-					"wx-filter"
-				) ||
-				!!event.target.closest(".wx-cell.wx-editor");
 			if (typeof handler === "function") {
-				handler({ key, event, node, isInput });
+				config[key] = handler;
 			} else if (handler) {
-				exec({ key, event, node, isInput });
+				config[key] = (event: KeyboardEvent) => {
+					const isInput = isTargetInput(event);
+					exec({ key, event, isInput });
+				};
 			}
 		}
 	}
 
-	node.addEventListener("keydown", handleKeydown);
+	const unsubscribe = libHotkeys.subscribe(t => {
+		t.configure(config, node);
+	});
+
 	return {
 		destroy: () => {
-			node.removeEventListener("keydown", handleKeydown);
+			unsubscribe();
 		},
 	};
 }

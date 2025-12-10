@@ -70,7 +70,7 @@
 					>
 					<div class="separator"></div>
 					<a
-						href="https://svar.dev/svelte/core/"
+						href="https://svar.dev/svelte/datagrid/"
 						target="_blank"
 						rel="noopener noreferrer"
 						><h1 class="title">Svelte {publicName}</h1></a
@@ -266,6 +266,7 @@
 	}
 
 	.content {
+		position: relative;
 		width: 100%;
 		height: 100%;
 		transition:

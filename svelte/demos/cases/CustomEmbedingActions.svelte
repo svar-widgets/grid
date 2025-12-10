@@ -1,6 +1,6 @@
 <script>
 	import { getContext } from "svelte";
-	import { Grid, defaultMenuOptions } from "../../src";
+	import { Grid } from "../../src";
 	import { ActionMenu } from "@svar-ui/svelte-menu";
 
 	import { getData } from "../data";
@@ -40,6 +40,29 @@
 		},
 	];
 
+	const options = [
+		{
+			id: "add-row:before",
+			text: "Add before",
+			icon: "wxi-table-row-plus-before",
+		},
+		{
+			id: "add-row:after",
+			text: "Add after",
+			icon: "wxi-table-row-plus-after",
+		},
+		{
+			id: "duplicate-row",
+			text: "Duplicate",
+			icon: "wxi-duplicate",
+		},
+		{
+			id: "delete-row",
+			text: "Delete",
+			icon: "wxi-delete-outline",
+		},
+	];
+
 	function action(action, ev) {
 		const { row, column, value } = ev;
 		const event = `Event: ${action}\n`;
@@ -70,19 +93,19 @@
 		if (option) {
 			const id = api.getState().selectedRows[0];
 			switch (option.id) {
-				case "add:before":
+				case "add-row:before":
 					api.exec("add-row", { row: {}, before: id });
 					break;
-				case "add:after":
+				case "add-row:after":
 					api.exec("add-row", { row: {}, after: id });
 					break;
-				case "copy":
+				case "duplicate-row":
 					api.exec("add-row", {
 						row: { ...api.getRow(id), id: null },
 						after: id,
 					});
 					break;
-				case "delete":
+				case "delete-row":
 					api.exec("delete-row", { id });
 					break;
 			}
@@ -93,10 +116,9 @@
 <div class="demo" style="padding: 20px;">
 	<ActionMenu
 		resolver={id => id}
-		{api}
 		at={"point"}
 		dataKey={"actionId"}
-		options={defaultMenuOptions}
+		{options}
 		onclick={handleClicks}
 	>
 		<Grid

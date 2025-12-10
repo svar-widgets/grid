@@ -3,18 +3,16 @@ describe("Keyboard navigation works", () => {
 		cy.visit(`/index.html#/inline-editors/willow`);
 
 		cy.wxT("table-row", 11).wxT("table-cell", 1).click({ force: true });
-		cy.wxT("table").trigger("keydown", { code: "arrowDown" });
+		cy.keyDown("arrowDown");
 		cy.wxT("table-row", 12).should("have.class", "wx-selected");
 
-		for (let i = 0; i < 3; i++)
-			cy.wxT("table").trigger("keydown", { code: "arrowDown" });
+		for (let i = 0; i < 3; i++) cy.keyDown("arrowDown");
 		cy.wxT("table-row", 15).should("have.class", "wx-selected");
 
-		cy.wxT("table").trigger("keydown", { code: "arrowUp" });
+		cy.keyDown("arrowUp");
 		cy.wxT("table-row", 14).should("have.class", "wx-selected");
 
-		for (let i = 0; i < 3; i++)
-			cy.wxT("table").trigger("keydown", { code: "arrowUp" });
+		for (let i = 0; i < 3; i++) cy.keyDown("arrowUp");
 		cy.wxT("table-row", 11).should("have.class", "wx-selected");
 	});
 
@@ -32,7 +30,7 @@ describe("Keyboard navigation works", () => {
 						.wxT("table-cell", 1)
 						.click({ force: true });
 					[7, 8, 14, 16].forEach(id => {
-						cy.root().trigger("keydown", { code: "arrowDown" });
+						cy.keyDown("arrowDown");
 						cy.shot(`richselect`);
 						cy.wxT("table-row", id).should(
 							"have.class",
@@ -48,9 +46,9 @@ describe("Keyboard navigation works", () => {
 					cy.wxT("table-row", 3)
 						.wxT("table-cell", 1)
 						.click({ force: true });
-					cy.root().trigger("keydown", { code: "arrowDown" });
+					cy.keyDown("arrowDown");
 					cy.wxT("table-row", 3).should("have.class", "wx-selected");
-					cy.root().trigger("keydown", { code: "arrowUp" });
+					cy.keyDown("arrowUp");
 					cy.wxT("table-row", 3).should("have.class", "wx-selected");
 
 					cy.get(".wx-header .wx-richselect").click();
@@ -61,7 +59,7 @@ describe("Keyboard navigation works", () => {
 						.wxT("table-cell", 1)
 						.click({ force: true });
 					[8, 14, 16].forEach(id => {
-						cy.root().trigger("keydown", { code: "arrowDown" });
+						cy.keyDown("arrowDown");
 						cy.wxT("table-row", id).should(
 							"have.class",
 							"wx-selected"
@@ -77,20 +75,16 @@ describe("Keyboard navigation works", () => {
 		cy.wxT("table-row", 11).wxT("table-cell", 0).click({ force: true });
 		cy.wxT("table-row", 11).wxT("table-cell", 0).should("have.focus");
 
-		for (let i = 0; i < 3; i++)
-			cy.wxT("table").trigger("keydown", { code: "arrowRight" });
+		for (let i = 0; i < 3; i++) cy.keyDown("arrowRight");
 		cy.wxT("table-row", 11).wxT("table-cell", 3).should("have.focus");
 
-		for (let i = 0; i < 3; i++)
-			cy.wxT("table").trigger("keydown", { code: "arrowDown" });
+		for (let i = 0; i < 3; i++) cy.keyDown("arrowDown");
 		cy.wxT("table-row", 14).wxT("table-cell", 3).should("have.focus");
 
-		for (let i = 0; i < 2; i++)
-			cy.wxT("table").trigger("keydown", { code: "arrowLeft" });
+		for (let i = 0; i < 2; i++) cy.keyDown("arrowLeft");
 		cy.wxT("table-row", 14).wxT("table-cell", 1).should("have.focus");
 
-		for (let i = 0; i < 2; i++)
-			cy.wxT("table").trigger("keydown", { code: "arrowUp" });
+		for (let i = 0; i < 2; i++) cy.keyDown("arrowUp");
 		cy.wxT("table-row", 12).wxT("table-cell", 1).should("have.focus");
 	});
 
@@ -100,14 +94,13 @@ describe("Keyboard navigation works", () => {
 		cy.wxT("table-row", 11).wxT("table-cell", 1).click({ force: true });
 		cy.wxT("table-row", 11).wxT("table-cell", 1).should("have.focus");
 
-		cy.wxT("table").trigger("keydown", { code: "f2" });
+		cy.keyDown("f2");
 		cy.get("input").type("-city{enter}");
 
 		cy.wxT("table-row", 11).wxT("table-cell", 1).should("have.focus");
 
-		for (let i = 0; i < 3; i++)
-			cy.wxT("table").trigger("keydown", { code: "arrowDown" });
-		cy.wxT("table").trigger("keydown", { code: "f2" });
+		for (let i = 0; i < 3; i++) cy.keyDown("arrowDown");
+		cy.keyDown("f2");
 		cy.get("input").type("Gotham{enter}");
 
 		cy.wxT("table-row", 14).wxT("table-cell", 1).should("have.focus");
@@ -119,30 +112,25 @@ describe("Keyboard navigation works", () => {
 		cy.visit(`/index.html#/inline-editors/willow`);
 
 		cy.wxT("table-row", 11).wxT("table-cell", 1).click({ force: true });
-		for (let i = 0; i < 3; i++)
-			cy.wxT("table").trigger("keydown", { code: "arrowDown" });
+		for (let i = 0; i < 3; i++) cy.keyDown("arrowDown");
 		cy.wxT("table-row", 14).should("have.class", "wx-selected");
 		cy.wxT("table-row", 14).wxT("table-cell", 1).should("have.focus");
 
 		cy.wxT("table-row", 11).wxT("table-cell", 1).dblclick();
 		cy.get("input").type("Gotham");
-		for (let i = 0; i < 3; i++)
-			cy.wxT("table").trigger("keydown", { code: "Tab" });
+		for (let i = 0; i < 3; i++) cy.keyDown("tab");
 		cy.wxT("table-row", 11).find("input").type("London");
 
 		cy.shot("table-editing-key-nav-tabs-right");
 
-		for (let i = 0; i < 3; i++)
-			cy.wxT("table").trigger("keydown", { code: "Shift+Tab" });
+		for (let i = 0; i < 3; i++) cy.keyDown("shift+tab");
 
 		cy.wxT("table-row", 11)
 			.wxT("table-cell", 1)
 			.find("input")
 			.clear()
 			.type("Also Star City");
-		cy.wxT("table-row", 11)
-			.find("input")
-			.trigger("keydown", { code: "Enter", key: "Enter" });
+		cy.wxT("table-row", 11).find("input").type("{enter}");
 		cy.get("input").should("not.exist");
 		cy.shot("table-editing-key-nav-tabs-left");
 	});
@@ -152,16 +140,14 @@ describe("Keyboard navigation works", () => {
 
 		let first = cy.wxT("table").first();
 		first.click();
-		for (let i = 0; i < 5; i++)
-			first.trigger("keydown", { code: "arrowDown" });
+		for (let i = 0; i < 5; i++) first.keyDown("arrowDown");
 		first.wxT("table-row", 7).should("have.class", "wx-selected");
 		first.wxT("table-row", 7).should("be.visible");
 
 		cy.shot("table-vertical-heads-key-nav-down");
 
 		first = cy.wxT("table").first();
-		for (let i = 0; i < 4; i++)
-			first.trigger("keydown", { code: "arrowUp" });
+		for (let i = 0; i < 4; i++) first.keyDown("arrowUp");
 		first.wxT("table-row", 3).should("have.class", "wx-selected");
 		first.wxT("table-row", 3).should("be.visible");
 
@@ -169,10 +155,8 @@ describe("Keyboard navigation works", () => {
 
 		const second = cy.wxT("table").eq(1);
 		second.click();
-		for (let i = 0; i < 15; i++)
-			second.trigger("keydown", { code: "arrowDown" });
-		for (let i = 0; i < 7; i++)
-			second.trigger("keydown", { code: "arrowUp" });
+		for (let i = 0; i < 15; i++) second.keyDown("arrowDown");
+		for (let i = 0; i < 7; i++) second.keyDown("arrowUp");
 		second.wxT("table-row", 8).should("have.class", "wx-selected");
 		second.wxT("table-row", 8).should("be.visible");
 
@@ -186,31 +170,22 @@ describe("Keyboard navigation works", () => {
 			cy.visit(`/index.html#/fixed-columns/willow`);
 
 			cy.wxT("table-row", 3).wxT("table-cell", 1).click();
-			cy.wxT("table-row", 3)
-				.wxT("table-cell", 1)
-				.trigger("keydown", { code: "f2" });
-			for (let i = 0; i < 8; i++)
-				cy.wxT("table").trigger("keydown", { code: "Tab" });
+			cy.keyDown("f2");
+			for (let i = 0; i < 8; i++) cy.keyDown("tab");
 			cy.wxT("table-row", 4).find("input").type(" Ciara");
-			for (let i = 0; i < 2; i++)
-				cy.wxT("table").trigger("keydown", { code: "Shift+Tab" });
+			for (let i = 0; i < 2; i++) cy.keyDown("shift+tab");
 			cy.wxT("table-row", 3).find("input").clear().type("Today!");
 
 			cy.shot("table-fixed-columns-tab-editor");
 
 			cy.wxT("table-row", 3).find("input").type("{enter}");
-			for (let i = 0; i < 16; i++)
-				cy.wxT("table").trigger("keydown", { code: "arrowDown" });
-			for (let i = 0; i < 6; i++)
-				cy.wxT("table").trigger("keydown", { code: "arrowLeft" });
-			cy.wxT("table-row", 19)
-				.wxT("table-cell", 1)
-				.should("have.focus")
-				.trigger("keydown", { code: "f2" });
-			for (let i = 0; i < 6; i++)
-				cy.wxT("table").trigger("keydown", { code: "Tab" });
+			for (let i = 0; i < 16; i++) cy.keyDown("arrowDown");
+			for (let i = 0; i < 6; i++) cy.keyDown("arrowLeft");
+			cy.wxT("table-row", 19).wxT("table-cell", 1).should("have.focus");
+			cy.keyDown("f2");
+			for (let i = 0; i < 6; i++) cy.keyDown("tab");
 			cy.wxT("table-row", 19).find("input").clear();
-			cy.wxT("table").trigger("keydown", { code: "Escape" });
+			cy.keyDown("escape");
 			cy.wxT("table-row", 19)
 				.wxT("table-cell", 5)
 				.invoke("text")
@@ -228,17 +203,16 @@ describe("Keyboard navigation works", () => {
 			cy.wxT("table-row", 11).wxT("table-cell", 0).click({ force: true });
 			cy.wxT("table-row", 11).wxT("table-cell", 0).should("have.focus");
 
-			for (let i = 0; i < 4; i++)
-				cy.wxT("table").trigger("keydown", { code: "arrowRight" });
+			for (let i = 0; i < 4; i++) cy.keyDown("arrowRight");
 
 			cy.wxT("table-row", 11).wxT("table-cell", 4).should("have.focus");
-			cy.wxT("table").trigger("keydown", { code: "home" });
+			cy.keyDown("home");
 			cy.wxT("table-row", 11).wxT("table-cell", 0).should("have.focus");
 
 			cy.shot("table-first-focused-cell-in-the-row");
 
 			cy.wxT("table-row", 14).wxT("table-cell", 2).click({ force: true });
-			cy.wxT("table").trigger("keydown", { code: "end" });
+			cy.keyDown("end");
 			cy.wxT("table-row", 14).wxT("table-cell", 5).should("have.focus");
 
 			cy.shot("table-last-focused-cell-in-the-row");
@@ -249,17 +223,17 @@ describe("Keyboard navigation works", () => {
 		cy.visit(`/index.html#/tree-mode/willow`);
 
 		cy.wxT("table-row", 1).wxT("table-cell", 0).click({ force: true });
-		cy.wxT("table").trigger("keydown", { code: "arrowRight" });
+		cy.keyDown("arrowRight");
 		cy.wxT("table-row", 1).wxT("table-cell", 1).should("have.focus");
-		cy.wxT("table").trigger("keydown", { code: "enter" });
-		cy.wxT("table").trigger("keydown", { code: "arrowDown" });
+		cy.keyDown("enter");
+		cy.keyDown("arrowDown");
 		cy.wxT("table-row", 2).wxT("table-cell", 1).should("have.focus");
-		cy.wxT("table").trigger("keydown", { code: "enter" });
+		cy.keyDown("enter");
 		cy.shot("table-tree-rows-are-closed");
 
-		cy.wxT("table").trigger("keydown", { code: "enter" });
-		cy.wxT("table").trigger("keydown", { code: "arrowUp" });
-		cy.wxT("table").trigger("keydown", { code: "enter" });
+		cy.keyDown("enter");
+		cy.keyDown("arrowUp");
+		cy.keyDown("enter");
 		cy.shot("table-tree-row-is-opened");
 	});
 
@@ -269,9 +243,8 @@ describe("Keyboard navigation works", () => {
 		let first = cy.wxT("table").first();
 
 		first.wxT("table-row", 11).wxT("table-cell", 0).click({ force: true });
-		for (let i = 0; i < 3; i++)
-			first.trigger("keydown", { code: "arrowDown" });
-		first.trigger("keydown", { code: "arrowRight" });
+		for (let i = 0; i < 3; i++) first.keyDown("arrowDown");
+		first.keyDown("arrowRight");
 
 		first.wxT("table-row", 14).wxT("table-cell", 1).should("have.focus");
 		first.wxT("table-row", 14).should("not.have.class", "wx-selected");
@@ -293,8 +266,7 @@ describe("Keyboard navigation works", () => {
 
 		first.wxT("table-row", 11).wxT("table-cell", 1).click({ force: true });
 		first.wxT("table-row", 11).wxT("table-cell", 1).should("have.focus");
-		for (let i = 0; i < 3; i++)
-			first.trigger("keydown", { code: "arrowDown" });
+		for (let i = 0; i < 3; i++) first.keyDown("arrowDown");
 
 		first.wxT("table-row", 14).wxT("table-cell", 1).should("have.focus");
 		first.wxT("table-row", 11).should("have.class", "wx-selected");

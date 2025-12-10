@@ -39,6 +39,16 @@ export type TEditorHandler = (
 	row?: IRow,
 	column?: IColumn
 ) => TEditorType | IColumnEditor | null;
+export interface ISearchValue {
+	value: string;
+	rows: {
+		[key: TID]: { [key: TID]: boolean };
+	};
+}
+export interface IHistory {
+	undo: number;
+	redo: number;
+}
 
 export interface IConfig {
 	data?: IRow[];
@@ -52,6 +62,7 @@ export interface IConfig {
 	tree?: boolean;
 	undo?: boolean;
 	select?: TSelect;
+	reorder?: boolean;
 }
 
 interface IProConfig extends IConfig {
@@ -62,6 +73,7 @@ export interface IDataConfig extends IProConfig {
 	_filterIds?: TID[];
 	_print?: IPrintConfig;
 	_skin: TSkinName;
+	_rowHeightFromData: boolean;
 	columns?: IColumn[];
 	scroll?: TScrollConfig;
 	editor?: TEditorConfig;
@@ -70,14 +82,15 @@ export interface IDataConfig extends IProConfig {
 		row: TID;
 		column: TID;
 	};
-	history?: {
-		undo: number;
-		redo: number;
-	};
+	history?: IHistory;
+	search?: ISearchValue;
 }
 
 export interface IData extends IDataConfig {
+	data: IRow[];
 	flatData: IRow[];
+	sortMarks: ISortMarks;
+	columns: IColumn[];
 	_sizes: IRenderSizes;
 	_columns: IRenderColumn[];
 }
@@ -117,11 +130,12 @@ export interface IDataHash<T> {
 	[key: string]: T;
 }
 
+export type TSortFunction = (a: IRow, b: IRow) => 1 | -1 | 0;
 export interface IColumn {
-	id?: string;
+	id?: TID;
 	width?: number;
 	flexgrow?: number;
-	sort?: boolean;
+	sort?: boolean | TSortFunction;
 	left?: number;
 	right?: number;
 	fixed?: number | { left?: number; right?: number };
@@ -152,7 +166,7 @@ export interface IRenderColumn extends IColumn {
 }
 
 export interface IHeaderCell {
-	id?: string;
+	id?: TID;
 	text?: string;
 	cell?: any;
 	css?: string;
@@ -218,6 +232,7 @@ export interface IOption {
 }
 
 export interface IRow {
+	rowHeight?: number;
 	[key: string]: any;
 }
 

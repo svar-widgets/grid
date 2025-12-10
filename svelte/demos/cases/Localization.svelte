@@ -7,6 +7,7 @@
 
 	const { allData: data, countries, users } = getData();
 	let table = $state();
+
 	function init(api) {
 		table = api;
 	}

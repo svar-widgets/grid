@@ -7,7 +7,7 @@ import WillowDark from "../src/themes/WillowDark.svelte";
 mount(Demos, {
 	target: document.querySelector("#wx_demo_area") || document.body,
 	props: {
-		publicName: "Grid",
+		publicName: "DataGrid",
 		productTag: "grid",
 		skins: [
 			{ id: "willow", label: "Willow", component: Willow },

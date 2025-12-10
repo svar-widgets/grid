@@ -26,7 +26,7 @@
 			text: "Add before",
 			icon: "wxi-table-row-plus-before",
 		},
-		{ id: "copy", text: "Copy", icon: "wxi-content-copy" },
+		{ id: "duplicate", text: "Duplicate", icon: "wxi-duplicate" },
 		{ id: "delete", text: "Delete", icon: "wxi-delete-outline" },
 		{ type: "separator" },
 		{ id: "info", text: "Info", icon: "wxi-alert" },
@@ -42,7 +42,7 @@
 				case "add":
 					table.exec("add-row", { row: {}, before: id });
 					break;
-				case "copy":
+				case "duplicate":
 					table.exec("add-row", {
 						row: { ...table.getRow(id), id: null },
 						after: id,

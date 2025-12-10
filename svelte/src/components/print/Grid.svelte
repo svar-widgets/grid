@@ -50,7 +50,10 @@
 
 	<tbody>
 		{#each data as row}
-			<tr class={"wx-row" + (rowStyle ? " " + rowStyle(row) : "")}>
+			<tr
+				class={"wx-row" + (rowStyle ? " " + rowStyle(row) : "")}
+				style={`height:${row.rowHeight || sizes.rowHeight}px;`}
+			>
 				{#each columns as column (column.id)}
 					{#if !column.collapsed}
 						<td

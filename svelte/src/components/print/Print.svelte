@@ -63,7 +63,7 @@
 
 	@media print {
 		:global(.wx-print > *) {
-			display: none;
+			display: none !important;
 		}
 
 		:global(.wx-print-container > .wx-print-grid-wrapper) {
@@ -72,7 +72,7 @@
 		}
 
 		:global(.wx-print-container) {
-			display: block;
+			display: block !important;
 		}
 	}
 </style>

@@ -100,25 +100,19 @@
 	<div style="max-width:810px">
 		<div class="controls">
 			<Field label={'Filter "Date" column'}>
-				{#snippet children({ id })}
-					<DateRangePicker
-						bind:value={dateValue}
-						{id}
-						clear
-						onchange={handleFilter}
-					/>
-				{/snippet}
+				<DateRangePicker
+					bind:value={dateValue}
+					clear
+					onchange={handleFilter}
+				/>
 			</Field>
 			<Field label={'Filter "Company" column'}>
-				{#snippet children({ id })}
-					<Text
-						bind:value={companyValue}
-						{id}
-						clear
-						icon={"wxi-search"}
-						onchange={handleFilter}
-					/>
-				{/snippet}
+				<Text
+					bind:value={companyValue}
+					clear
+					icon={"wxi-search"}
+					onchange={handleFilter}
+				/>
 			</Field>
 		</div>
 		<div style="height: 400px;">

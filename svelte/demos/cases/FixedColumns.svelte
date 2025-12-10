@@ -12,9 +12,7 @@
 	<h4>Drag the slider to fix columns on the left</h4>
 	<div class="controls">
 		<Field label="Fix columns">
-			{#snippet children({ id })}
-				<Slider min={0} max={4} bind:value={left} {id} />
-			{/snippet}
+			<Slider min={0} max={4} bind:value={left} />
 		</Field>
 	</div>
 

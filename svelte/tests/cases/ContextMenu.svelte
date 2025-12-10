@@ -24,7 +24,7 @@
 		<div style="padding: 20px;">
 			<div>
 				<ContextMenu api={table}>
-					<Grid {data} {columns} {init} />
+					<Grid {data} {columns} {init} reorder multiselect />
 				</ContextMenu>
 			</div>
 		</div>

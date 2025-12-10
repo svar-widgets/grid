@@ -7,7 +7,7 @@
 
 	let parentData = $state();
 	$effect(() => {
-		if (parentData) {
+		if (parentData && $selectedRows.length) {
 			const everyChildSelected = parentData.data.every(
 				d => $selectedRows.indexOf(d.id) !== -1
 			);

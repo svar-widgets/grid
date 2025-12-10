@@ -9,7 +9,7 @@
 
 	// stores
 	import { EventBusRouter } from "@svar-ui/lib-state";
-	import { DataStore, isCommunity } from "@svar-ui/grid-store";
+	import { DataStore } from "@svar-ui/grid-store";
 
 	// ui
 	import Layout from "./Layout.svelte";
@@ -38,6 +38,7 @@
 		responsive = null,
 		sortMarks = {},
 		undo = false,
+		hotkeys = null,
 		...restProps
 	} = $props();
 
@@ -143,16 +144,10 @@
 		}
 	}
 
-	const isReorderAvailable = $derived.by(() => {
-		let available = !tree;
-		if (!isCommunity()) available = true;
-
-		return available ? reorder : false;
-	});
-
 	let _skin = $derived(getContext("wx-theme"));
 	let init_once = true;
-	const reinitStore = () => {
+
+	$effect.pre(() => {
 		dataStore.init({
 			data,
 			columns: finalColumns,
@@ -164,6 +159,7 @@
 			sortMarks,
 			select,
 			undo,
+			reorder,
 			_skin,
 		});
 
@@ -171,10 +167,7 @@
 			init(api);
 			init_once = false;
 		}
-	};
-
-	reinitStore();
-	$effect(reinitStore);
+	});
 </script>
 
 <Locale words={en} optional={true}>
@@ -185,7 +178,6 @@
 		{rowStyle}
 		{columnStyle}
 		{cellStyle}
-		reorder={isReorderAvailable}
 		{onreorder}
 		{multiselect}
 		{autoRowHeight}
@@ -193,5 +185,6 @@
 		{clientHeight}
 		{responsiveLevel}
 		{resize}
+		{hotkeys}
 	/>
 </Locale>

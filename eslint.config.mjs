@@ -7,7 +7,7 @@ import vitest from "eslint-plugin-vitest";
 import globals from "globals";
 
 export default [{
-                ignores: ["node_modules/", "dist/", "build/", "coverage/", "public/", "*/vite.config.js"],
+                ignores: ["node_modules/", "dist/", "build/", "coverage/", "public/", "svelte/vite.config.js"],
         },
 	jsLint.configs.recommended,
         ...tsLint.configs.recommended,

@@ -21,12 +21,14 @@
 
 	const options = [
 		{
-			id: "add:after",
+			id: "add-row:after",
 			text: "Add after",
 			icon: "wxi-table-row-plus-after",
 		},
-		{ id: "copy", text: "Copy", icon: "wxi-content-copy" },
-		{ id: "delete", text: "Delete", icon: "wxi-delete-outline" },
+		{ id: "copy-row", text: "Copy", icon: "wxi-content-copy" },
+		{ id: "cut-row", text: "Cut", icon: "wxi-content-cut" },
+		{ id: "paste-row", text: "Paste", icon: "wxi-content-paste" },
+		{ id: "delete-row", text: "Delete", icon: "wxi-delete-outline" },
 		{ type: "separator" },
 		{ id: "info", text: "Info", icon: "wxi-alert" },
 	];

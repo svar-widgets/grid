@@ -14,8 +14,7 @@
 		id,
 	} from "@svar-ui/lib-dom";
 
-	import { hotkeys } from "@svar-ui/grid-store";
-	import { getKeys } from "../helpers/hotkeys";
+	import { hotkeys, defaultHotkeys } from "@svar-ui/grid-store";
 	import { scrollTo } from "@svar-ui/grid-store";
 
 	import Cell from "./Cell.svelte";
@@ -29,7 +28,6 @@
 		footer,
 		overlay,
 		multiselect,
-		reorder,
 		onreorder,
 		rowStyle,
 		columnStyle,
@@ -39,6 +37,7 @@
 		clientWidth,
 		clientHeight,
 		responsiveLevel,
+		hotkeys: hotkeysConfig,
 	} = $props();
 
 	const api = getContext("grid-store");
@@ -57,6 +56,8 @@
 		focusCell,
 		_print,
 		undo,
+		reorder,
+		_rowHeightFromData,
 	} = api.getReactiveState();
 
 	// will be calculated once, after rendering
@@ -78,18 +79,24 @@
 
 	const fullHeight = $derived.by(() => {
 		const count = $dynamic ? $dynamic.rowCount : $data.length;
-		const base = count * defaultRowHeight;
+
 		if (autoRowHeight) {
 			return (
 				renderedHeight +
 				renderRows.d +
 				(count - renderEnd) * defaultRowHeight
 			);
-		} else {
-			return base;
 		}
+		if (!$_rowHeightFromData) {
+			return count * defaultRowHeight;
+		}
+
+		let totalHeight = 0;
+		for (let i = 0; i < count; i++)
+			totalHeight += $data[i].rowHeight || defaultRowHeight;
+
+		return totalHeight;
 	});
-	// $inspect(fullHeight, "fullHeight");
 
 	const fullWidth = $derived(
 		$_columns.reduce((acc, col) => {
@@ -303,6 +310,42 @@
 
 			start = Math.max(0, start - EXTRAROWS);
 		} else {
+			if ($_rowHeightFromData) {
+				let startInd = 0;
+				let topHeight = 0;
+				for (let i = 0; i < $data.length; i++) {
+					const height = $data[i].rowHeight || defaultRowHeight;
+					if (topHeight + height > scrollTop) {
+						startInd = i;
+						break;
+					}
+					topHeight += height;
+				}
+				start = Math.max(0, startInd - EXTRAROWS);
+
+				for (let i = 0; i < start; i++) {
+					deltaTop += $data[i].rowHeight || defaultRowHeight;
+				}
+
+				let visibleRowsCount = 0;
+				let currentHeight = 0;
+				for (let i = startInd + 1; i < $data.length; i++) {
+					const height = $data[i].rowHeight || defaultRowHeight;
+					visibleRowsCount++;
+					if (currentHeight + height > visibleRowsHeight) {
+						break;
+					}
+					currentHeight += height;
+				}
+
+				const end = Math.min(
+					$dynamic ? $dynamic.rowCount : $data.length,
+					startInd + visibleRowsCount + EXTRAROWS
+				);
+
+				return { d: deltaTop, start, end };
+			}
+
 			start = Math.floor(scrollTop / defaultRowHeight);
 			start = Math.max(0, start - EXTRAROWS);
 			deltaTop = start * defaultRowHeight;
@@ -373,13 +416,25 @@
 		click: (id, ev) => {
 			if (postDrag) return;
 			const column = locateAttr(ev, "data-col-id");
-			api.exec("focus-cell", { row: id, column, eventSource: "click" });
+			if ($focusCell?.id !== id)
+				api.exec("focus-cell", {
+					row: id,
+					column,
+					eventSource: "click",
+				});
 
-			if (select === false) return;
+			if ($select === false) return;
 
 			const toggle = multiselect && ev.ctrlKey;
 			const range = multiselect && ev.shiftKey;
-			if ($select) api.exec("select-row", { id, toggle, range });
+
+			if (
+				toggle ||
+				$selectedRows.length > 1 ||
+				!$selectedRows.includes(id)
+			) {
+				api.exec("select-row", { id, toggle, range });
+			}
 		},
 		"toggle-row": id => {
 			const row = api.getRow(id);
@@ -650,11 +705,16 @@
 			start: startDrag,
 			move: moveDrag,
 			end: endDrag,
-			getReorder: () => reorder,
+			getReorder: () => $reorder,
 			getDraggableInfo: () => ({ hasDraggable: checkDraggable() }),
 		}}
 		use:hotkeys={{
-			keys: getKeys({ undo: $undo }),
+			keys: hotkeysConfig !== false && {
+				...defaultHotkeys,
+				"ctrl+z": $undo,
+				"ctrl+y": $undo,
+				...hotkeysConfig,
+			},
 			exec: v => api.exec("hotkey", v),
 		}}
 		{style}
@@ -705,23 +765,22 @@
 					style="padding-top:{renderRows.d}px;padding-left:{renderColumns.d}px;"
 				>
 					{#each dataRows as row, rIndex (row.id)}
+						{@const isSelected =
+							$selectedRows.indexOf(row.id) !== -1}
 						<div
 							class:wx-autoheight={autoRowHeight}
 							class={"wx-row" +
 								(rowStyle ? " " + rowStyle(row) : "")}
 							data-id={row.id}
 							data-context-id={row.id}
-							class:wx-selected={$selectedRows.indexOf(row.id) !==
-								-1}
+							class:wx-selected={isSelected}
 							class:wx-inactive={dragItem === row.id}
-							style={`${autoRowHeight ? "min-height" : "height"}:${defaultRowHeight}px;`}
+							style={`${autoRowHeight ? "min-height" : "height"}:${row.rowHeight || defaultRowHeight}px;`}
 							role="row"
 							aria-rowindex={rIndex}
 							aria-expanded={row.open}
 							aria-level={$tree ? row.$level + 1 : undefined}
-							aria-selected={$tree
-								? $selectedRows.indexOf(row.id) !== -1
-								: undefined}
+							aria-selected={$tree ? isSelected : undefined}
 							tabindex="-1"
 						>
 							{#each renderColumns.data as column (column.id)}

@@ -26,6 +26,7 @@ import InlineEditorsHandler from "./cases/InlineEditorsHandler.svelte";
 import InlineEditorsDisabled from "./cases/InlineEditorsDisabled.svelte";
 import MultilineRows from "./cases/MultilineRows.svelte";
 import Overlay from "./cases/Overlay.svelte";
+import HotkeysCustom from "./cases/HotkeysCustom.svelte";
 import Paging from "./cases/Paging.svelte";
 import Resize from "./cases/Resize.svelte";
 import Reordering from "./cases/Reordering.svelte";
@@ -38,6 +39,7 @@ import SelectionCheckboxes from "./cases/SelectionCheckboxes.svelte";
 import SizeToContainer from "./cases/SizeToContainer.svelte";
 import SizeToContent from "./cases/SizeToContent.svelte";
 import Sort from "./cases/Sort.svelte";
+import SortCustom from "./cases/SortCustom.svelte";
 import StaticData from "./cases/StaticData.svelte";
 import Styling from "./cases/Styling.svelte";
 import TableAPI from "./cases/TableAPI.svelte";
@@ -50,6 +52,10 @@ import TreeTable from "./cases/TreeTable.svelte";
 import Print from "./cases/Print.svelte";
 import PrintWideGrid from "./cases/PrintWideGrid.svelte";
 import UndoRedo from "./cases/UndoRedo.svelte";
+import Toolbar from "./cases/Toolbar.svelte";
+import ToolbarCustom from "./cases/ToolbarCustom.svelte";
+import ExternalToolbar from "./cases/ExternalToolbar.svelte";
+import CustomRowHeight from "./cases/CustomRowHeight.svelte";
 
 
 export const links = [
@@ -174,6 +180,12 @@ export const links = [
 
 	["/reordering/:skin", "Reordering rows", Reordering, "Reordering"],
 	["/sort/:skin", "Sort data", Sort, "Sort"],
+	[
+		"/sort-custom/:skin",
+		"Custom data sorting",
+		SortCustom,
+		"Custom data sorting",
+	],
 	["/filters/:skin", "Filters", Filters, "Filters"],
 	[
 		"/filters-custom/:skin",
@@ -217,6 +229,7 @@ export const links = [
 	],
 
 	["/overlay/:skin", "Overlay", Overlay, "Overlay"],
+	["/hotkeys-custom/:skin", "Custom Hotkeys", HotkeysCustom, "HotkeysCustom"],
 	["/bigdata/:skin", "Render big data", StaticData, "StaticData"],
 	["/dynamic/:skin", "Dynamic loading", DynamicData, "DynamicData"],
 	["/rest/:skin", "REST backend", RestBackend, "RestBackend"],
@@ -231,4 +244,13 @@ export const links = [
 	["/print-wide/:skin", "Print wide grid", PrintWideGrid, "PrintWideGrid"],
 	["/locale/:skin", "Locales", Localization, "Localization"],
 	["/undo-redo/:skin", "Undo/redo", UndoRedo, "UndoRedo"],
+	["/toolbar/:skin", "Toolbar", Toolbar],
+	["/toolbar-custom/:skin", "Toolbar: custom", ToolbarCustom],
+	["/external-toolbar/:skin", "External Toolbar", ExternalToolbar],
+	[
+		"/custom-row-height/:skin",
+		"Custom row heights",
+		CustomRowHeight,
+		"CustomRowHeight",
+	],
 ];

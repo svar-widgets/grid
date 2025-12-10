@@ -10,7 +10,7 @@
 	<h4>Context menu with default actions</h4>
 	<ContextMenu api={grid}>
 		<HeaderMenu api={grid}>
-			<Grid {data} {columns} bind:this={grid} />
+			<Grid {data} {columns} bind:this={grid} multiselect reorder />
 		</HeaderMenu>
 	</ContextMenu>
 </div>

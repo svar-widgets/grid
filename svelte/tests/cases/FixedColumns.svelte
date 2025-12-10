@@ -19,9 +19,7 @@
 			<h4>Table with fixed / resizable columns</h4>
 			<div class="controls">
 				<Field label="Fix columns">
-					{#snippet children({ id })}
-						<Slider min={0} max={4} bind:value={left} {id} />
-					{/snippet}
+					<Slider min={0} max={4} bind:value={left} />
 				</Field>
 			</div>
 

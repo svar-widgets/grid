@@ -24,6 +24,7 @@ import type {
 	IDataHash,
 	IFilterValues,
 	IPrintConfig,
+	ISearchValue,
 } from "./types";
 import { sortByMany } from "./sort";
 import {
@@ -83,7 +84,7 @@ export default class DataStore extends Store<IData> {
 							_skin
 						);
 
-						_columns.forEach((col, i) => {
+						for (let i = 0; i < _columns.length; i++) {
 							this.normalizeColumns(
 								_columns,
 								i,
@@ -98,26 +99,35 @@ export default class DataStore extends Store<IData> {
 								footerRowCount,
 								_sizes
 							);
-						});
-
+						}
 						this.setState({ _columns, _sizes }, ctx);
 					},
 				},
 				{
 					in: ["data", "tree", "_filterIds"],
-					out: ["flatData"],
+					out: ["flatData", "_rowHeightFromData"],
 					exec: (ctx: TDataConfig) => {
 						const {
 							data,
 							tree,
+							dynamic,
 							_filterIds: filterIds,
 						} = this.getState();
+
+						const filterSet: Set<TID> | null =
+							filterIds && new Set(filterIds);
+
 						const flatData = tree
 							? this.flattenRows(data, [], filterIds)
-							: data.filter(
-									d => !filterIds || filterIds.includes(d.id)
-								);
-						this.setState({ flatData }, ctx);
+							: filterSet
+								? data.filter(d => filterSet.has(d.id))
+								: data;
+						const hasHeight =
+							!dynamic && flatData.some(d => d.rowHeight);
+						this.setState(
+							{ flatData, _rowHeightFromData: hasHeight },
+							ctx
+						);
 					},
 				},
 			],
@@ -198,8 +208,8 @@ export default class DataStore extends Store<IData> {
 			if (before || after) {
 				const id = before || after;
 				const index = data.findIndex(a => a.id === id);
-				data.splice(index + (after ? 1 : 0), 0, ev.row);
 				data = [...data];
+				data.splice(index + (after ? 1 : 0), 0, ev.row);
 			} else {
 				data = [...data, ev.row];
 			}
@@ -215,7 +225,7 @@ export default class DataStore extends Store<IData> {
 				inBus.exec("select-row", { id: row.id, show: true });
 		});
 		inBus.on("delete-row", (ev: IDataMethodsConfig["delete-row"]) => {
-			const { data, selectedRows, focusCell } = this.getState();
+			const { data, selectedRows, focusCell, editor } = this.getState();
 			const { id } = ev;
 
 			const update: Partial<IData> = {
@@ -224,6 +234,9 @@ export default class DataStore extends Store<IData> {
 
 			if (this.isSelected(id)) {
 				update.selectedRows = selectedRows.filter(a => a !== id);
+			}
+			if (editor?.id == id) {
+				update.editor = null;
 			}
 
 			this.setState(update);
@@ -308,7 +321,7 @@ export default class DataStore extends Store<IData> {
 					} else selectedRows = [id];
 				}
 
-				this.setState({ selectedRows });
+				this.setState({ selectedRows: [...selectedRows] });
 
 				if (focusCell?.row !== id) {
 					this.in.exec("focus-cell", { eventSource: "select-row" });
@@ -382,17 +395,21 @@ export default class DataStore extends Store<IData> {
 			} else ev.skipUndo = true;
 		});
 		inBus.on("sort-rows", (ev: IDataMethodsConfig["sort-rows"]) => {
-			const { key, add } = ev;
-			let { order = "asc" } = ev;
-
+			const { key, add, sort } = ev;
 			const state = this.getState();
-			let sortMarks = state.sortMarks;
 			const { columns, data, tree } = state;
+
+			if (sort) {
+				const nextData = [...data];
+				nextData.sort(sort);
+				this.setState({ data: nextData });
+				return;
+			}
+
+			const { order = "asc" } = ev;
+			let sortMarks = state.sortMarks;
 			const fields = Object.keys(sortMarks);
 			const fLength = fields.length;
-
-			if (sortMarks[key])
-				order = sortMarks[key].order === "asc" ? "desc" : "asc";
 
 			if (!add || !fLength || (fLength === 1 && sortMarks[key])) {
 				sortMarks = { [key]: { order } };
@@ -408,11 +425,13 @@ export default class DataStore extends Store<IData> {
 					...sortMarks,
 					[key]: {
 						order,
-						index: sortMarks[key]?.index ?? fLength,
+						index:
+							typeof add === "number"
+								? add
+								: (sortMarks[key]?.index ?? fLength),
 					},
 				};
 			}
-
 			const sortArr = Object.keys(sortMarks)
 				.sort((a, b) => sortMarks[a].index - sortMarks[b].index)
 				.map(k => ({ key: k, order: sortMarks[k].order }));
@@ -425,8 +444,9 @@ export default class DataStore extends Store<IData> {
 
 				if (tree) {
 					this.sortTree(nextData, sorter);
-				} else nextData.sort(sorter);
-
+				} else {
+					nextData.sort(sorter);
+				}
 				this.setState({ data: nextData });
 			}
 		});
@@ -483,10 +503,30 @@ export default class DataStore extends Store<IData> {
 		);
 
 		inBus.on("move-item", (ev: IDataMethodsConfig["move-item"]) => {
-			const { id, target, mode = "after", inProgress } = ev;
+			const { id, inProgress } = ev;
+			let { target, mode = "after" } = ev;
 			const { data, flatData, tree } = this.getState();
+
 			const sourceIndex = flatData.findIndex(a => a.id == id);
-			const targetIndex = flatData.findIndex(a => a.id == target);
+			let targetIndex;
+
+			if (mode === "up" || mode === "down") {
+				if (mode === "up") {
+					if (sourceIndex === 0) return;
+
+					targetIndex = sourceIndex - 1;
+					mode = "before";
+				} else if (mode === "down") {
+					if (sourceIndex === flatData.length - 1) return;
+
+					targetIndex = sourceIndex + 1;
+					mode = "after";
+				}
+
+				target = flatData[targetIndex] && flatData[targetIndex].id;
+			} else {
+				targetIndex = flatData.findIndex(a => a.id == target);
+			}
 
 			if (
 				sourceIndex === -1 ||
@@ -506,6 +546,32 @@ export default class DataStore extends Store<IData> {
 			this.setState({
 				data: tree ? this.normalizeTreeRows(updatedData) : updatedData,
 			});
+		});
+
+		inBus.on("copy-row", (ev: IDataMethodsConfig["copy-row"]) => {
+			const { id, target, mode = "after" } = ev;
+			const state = this.getState();
+
+			const { flatData, _filterIds: filterIds } = state;
+			let { data } = state;
+
+			const sourceRow = this.getRow(id);
+			if (!sourceRow) return;
+
+			const copiedRow: IRow = { ...sourceRow, id: uid() };
+			ev.id = copiedRow.id;
+
+			const targetIndex = flatData.findIndex(a => a.id == target);
+			if (targetIndex === -1) return;
+
+			data.splice(targetIndex + (mode === "after" ? 1 : 0), 0, copiedRow);
+			data = [...data];
+
+			const update: Partial<IData> = { data };
+
+			if (filterIds) update._filterIds = [...filterIds, copiedRow.id];
+
+			this.setState(update);
 		});
 
 		inBus.on("open-row", (ev: IDataMethodsConfig["open-row"]) => {
@@ -819,11 +885,13 @@ export default class DataStore extends Store<IData> {
 				_sizes,
 				flatData: data,
 				dynamic,
+				_rowHeightFromData,
 			} = this.getState();
 
 			let left = -1,
 				top = -1,
-				width = 0;
+				width = 0,
+				height = 0;
 			if (ev.column) {
 				left = 0;
 				const ind = _columns.findIndex(a => a.id == ev.column);
@@ -835,8 +903,20 @@ export default class DataStore extends Store<IData> {
 				}
 			}
 			if (ev.row && !dynamic) {
-				const index = data.findIndex(a => a.id === ev.row);
-				if (index >= 0) top = _sizes.rowHeight * index;
+				const index = data.findIndex(a => a.id == ev.row);
+				if (index >= 0) {
+					if (_rowHeightFromData) {
+						top = data
+							.slice(0, index)
+							.reduce(
+								(total, row) =>
+									total + (row.rowHeight || _sizes.rowHeight),
+								0
+							);
+
+						height = data[index].rowHeight;
+					} else top = _sizes.rowHeight * index;
+				}
 			}
 
 			this.setState({
@@ -844,7 +924,7 @@ export default class DataStore extends Store<IData> {
 					top,
 					left,
 					width,
-					height: _sizes.rowHeight,
+					height: height || _sizes.rowHeight,
 				},
 			});
 		});
@@ -895,6 +975,7 @@ export default class DataStore extends Store<IData> {
 			focusCell: null,
 			_print: null,
 			history: { undo: 0, redo: 0 },
+			search: null,
 		};
 		this._router.init(state);
 	}
@@ -921,12 +1002,16 @@ export default class DataStore extends Store<IData> {
 				_filterIds: null,
 				filterValues: {},
 				sortMarks: {},
+				search: null,
 			});
 			if (this._historyManager) this._historyManager.resetHistory();
 		}
 
 		if (isCommunity()) {
-			if (state.tree) state.undo = false;
+			if (state.tree) {
+				state.undo = false;
+				state.reorder = false;
+			}
 			if (state.split?.right) state.split.right = 0;
 		}
 
@@ -1196,12 +1281,12 @@ export default class DataStore extends Store<IData> {
 
 	private copyColumns(columns: IColumn[]) {
 		const _columns: IRenderColumn[] = [];
-		columns.forEach(col => {
-			const copy = { ...col } as IRenderColumn;
+		for (let i = 0; i < columns.length; i++) {
+			const copy = { ...columns[i] } as IRenderColumn;
 			this.copyHeaderFooter(copy, "header");
 			this.copyHeaderFooter(copy, "footer");
-			_columns.push(copy);
-		});
+			_columns[i] = copy;
+		}
 		return _columns;
 	}
 
@@ -1346,9 +1431,10 @@ export default class DataStore extends Store<IData> {
 	}
 
 	normalizeRows(data: IRow[]): IRow[] {
-		data.forEach(row => {
-			if (!row.id) row.id = uid();
-		});
+		for (let i = 0; i < data.length; i++) {
+			if (!data[i].id) data[i].id = uid();
+		}
+
 		return data;
 	}
 
@@ -1434,6 +1520,36 @@ export default class DataStore extends Store<IData> {
 			}
 			return true;
 		};
+	}
+
+	searchRows(search: string, columns?: { [key: TID]: boolean }) {
+		search = search.trim().toLowerCase();
+		const rows: ISearchValue["rows"] = {};
+
+		if (!search) return rows;
+
+		const { flatData, columns: allColumns } = this.getState();
+
+		const columnsToSearch = columns
+			? allColumns.filter(col => columns[col.id])
+			: allColumns;
+
+		flatData.forEach(row => {
+			const columnsMatches: { [key: TID]: boolean } = {};
+
+			columnsToSearch.forEach(column => {
+				const cellValue = getRenderValue(row, column);
+				if (String(cellValue).toLowerCase().includes(search)) {
+					columnsMatches[column.id] = true;
+				}
+			});
+
+			if (Object.keys(columnsMatches).length) {
+				rows[row.id] = columnsMatches;
+			}
+		});
+
+		return rows;
 	}
 
 	private normalizeSizes(
@@ -1524,18 +1640,25 @@ export type IDataMethodsConfig = CombineTypes<
 			eventSource?: string;
 		};
 		["hide-column"]: {
-			id: string;
+			id: TID;
 			mode?: boolean;
 			eventSource?: string;
 		} & ISkipUndoAction;
 		["sort-rows"]: {
 			key: string;
 			order?: "asc" | "desc";
-			add?: boolean;
+			add?: boolean | number;
+			sort?: (a: IRow, b: IRow) => 1 | -1 | 0;
+		};
+		["search-rows"]: {
+			search: string;
+			columns?: {
+				[key: TID]: boolean;
+			};
 		};
 		["open-editor"]: {
-			id: string;
-			column?: string;
+			id: TID;
+			column?: TID;
 		};
 		["close-editor"]: {
 			ignore?: boolean;
@@ -1556,9 +1679,15 @@ export type IDataMethodsConfig = CombineTypes<
 		};
 		["move-item"]: {
 			id: TID;
-			target: TID;
-			mode?: "before" | "after";
+			target?: TID;
+			mode?: "before" | "after" | "up" | "down";
 			inProgress?: boolean;
+			eventSource?: string;
+		};
+		["copy-row"]: {
+			id: TID;
+			target?: TID;
+			mode?: "before" | "after";
 			eventSource?: string;
 		};
 		["open-row"]: {
@@ -1589,7 +1718,7 @@ export type IDataMethodsConfig = CombineTypes<
 			column?: TID;
 			eventSource?: string;
 		};
-		["print"]?: IPrintConfig;
+		["print"]: IPrintConfig;
 		["undo"]: void;
 		["redo"]: void;
 		["request-data"]: {

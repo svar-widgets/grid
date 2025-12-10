@@ -92,14 +92,44 @@ export class HistoryManager {
 			},
 			"update-row": {
 				handler: (ev: IDataMethodsConfig["update-row"]) => {
-					const { id } = ev;
+					const { id, row } = ev;
 
 					const rowData = this.getRow(id);
+					for (const key in row) {
+						if (!Object.keys(rowData).includes(key)) {
+							rowData[key] = undefined;
+						}
+					}
 
 					return {
 						action: "update-row",
 						data: { id, row: rowData },
 						source: { action: "update-row", data: ev },
+					};
+				},
+			},
+			"copy-row": {
+				handler: (ev: IDataMethodsConfig["copy-row"]) => {
+					const { id } = ev;
+
+					const { data } = this.getState();
+					const rowIndex = data.findIndex(a => a.id == id);
+					const rowData = data[rowIndex];
+
+					return {
+						action: "delete-row",
+						data: { id },
+						source: {
+							action: "add-row",
+							data: {
+								id,
+								row: rowData,
+								before:
+									rowIndex < data.length - 1
+										? data[rowIndex + 1].id
+										: undefined,
+							},
+						},
 					};
 				},
 			},

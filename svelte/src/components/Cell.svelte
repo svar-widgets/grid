@@ -1,5 +1,5 @@
 <script>
-	import { onDestroy, getContext } from "svelte";
+	import { onDestroy, getContext, untrack } from "svelte";
 	import { getStyle } from "../helpers/columnWidth";
 	import { getRenderValue } from "@svar-ui/grid-store";
 
@@ -9,7 +9,6 @@
 		cellStyle = null,
 		columnStyle = null,
 		children,
-		reorder,
 		focusable,
 	} = $props();
 
@@ -25,7 +24,11 @@
 		css = $derived(buildCellCss(columnStyle, cellStyle));
 
 	const api = getContext("grid-store");
-	const { focusCell } = api.getReactiveState();
+	const { focusCell, search, reorder } = api.getReactiveState();
+
+	const shouldHighlight = $derived(
+		$search?.rows[row.id] && $search.rows[row.id][column.id]
+	);
 
 	const isDraggable = $derived(
 		typeof column.draggable === "function"
@@ -35,9 +38,16 @@
 
 	let cellEl;
 	$effect(() => {
-		const needFocus =
-			$focusCell?.row === row.id && $focusCell?.column === column.id;
-		if (cellEl && focusable && needFocus) cellEl.focus();
+		$focusCell;
+		focusable;
+		untrack(() => {
+			if (cellEl && focusable) {
+				const needFocus =
+					$focusCell?.row === row.id &&
+					$focusCell?.column === column.id;
+				if (needFocus) cellEl.focus();
+			}
+		});
 	});
 
 	function buildCellCss(columnStyle, cellStyle) {
@@ -67,6 +77,13 @@
 			focusable = false;
 		}
 	});
+
+	function highlightText(text) {
+		const regex = new RegExp(`(${$search.value.trim()})`, "gi");
+		const parts = String(text).split(regex);
+
+		return parts.map(text => ({ text, highlight: regex.test(text) }));
+	}
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -85,7 +102,7 @@
 	aria-colindex={column._colindex}
 	aria-readonly={!column.editor ? true : undefined}
 >
-	{#if reorder && column.draggable}
+	{#if $reorder && column.draggable}
 		{#if isDraggable}
 			<i draggable-data="true" class="wx-draggable wxi-drag"></i>
 		{:else}
@@ -110,10 +127,18 @@
 			{column}
 			onaction={({ action, data }) => api.exec(action, data)}
 		/>
-	{:else if children}{@render children()}{:else}{getRenderValue(
-			row,
-			column
-		)}{/if}
+	{:else if children}{@render children()}
+	{:else if shouldHighlight}
+		<span>
+			{#each highlightText(getRenderValue(row, column)) as { highlight, text }}
+				{#if highlight}
+					<mark class="wx-search">{text}</mark>
+				{:else}{text}{/if}
+			{/each}
+		</span>
+	{:else}
+		{getRenderValue(row, column)}
+	{/if}
 </div>
 
 <style>
@@ -177,5 +202,9 @@
 	.wx-cell[tabindex="0"]:focus {
 		outline: 1px solid var(--wx-color-primary);
 		outline-offset: -1px;
+	}
+
+	.wx-search {
+		background-color: #ffeb3b;
 	}
 </style>

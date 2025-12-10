@@ -6,8 +6,10 @@
 	import { repeatData, repeatColumns } from "../data";
 	import { timer, timerEnd } from "../custom/timers";
 
-	let data = $state([]);
-	let columns = $state([]);
+	// svelte-ignore non_reactive_update
+	let data = [];
+	// svelte-ignore non_reactive_update
+	let columns = [];
 
 	let stats = $state(null);
 	let counter = $state(1);

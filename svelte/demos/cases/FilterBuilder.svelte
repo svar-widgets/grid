@@ -6,6 +6,21 @@
 
 	const { data, columns } = getData();
 	columns.push({ id: "comments", flexgrow: 1, header: "Comments" });
+	const value = {
+		glue: "or",
+		rules: [
+			{
+				field: "city",
+				filter: "equal",
+				value: "Eulaliabury",
+			},
+			{
+				field: "city",
+				filter: "equal",
+				value: "West Meda",
+			},
+		],
+	};
 
 	let api = $state();
 
@@ -27,11 +42,21 @@
 		const filter = createFilter(value);
 		api.exec("filter-rows", { filter });
 	}
+
+	$effect(() => {
+		if (api) applyFilter({ value });
+	});
 </script>
 
 <div style="padding: 20px;">
 	<h4>Filter grid data executing "filter-rows" action</h4>
-	<FilterBuilder {fields} {options} type={"line"} onchange={applyFilter} />
+	<FilterBuilder
+		{value}
+		{fields}
+		{options}
+		type={"line"}
+		onchange={applyFilter}
+	/>
 
 	<Grid {data} {columns} bind:this={api} />
 </div>

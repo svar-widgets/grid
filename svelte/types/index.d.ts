@@ -1,5 +1,6 @@
 import type { Component, ComponentProps } from "svelte";
 import { ContextMenu as BaseContextMenu } from "@svar-ui/svelte-menu";
+import { Toolbar as BaseToolbar } from "@svar-ui/svelte-toolbar";
 
 import type {
 	IColumn,
@@ -84,6 +85,9 @@ export declare const Grid: Component<
 
 		overlay?: string | Component;
 		columns: IColumnConfig[];
+		hotkeys?:
+			| false
+			| { [key: string]: ((e?: KeyboardEvent) => void) | boolean };
 	} & IConfig &
 		GridActions<TMethodsConfig>
 >;
@@ -96,6 +100,12 @@ export declare const HeaderMenu: Component<{
 
 export declare const ContextMenu: Component<
 	ComponentProps<typeof BaseContextMenu> & {
+		api?: IApi;
+	}
+>;
+
+export declare const Toolbar: Component<
+	ComponentProps<typeof BaseToolbar> & {
 		api?: IApi;
 	}
 >;
