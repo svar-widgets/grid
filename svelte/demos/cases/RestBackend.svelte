@@ -28,7 +28,7 @@
 	];
 	let data = $state([]);
 	const provider = new RestDataProvider(
-		"https://master--svar-grid-go--dev.webix.io/films",
+		"https://grid-backend.svar.dev/films",
 		obj => {
 			obj.year = obj.year * 1;
 			obj.votes = obj.votes * 1;
