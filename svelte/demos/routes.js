@@ -56,6 +56,7 @@ import Toolbar from "./cases/Toolbar.svelte";
 import ToolbarCustom from "./cases/ToolbarCustom.svelte";
 import ExternalToolbar from "./cases/ExternalToolbar.svelte";
 import CustomRowHeight from "./cases/CustomRowHeight.svelte";
+import ExportCSV from "./cases/ExportCSV.svelte";
 
 
 export const links = [
@@ -242,6 +243,7 @@ export const links = [
 	["/scroll/:skin", "Scroll by API", ScrollTable, "ScrollTable"],
 	["/print/:skin", "Print", Print, "Print"],
 	["/print-wide/:skin", "Print wide grid", PrintWideGrid, "PrintWideGrid"],
+	["/export-csv/:skin", "Export to CSV", ExportCSV, "ExportCSV"],
 	["/locale/:skin", "Locales", Localization, "Localization"],
 	["/undo-redo/:skin", "Undo/redo", UndoRedo, "UndoRedo"],
 	["/toolbar/:skin", "Toolbar", Toolbar],

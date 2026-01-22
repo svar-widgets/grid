@@ -3,7 +3,6 @@ import type { TDataConfig, TWritableCreator, TID } from "@svar-ui/lib-state";
 import { getValue, setValue } from "./editors";
 import { download, getRenderValue } from "./export";
 import { getCsvData } from "./export/csv";
-import { getExcelData, getExportStyles } from "./export/excel";
 import { normalizePrintConfig } from "./print";
 import { HistoryManager } from "./HistoryManager";
 import { isCommunity } from "./package";
@@ -582,6 +581,25 @@ export default class DataStore extends Store<IData> {
 		inBus.on("close-row", (ev: IDataMethodsConfig["close-row"]) => {
 			const { id, nested } = ev;
 			this.toggleBranch(id, false, nested);
+		});
+		inBus.on("export-data", (ev: IDataMethodsConfig["export-data"]) => {
+			return new Promise((resolve, reject) => {
+				const format = ev.format || "csv";
+
+				const filename = `${ev.fileName || "data"}.${format}`;
+
+				if (format == "csv") {
+					const csv = getCsvData(this.getState(), ev.csv || {});
+					if (ev.download !== false)
+						download(
+							new Blob(["\uFEFF" + csv], { type: "text/csv" }),
+							filename
+						);
+					else ev.result = csv;
+					resolve(true);
+				}
+				else reject();
+			});
 		});
 		inBus.on(
 			"hotkey",
@@ -1700,10 +1718,7 @@ export type IDataMethodsConfig = CombineTypes<
 			nested?: boolean;
 			eventSource?: string;
 		};
-		["export"]: {
-			options?: IExportOptions;
-			result?: any;
-		};
+		["export-data"]: IExportOptions;
 		["scroll"]: {
 			row?: TID;
 			column?: TID;

@@ -1,7 +1,7 @@
-import type { IColumn, IExportCell, IExportOptions, IData } from "../types";
+import type { IColumn, IExportCell, ICSVOptions, IData } from "../types";
 import { getRenderValue } from "./index";
 
-export function getCsvData(state: Partial<IData>, options: IExportOptions) {
+export function getCsvData(state: Partial<IData>, options: ICSVOptions) {
 	const reg = /\n|"|;|,/;
 	let csv = "";
 

@@ -1,6 +1,6 @@
 {
 	"name": "@svar-ui/svelte-grid",
-	"version": "2.4.0",
+	"version": "2.5.0",
 	"description": "A fast, feature-rich Svelte DataGrid component",
 	"productTag": "grid",
 	"productTrial": false,
@@ -39,9 +39,9 @@
 		"@svar-ui/svelte-menu": "2.4.0",
 		"@svar-ui/svelte-core": "2.4.0",
 		"@svar-ui/svelte-toolbar": "2.4.0",
-		"@svar-ui/grid-data-provider": "2.4.0",
-		"@svar-ui/grid-locales": "2.4.0",
-		"@svar-ui/grid-store": "2.4.0"
+		"@svar-ui/grid-data-provider": "2.5.0",
+		"@svar-ui/grid-locales": "2.5.0",
+		"@svar-ui/grid-store": "2.5.0"
 	},
 	"devDependencies": {
 		"@svar-ui/svelte-editor": "2.4.0",

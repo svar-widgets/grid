@@ -270,16 +270,18 @@ export type TExportStyles = {
 
 export type TConfigExportStyles = TExportStyles | string | boolean;
 
-export interface IExportOptions {
-	format?: string;
+export interface ICSVOptions {
+	header?: boolean;
+	footer?: boolean;
+	rows?: string;
+	cols?: string;
+}
+
+export interface IExcelOptions {
 	cdn?: string;
 	header?: boolean;
 	footer?: boolean;
-	download?: boolean;
-	fileName?: string;
 	sheetName?: string;
-	rows?: string;
-	cols?: string;
 	styles?: TConfigExportStyles;
 	cellTemplate?: (value: Value, row: IRow, column: IColumn) => string;
 	headerCellTemplate?: (
@@ -299,6 +301,15 @@ export interface IExportOptions {
 		column: IColumn,
 		type: TColumnType
 	) => IDataHash<any> | null;
+}
+
+export interface IExportOptions {
+	format?: "csv" | "xlsx";
+	fileName?: string;
+	download?: boolean;
+	result?: any;
+	csv?: ICSVOptions;
+	excel?: IExcelOptions;
 }
 
 export type TColumnType = "header" | "footer";

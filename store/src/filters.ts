@@ -2,7 +2,8 @@ import { TFilterHandler, TFilterType } from "./types";
 
 export const filtersHandlers: { [key: string]: TFilterHandler } = {
 	text: (a: string, b: string) => {
-		if (a) return a.toLowerCase().indexOf(b.toLowerCase()) !== -1;
+		if (a)
+			return a.toString().toLowerCase().indexOf(b.toLowerCase()) !== -1;
 		return !b;
 	},
 	richselect: (a: string | number, b: string | number) => {

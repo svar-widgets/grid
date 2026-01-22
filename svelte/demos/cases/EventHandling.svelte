@@ -14,7 +14,7 @@
 
 	let data = $state([]);
 	const provider = new RestDataProvider(
-		"https://grid-backend.svar.dev/films",
+		"https://master--svar-grid-go--dev.webix.io/films",
 		o => o
 	);
 	provider.getData().then(v => (data = v));

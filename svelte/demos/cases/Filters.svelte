@@ -38,7 +38,7 @@
 		},
 		{
 			id: "stars",
-			header: "Stars",
+			header: { filter: "text" },
 			footer: "Stars",
 		},
 	];

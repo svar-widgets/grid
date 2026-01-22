@@ -1,3 +1,13 @@
+## 2.5.0
+
+### New features
+
+-   Export to CSV
+
+### Fixes
+
+-   Text filtering fails for numeric values
+
 ## 2.4.0
 
 ### New features

@@ -1,6 +1,6 @@
 {
 	"name": "@svar-ui/grid-store",
-	"version": "2.4.0",
+	"version": "2.5.0",
 	"type": "module",
 	"main": "dist/index.js",
 	"module": "dist/index.js",
