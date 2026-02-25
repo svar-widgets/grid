@@ -50,7 +50,12 @@
 
 	const SvelteComponent = $derived.by(() => {
 		let editor = column.editor;
+
 		if (typeof editor === "function") editor = editor(row, column);
+
+		if (typeof editor === "object" && !!editor?.component)
+			return editor.component;
+
 		let type = typeof editor === "string" ? editor : editor.type;
 		return editors[type];
 	});

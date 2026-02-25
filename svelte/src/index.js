@@ -14,6 +14,8 @@ export {
 	defaultToolbarButtons,
 } from "@svar-ui/grid-store";
 
+export { registerEditor } from "./components/inlineEditors/editors";
+
 import { setEnv } from "@svar-ui/lib-dom";
 import { env } from "@svar-ui/lib-svelte";
 setEnv(env);

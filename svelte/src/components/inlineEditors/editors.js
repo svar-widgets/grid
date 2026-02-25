@@ -9,3 +9,7 @@ export const editors = {
 	datepicker: Datepicker,
 	richselect: Richselect,
 };
+
+export function registerEditor(type, component) {
+	editors[type] = component;
+}
