@@ -62,8 +62,8 @@ export function handleAction(
 			if (api._temp?.length) {
 				const sortedTemp = [...api._temp].sort(
 					(a, b) =>
-						data.findIndex(d => d.id == b.id) -
-						data.findIndex(d => d.id == a.id)
+						data.findIndex(d => d.id === b.id) -
+						data.findIndex(d => d.id === a.id)
 				);
 				sortedTemp.forEach((temp: any, ti) => {
 					selectedRows.forEach((id, ri) => {
@@ -92,8 +92,8 @@ export function handleAction(
 			// sort rows according to their position in data
 			const sortedRows = [...selectedRows].sort(
 				(a, b) =>
-					data.findIndex(d => d.id == a) -
-					data.findIndex(d => d.id == b)
+					data.findIndex(d => d.id === a) -
+					data.findIndex(d => d.id === b)
 			);
 
 			sortedRows.forEach(id => {
@@ -105,8 +105,8 @@ export function handleAction(
 			// sort rows in reverse order according to their position in data
 			const sortedRows = [...selectedRows].sort(
 				(a, b) =>
-					data.findIndex(d => d.id == b) -
-					data.findIndex(d => d.id == a)
+					data.findIndex(d => d.id === b) -
+					data.findIndex(d => d.id === a)
 			);
 
 			sortedRows.forEach(id => {

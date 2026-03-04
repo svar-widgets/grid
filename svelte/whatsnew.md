@@ -1,3 +1,10 @@
+## 2.5.1
+
+### Fixes
+
+-   Items with string ids fail in some operations
+-   Multiple sorting and selection does not work on MacOs
+
 ## 2.5.0
 
 ### New features

@@ -41,9 +41,7 @@ export type TEditorHandler = (
 ) => TEditorType | IColumnEditor | null;
 export interface ISearchValue {
 	value: string;
-	rows: {
-		[key: TID]: { [key: TID]: boolean };
-	};
+	rows: Record<string | number, Record<string | number, boolean>>;
 }
 export interface IHistory {
 	undo: number;

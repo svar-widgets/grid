@@ -56,7 +56,7 @@ export class HistoryManager {
 					const { id } = ev;
 
 					const { data } = this.getPrev();
-					const rowIndex = data.findIndex(a => a.id == id);
+					const rowIndex = data.findIndex(a => a.id === id);
 
 					return {
 						action: "add-row",
@@ -113,7 +113,7 @@ export class HistoryManager {
 					const { id } = ev;
 
 					const { data } = this.getState();
-					const rowIndex = data.findIndex(a => a.id == id);
+					const rowIndex = data.findIndex(a => a.id === id);
 					const rowData = data[rowIndex];
 
 					return {
@@ -184,7 +184,7 @@ export class HistoryManager {
 					const { id, target, mode } = ev;
 					const { flatData } = this.getPrev();
 
-					const sourceIndex = flatData.findIndex(a => a.id == id);
+					const sourceIndex = flatData.findIndex(a => a.id === id);
 
 					return {
 						action: "move-item",
@@ -341,12 +341,12 @@ export class HistoryManager {
 
 		if (this.getState().tree) return this.getTreeRow(data, id);
 
-		return data.find(a => a.id == id);
+		return data.find(a => a.id === id);
 	}
 
 	private getTreeRow(data: IRow[], id: TID): IRow {
 		for (let i = 0; i < data.length; i++) {
-			if (data[i].id == id) return data[i];
+			if (data[i].id === id) return data[i];
 			if (data[i].data) {
 				const res = this.getTreeRow(data[i].data, id);
 				if (res) return res;
@@ -357,6 +357,6 @@ export class HistoryManager {
 
 	private getColumn(id: TID): IColumn {
 		const { columns } = this.getPrev();
-		return columns.find(a => a.id == id);
+		return columns.find(a => a.id === id);
 	}
 }

@@ -8,6 +8,8 @@
 // https://on.cypress.io/custom-commands
 // ***********************************************
 
+import { setID } from "@svar-ui/lib-dom";
+
 Cypress.Commands.add("shot", (...args) => {
 	// eslint-disable-next-line cypress/no-unnecessary-waiting
 	cy.wait(100);
@@ -82,7 +84,7 @@ Cypress.Commands.add(
 			case "table-scroll":
 				return subject.get(".wx-scroll");
 			case "table-row":
-				return subject.get(`.wx-row[data-id="${id}"]`);
+				return subject.get(`.wx-row[data-id="${setID(id)}"]`);
 			case "table-rows":
 				return subject.get(".wx-row");
 			case "table-cell":
@@ -104,7 +106,9 @@ Cypress.Commands.add(
 			case "menu":
 				return subject.get(".wx-menu");
 			case "menu-item":
-				return subject.get(".wx-menu .wx-option[data-id='" + id + "']");
+				return subject.get(
+					`.wx-menu .wx-option[data-id="${setID(id)}"]`
+				);
 			case "header-rows":
 				return subject.get(".wx-h-row");
 			case "header-row":

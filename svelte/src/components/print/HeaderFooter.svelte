@@ -15,7 +15,7 @@
 {#each columns as row, i}
 	<tr>
 		{#each row as cell (cell.id)}
-			{@const column = _columns.find(c => c.id == cell.id)}
+			{@const column = _columns.find(c => c.id === cell.id)}
 			<th
 				style={getPrintCellStyle(cell, sizes.columnWidth)}
 				class="wx-print-cell-{type} {getColumnCss(column)}"

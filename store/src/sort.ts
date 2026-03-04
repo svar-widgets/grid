@@ -34,7 +34,7 @@ export function sortByMany(sortArray: TSortConfig[], columns: IColumn[]) {
 	if (!sortArray || !sortArray.length) return;
 
 	const sorts = sortArray.map(item => {
-		const column = columns.find(c => c.id == item.key);
+		const column = columns.find(c => c.id == item.key); // the non-strict comparison, since field is always a string
 		return sortBy(item.order, column);
 	});
 	if (sortArray.length === 1) return sorts[0];

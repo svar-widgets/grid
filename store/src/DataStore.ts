@@ -37,7 +37,7 @@ import { getFilterHandler } from "./filters";
 export default class DataStore extends Store<IData> {
 	public in: EventBus<TMethodsConfig, keyof TMethodsConfig>;
 	private _router: DataRouter<IData, IDataConfig, TMethodsConfig>;
-	private _branches: { [key: TID]: IRow };
+	private _branches: Record<string | number, IRow>;
 	private _xlsxWorker: any;
 	private _historyManager: HistoryManager;
 
@@ -234,7 +234,7 @@ export default class DataStore extends Store<IData> {
 			if (this.isSelected(id)) {
 				update.selectedRows = selectedRows.filter(a => a !== id);
 			}
-			if (editor?.id == id) {
+			if (editor?.id === id) {
 				update.editor = null;
 			}
 
@@ -263,7 +263,7 @@ export default class DataStore extends Store<IData> {
 					data = update;
 				}
 			} else {
-				const index = data.findIndex(a => a.id == id);
+				const index = data.findIndex(a => a.id === id);
 				const obj = { ...data[index] };
 				setValue(obj, col, value);
 
@@ -276,7 +276,7 @@ export default class DataStore extends Store<IData> {
 			let { data } = this.getState();
 			const { id, row } = ev;
 
-			const index = data.findIndex(a => a.id == id);
+			const index = data.findIndex(a => a.id === id);
 			data = [...data];
 			data[index] = { ...data[index], ...row };
 			this.setState({ data });
@@ -301,14 +301,13 @@ export default class DataStore extends Store<IData> {
 					const { data } = this.getState();
 
 					let sindex = data.findIndex(
-						a => a.id == selectedRows[selectedRows.length - 1]
+						a => a.id === selectedRows[selectedRows.length - 1]
 					);
-					let eindex = data.findIndex(a => a.id == id);
+					let eindex = data.findIndex(a => a.id === id);
 					if (sindex > eindex) [sindex, eindex] = [eindex, sindex];
 
 					data.slice(sindex, eindex + 1).forEach(a => {
-						if (selectedRows.indexOf(a.id) === -1)
-							selectedRows.push(a.id);
+						if (!this.isSelected(a.id)) selectedRows.push(a.id);
 					});
 				} else if (toggle && this.isSelected(id)) {
 					if (mode === true) return;
@@ -337,10 +336,10 @@ export default class DataStore extends Store<IData> {
 				if (eventSource !== "click") {
 					if (
 						(!split.left ||
-							_columns.findIndex(a => a.id == ev.column) >=
+							_columns.findIndex(a => a.id === ev.column) >=
 								split.left) &&
 						(!split.right ||
-							_columns.findIndex(a => a.id == ev.column) <
+							_columns.findIndex(a => a.id === ev.column) <
 								_columns.length - split.right)
 					) {
 						this.in.exec("scroll", { row, column });
@@ -356,10 +355,10 @@ export default class DataStore extends Store<IData> {
 			}
 			let width = ev.width || 0;
 			const columns = [...this.getState().columns];
-			const column = columns.find(a => a.id == id);
+			const column = this.getColumn(id);
 
 			if (auto) {
-				if (auto == "data" || auto === true) {
+				if (auto === "data" || auto === true) {
 					const { flatData, _skin } = this.getState();
 					let max = flatData.length;
 
@@ -369,7 +368,7 @@ export default class DataStore extends Store<IData> {
 					width = getColumnWidth(column, curData, _skin);
 				}
 
-				if (auto == "header" || auto === true) {
+				if (auto === "header" || auto === true) {
 					const { _skin } = this.getState();
 
 					width = Math.max(getHeaderColWidth(column, _skin), width);
@@ -383,7 +382,7 @@ export default class DataStore extends Store<IData> {
 		inBus.on("hide-column", (ev: IDataMethodsConfig["hide-column"]) => {
 			const { id, mode } = ev;
 			const columns = [...this.getState().columns];
-			const column = columns.find(a => a.id == id);
+			const column = this.getColumn(id);
 			const visibleColumns = columns.reduce(
 				(p, v) => p + (v.hidden ? 0 : 1),
 				0
@@ -506,7 +505,7 @@ export default class DataStore extends Store<IData> {
 			let { target, mode = "after" } = ev;
 			const { data, flatData, tree } = this.getState();
 
-			const sourceIndex = flatData.findIndex(a => a.id == id);
+			const sourceIndex = flatData.findIndex(a => a.id === id);
 			let targetIndex;
 
 			if (mode === "up" || mode === "down") {
@@ -524,7 +523,7 @@ export default class DataStore extends Store<IData> {
 
 				target = flatData[targetIndex] && flatData[targetIndex].id;
 			} else {
-				targetIndex = flatData.findIndex(a => a.id == target);
+				targetIndex = flatData.findIndex(a => a.id === target);
 			}
 
 			if (
@@ -560,7 +559,7 @@ export default class DataStore extends Store<IData> {
 			const copiedRow: IRow = { ...sourceRow, id: uid() };
 			ev.id = copiedRow.id;
 
-			const targetIndex = flatData.findIndex(a => a.id == target);
+			const targetIndex = flatData.findIndex(a => a.id === target);
 			if (targetIndex === -1) return;
 
 			data.splice(targetIndex + (mode === "after" ? 1 : 0), 0, copiedRow);
@@ -588,7 +587,7 @@ export default class DataStore extends Store<IData> {
 
 				const filename = `${ev.fileName || "data"}.${format}`;
 
-				if (format == "csv") {
+				if (format === "csv") {
 					const csv = getCsvData(this.getState(), ev.csv || {});
 					if (ev.download !== false)
 						download(
@@ -912,7 +911,7 @@ export default class DataStore extends Store<IData> {
 				height = 0;
 			if (ev.column) {
 				left = 0;
-				const ind = _columns.findIndex(a => a.id == ev.column);
+				const ind = _columns.findIndex(a => a.id === ev.column);
 				width = _columns[ind].width;
 				for (let i = split.left ?? 0; i < ind; i++) {
 					const col = _columns[i];
@@ -921,7 +920,7 @@ export default class DataStore extends Store<IData> {
 				}
 			}
 			if (ev.row && !dynamic) {
-				const index = data.findIndex(a => a.id == ev.row);
+				const index = data.findIndex(a => a.id === ev.row);
 				if (index >= 0) {
 					if (_rowHeightFromData) {
 						top = data
@@ -1012,7 +1011,6 @@ export default class DataStore extends Store<IData> {
 		// perform these changes only if data was reset
 		if (!isSame(this.getState().data, state.data)) {
 			if (state.tree) {
-				this._branches = { 0: { data: state.data } };
 				state.data = this.normalizeTreeRows(state.data);
 			} else state.data = this.normalizeRows(state.data);
 
@@ -1057,12 +1055,12 @@ export default class DataStore extends Store<IData> {
 	getRow(id: TID): IRow {
 		const { tree } = this.getState();
 		if (tree) return this._branches[id];
-		return this.getState().data.find(a => a.id == id);
+		return this.getState().data.find(a => a.id === id);
 	}
 
 	getRowIndex(id: TID, data?: any[]): number {
 		if (!data) data = this.getState().flatData;
-		return data.findIndex(a => a.id == id);
+		return data.findIndex(a => a.id === id);
 	}
 
 	getNextRow(id: TID): IRow {
@@ -1078,12 +1076,12 @@ export default class DataStore extends Store<IData> {
 	}
 
 	getColumn(id: TID): IColumn {
-		return this.getState().columns.find(a => a.id == id);
+		return this.getState().columns.find(a => a.id === id);
 	}
 
 	getNextColumn(id: TID, visible?: boolean): IRenderColumn {
 		const columns = this.getState()._columns;
-		const index = columns.findIndex((c: IRenderColumn) => c.id == id);
+		const index = columns.findIndex((c: IRenderColumn) => c.id === id);
 
 		if (visible) {
 			return this._getFirstVisibleColumn(index + 1);
@@ -1094,7 +1092,7 @@ export default class DataStore extends Store<IData> {
 
 	getPrevColumn(id: TID, visible?: boolean): IRenderColumn {
 		const columns = this.getState()._columns;
-		const index = columns.findIndex((c: IRenderColumn) => c.id == id);
+		const index = columns.findIndex((c: IRenderColumn) => c.id === id);
 
 		if (visible) {
 			return this._getLastVisibleColumn(index - 1);
@@ -1142,7 +1140,7 @@ export default class DataStore extends Store<IData> {
 	getNextEditor(row: IRow, column?: IColumn): IColumn {
 		let columns = this.getState().columns;
 		if (column) {
-			const index = columns.findIndex(c => c.id == column.id);
+			const index = columns.findIndex(c => c.id === column.id);
 			columns = columns.slice(index + 1);
 		}
 		return columns.find(c => this.isCellEditable(row, c));
@@ -1151,7 +1149,7 @@ export default class DataStore extends Store<IData> {
 	getPrevEditor(row: IRow, column?: IColumn): IColumn {
 		let columns = this.getState().columns;
 		if (column) {
-			const index = columns.findLastIndex(c => c.id == column.id);
+			const index = columns.findLastIndex(c => c.id === column.id);
 			columns = columns.slice(0, index);
 		}
 		return columns.findLast(c => this.isCellEditable(row, c));
@@ -1197,7 +1195,7 @@ export default class DataStore extends Store<IData> {
 		this._branches[id] = item;
 
 		const parentRow = this._branches[item.$parent];
-		const parentIndex = parentRow.data.findIndex((a: IRow) => a.id == id);
+		const parentIndex = parentRow.data.findIndex((a: IRow) => a.id === id);
 
 		parentRow.data = [...parentRow.data];
 		parentRow.data[parentIndex] = item;
@@ -1205,13 +1203,13 @@ export default class DataStore extends Store<IData> {
 		return parentRow.data;
 	}
 
-	private isSelected(id: TID): boolean {
+	isSelected(id: TID): boolean {
 		return this.getState().selectedRows.indexOf(id) !== -1;
 	}
 
 	private findAndRemove(items: any[], id: TID): any {
 		for (let i = 0; i < items.length; i++) {
-			if (items[i].id == id) {
+			if (items[i].id === id) {
 				return items.splice(i, 1)[0];
 			}
 			if (items[i].data) {
@@ -1236,7 +1234,7 @@ export default class DataStore extends Store<IData> {
 		mode: IDataMethodsConfig["move-item"]["mode"]
 	): boolean {
 		for (let i = 0; i < items.length; i++) {
-			if (items[i].id == targetId) {
+			if (items[i].id === targetId) {
 				const targetItem = items[i];
 				const insertIndex = mode === "before" ? i : i + 1;
 
@@ -1457,6 +1455,7 @@ export default class DataStore extends Store<IData> {
 	}
 
 	normalizeTreeRows(data: IRow[], level?: number, parent?: TID): IRow[] {
+		if (!level && !parent) this._branches = { 0: { data } };
 		data.forEach(row => {
 			if (!row.id) row.id = uid();
 
@@ -1516,17 +1515,17 @@ export default class DataStore extends Store<IData> {
 		const filters: ((obj: any) => boolean)[] = [];
 
 		for (const field in filterValues) {
-			const { config, type } = columns
-				.find(c => c.id == field)
-				.header.find(h => h.filter).filter;
+			const column = columns.find(c => c.id == field); // the non-strict comparison, since field is always a string
+			const { config, type } = column.header.find(h => h.filter).filter;
 			const value = filterValues[field];
 
 			filters.push((obj: any) => {
+				const oValue = getValue(obj, column);
 				if (config?.handler) {
-					return config.handler(obj[field], value);
+					return config.handler(oValue, value);
 				}
 
-				return getFilterHandler(type)(obj[field], value);
+				return getFilterHandler(type)(oValue, value);
 			});
 		}
 
@@ -1540,7 +1539,7 @@ export default class DataStore extends Store<IData> {
 		};
 	}
 
-	searchRows(search: string, columns?: { [key: TID]: boolean }) {
+	searchRows(search: string, columns?: Record<string | number, boolean>) {
 		search = search.trim().toLowerCase();
 		const rows: ISearchValue["rows"] = {};
 
@@ -1553,7 +1552,7 @@ export default class DataStore extends Store<IData> {
 			: allColumns;
 
 		flatData.forEach(row => {
-			const columnsMatches: { [key: TID]: boolean } = {};
+			const columnsMatches: Record<string | number, boolean> = {};
 
 			columnsToSearch.forEach(column => {
 				const cellValue = getRenderValue(row, column);
@@ -1663,16 +1662,14 @@ export type IDataMethodsConfig = CombineTypes<
 			eventSource?: string;
 		} & ISkipUndoAction;
 		["sort-rows"]: {
-			key: string;
+			key: TID;
 			order?: "asc" | "desc";
 			add?: boolean | number;
 			sort?: (a: IRow, b: IRow) => 1 | -1 | 0;
 		};
 		["search-rows"]: {
 			search: string;
-			columns?: {
-				[key: TID]: boolean;
-			};
+			columns?: Record<string | number, boolean>;
 		};
 		["open-editor"]: {
 			id: TID;
@@ -1686,7 +1683,7 @@ export type IDataMethodsConfig = CombineTypes<
 		};
 		["filter-rows"]: {
 			filter?: any;
-			key?: string;
+			key?: TID;
 			value?: any;
 		};
 		["collapse-column"]: {

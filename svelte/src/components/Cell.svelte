@@ -2,6 +2,7 @@
 	import { onDestroy, getContext, untrack } from "svelte";
 	import { getStyle } from "../helpers/columnWidth";
 	import { getRenderValue } from "@svar-ui/grid-store";
+	import { setID } from "@svar-ui/lib-dom";
 
 	let {
 		row,
@@ -95,8 +96,8 @@
 	onfocus={toggleFocusAction}
 	class:wx-fixed-right={column.fixed && column.fixed.right}
 	{style}
-	data-row-id={row.id}
-	data-col-id={column.id}
+	data-row-id={setID(row.id)}
+	data-col-id={setID(column.id)}
 	tabindex={focusable ? "0" : "-1"}
 	role={"gridcell"}
 	aria-colindex={column._colindex}

@@ -9,9 +9,10 @@
 	import {
 		clickOutside,
 		delegateClick,
-		locateAttr,
 		locate,
-		id,
+		setID,
+		locateID,
+		getID,
 	} from "@svar-ui/lib-dom";
 
 	import { hotkeys, defaultHotkeys } from "@svar-ui/grid-store";
@@ -410,12 +411,12 @@
 
 	const bodyClickHandlers = {
 		dblclick: (id, ev) => {
-			const data = { id, column: locateAttr(ev, "data-col-id") };
+			const data = { id, column: locateID(ev, "data-col-id") };
 			api.exec("open-editor", data);
 		},
 		click: (id, ev) => {
 			if (postDrag) return;
-			const column = locateAttr(ev, "data-col-id");
+			const column = locateID(ev, "data-col-id");
 			if ($focusCell?.id !== id)
 				api.exec("focus-cell", {
 					row: id,
@@ -425,7 +426,7 @@
 
 			if ($select === false) return;
 
-			const toggle = multiselect && ev.ctrlKey;
+			const toggle = multiselect && (ev.ctrlKey || ev.metaKey);
 			const range = multiselect && ev.shiftKey;
 
 			if (
@@ -467,11 +468,11 @@
 
 		dragItem = from;
 
-		if (api.getRow(dragItem).open)
+		if ($tree && api.getRow(dragItem).open)
 			api.exec("close-row", { id: dragItem, nested: true });
 
 		// default to drag source (target may be shifted by this moment)
-		const itemNode = locate(sourceNode, "data-id");
+		const itemNode = locate(sourceNode);
 		dragNode = itemNode.cloneNode(true);
 		dragNode.classList.remove("wx-selected");
 		dragNode
@@ -521,8 +522,8 @@
 		}
 
 		if (tableNode.contains(context.targetNode)) {
-			const targetRow = locate(context.targetNode, "data-id");
-			const to = id(targetRow?.getAttribute("data-id"));
+			const targetRow = locate(context.targetNode);
+			const to = targetRow && getID(targetRow);
 
 			if (to && to !== from) {
 				context.to = to;
@@ -675,9 +676,9 @@
 				!focus ||
 				(visibleSelection.length &&
 					!visibleSelection.includes(focus.row)) ||
-				dataRows.findIndex(r => r.id == focus.row) === -1 ||
+				dataRows.findIndex(r => r.id === focus.row) === -1 ||
 				renderColumns.data.findIndex(
-					c => c.id == focus.column && !c.collapsed
+					c => c.id === focus.column && !c.collapsed
 				) === -1
 			) {
 				const row = visibleSelection[0] || dataRows[0].id;
@@ -753,6 +754,7 @@
 				style="width:{contentWidth}px;height:{fullHeight}px;"
 				onmousedown={ev => lockSelection(ev)}
 				use:clickOutside={() =>
+					$focusCell &&
 					api.exec("focus-cell", { eventSource: "click" })}
 				use:delegateClick={bodyClickHandlers}
 			>
@@ -771,8 +773,8 @@
 							class:wx-autoheight={autoRowHeight}
 							class={"wx-row" +
 								(rowStyle ? " " + rowStyle(row) : "")}
-							data-id={row.id}
-							data-context-id={row.id}
+							data-id={setID(row.id)}
+							data-context-id={setID(row.id)}
 							class:wx-selected={isSelected}
 							class:wx-inactive={dragItem === row.id}
 							style={`${autoRowHeight ? "min-height" : "height"}:${row.rowHeight || defaultRowHeight}px;`}
@@ -786,7 +788,7 @@
 							{#each renderColumns.data as column (column.id)}
 								{#if column.collapsed}
 									<div class="wx-cell wx-collapsed"></div>
-								{:else if $editor?.id === row.id && $editor.column == column.id}
+								{:else if $editor?.id === row.id && $editor.column === column.id}
 									<Editor {row} {column} />
 								{:else}
 									<Cell
@@ -796,7 +798,7 @@
 										{cellStyle}
 										{reorder}
 										focusable={focus?.row === row.id &&
-											focus?.column == column.id}
+											focus?.column === column.id}
 									/>
 								{/if}
 							{/each}

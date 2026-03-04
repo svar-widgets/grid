@@ -8,6 +8,7 @@ import {
 	extractPropsAndFlatten,
 	findColumnById,
 } from "./stubs/helpers";
+import { TID } from "@svar-ui/lib-state";
 
 let store: DataStore;
 
@@ -2207,6 +2208,50 @@ describe("datastore", () => {
 			expect(copiedRow.parent).to.eq(3);
 			expect(flatData[3].data.length).to.eq(4);
 			expect(flatData[3].data[1].id).to.eq(copiedRow.id);
+		});
+	});
+
+	describe("select-row", () => {
+		test("should select single row", () => {
+			resetState();
+
+			const ids = [1, 3, 6];
+
+			let selectedRows;
+			ids.forEach(id => {
+				store.in.exec("select-row", { id });
+				selectedRows = store.getState().selectedRows;
+				expect(selectedRows).to.deep.equal([id]);
+			});
+		});
+
+		test("should toggle multi select rows", () => {
+			resetState();
+
+			const ids = [1, 3, 6, 4];
+
+			let selectedRows;
+			const result: TID[] = [];
+			ids.forEach(id => {
+				store.in.exec("select-row", { id, toggle: true });
+				result.push(id);
+				selectedRows = store.getState().selectedRows;
+				expect(selectedRows).to.deep.equal(result);
+			});
+		});
+
+		test("should select a range of rows", () => {
+			resetState();
+
+			store.in.exec("select-row", { id: 1 });
+			store.in.exec("select-row", { id: 3, range: true });
+
+			let selectedRows = store.getState().selectedRows;
+			expect(selectedRows).to.deep.equal([1, 2, 3]);
+
+			store.in.exec("select-row", { id: 5, range: true });
+			selectedRows = store.getState().selectedRows;
+			expect(selectedRows).to.deep.equal([1, 2, 3, 4, 5]);
 		});
 	});
 });

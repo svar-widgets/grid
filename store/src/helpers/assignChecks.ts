@@ -43,9 +43,9 @@ export function assignChecks<T extends ICheckableItem>(items: T[]): T[] {
 }
 
 function isFirstRow(ids: TID[], data: any[]) {
-	return ids.some(id => data[0]?.id == id);
+	return ids.some(id => data[0]?.id === id);
 }
 
 function isLastRow(ids: TID[], data: any[]) {
-	return ids.some(id => data[data.length - 1]?.id == id);
+	return ids.some(id => data[data.length - 1]?.id === id);
 }

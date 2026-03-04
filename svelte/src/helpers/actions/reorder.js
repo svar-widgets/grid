@@ -1,11 +1,7 @@
-import { locate, id } from "@svar-ui/lib-dom";
+import { locate, getID } from "@svar-ui/lib-dom";
 
 const SHIFT = 5;
 const LONG_TOUCH_DELAY = 700;
-
-function getID(node) {
-	return id(node.getAttribute("data-id"));
-}
 
 export function getOffset(node) {
 	const box = node.getBoundingClientRect();

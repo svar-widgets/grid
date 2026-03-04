@@ -3,6 +3,7 @@
 	import { resize } from "../helpers/actions/resize";
 	import { getCssName, getStyle } from "../helpers/columnWidth";
 	import Filter from "./inlineFilters/Filter.svelte";
+	import { setID } from "@svar-ui/lib-dom";
 
 	let {
 		cell,
@@ -49,7 +50,7 @@
 		}
 		api.exec("sort-rows", {
 			key: cell.id,
-			add: ev.ctrlKey,
+			add: ev.ctrlKey || ev.metaKey,
 			order: sortMark?.order,
 		});
 	}
@@ -106,7 +107,7 @@
 		tabindex="0"
 		onkeydown={toggleCollapseColumn}
 		onclick={collapse}
-		data-header-id={column.id}
+		data-header-id={setID(column.id)}
 	>
 		<div class="wx-text" style={collapsedTextStyle}>
 			{cell.text || ""}
@@ -121,7 +122,7 @@
 		class:wx-fixed-right={column.fixed && column.fixed.right}
 		{style}
 		onclick={sort}
-		data-header-id={column.id}
+		data-header-id={setID(column.id)}
 		tabindex={!cell._hidden && column.sort && !cell.filter
 			? "0"
 			: undefined}
