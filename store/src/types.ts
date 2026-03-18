@@ -8,9 +8,10 @@ import type { IDataMethodsConfig } from "./DataStore";
 import type DataStore from "./DataStore";
 
 export type Value = string | number | Date;
-export type DataHash = { [key: string]: Value };
-export type ValueGetter = (obj: DataHash) => Value;
-export type ValueSetter = (obj: DataHash, value: Value) => void;
+export type DataHash<T> = { [key: string]: T };
+
+export type ValueGetter<T = Value> = (obj: DataHash<T>) => T;
+export type ValueSetter<T = Value> = (obj: DataHash<T>, value: T) => void;
 
 export type TMethodsConfig = IDataMethodsConfig;
 
@@ -24,8 +25,14 @@ export interface IMethodsHash {
 }
 
 export type TSelect = boolean;
-export type TFilterType = "text" | "richselect";
-export type TEditorType = "text" | "combo" | "datepicker" | "richselect";
+export type TFilterType = "text" | "richselect" | "datepicker";
+export type TEditorType =
+	| "text"
+	| "combo"
+	| "datepicker"
+	| "richselect"
+	| "multiselect"
+	| string;
 export interface IColumnEditor {
 	type: TEditorType;
 	config?: {
@@ -41,7 +48,7 @@ export type TEditorHandler = (
 ) => TEditorType | IColumnEditor | null;
 export interface ISearchValue {
 	value: string;
-	rows: Record<string | number, Record<string | number, boolean>>;
+	rows: Record<TID, Partial<Record<TID, boolean>>>;
 }
 export interface IHistory {
 	undo: number;
@@ -61,6 +68,7 @@ export interface IConfig {
 	undo?: boolean;
 	select?: TSelect;
 	reorder?: boolean;
+	filterValues: IFilterValues;
 }
 
 interface IProConfig extends IConfig {
@@ -75,7 +83,6 @@ export interface IDataConfig extends IProConfig {
 	columns?: IColumn[];
 	scroll?: TScrollConfig;
 	editor?: TEditorConfig;
-	filterValues: IFilterValues;
 	focusCell?: {
 		row: TID;
 		column: TID;
@@ -163,6 +170,10 @@ export interface IRenderColumn extends IColumn {
 	editor?: IColumnEditor;
 }
 
+export interface IFilterColumn extends IColumn {
+	header?: IRenderHeaderCell[];
+}
+
 export interface IHeaderCell {
 	id?: TID;
 	text?: string;
@@ -178,7 +189,7 @@ export interface IHeaderCell {
 }
 
 export interface IRenderHeaderCell extends IHeaderCell {
-	width: number;
+	width?: number;
 	height?: number;
 	flexgrow?: number;
 	filter?: IHeaderFilter;
@@ -211,10 +222,15 @@ export type TSortConfig = {
 export type TEditorConfig = {
 	id: TID;
 	column: TID;
-	value?: any;
+	value?: Value | Array<Value>;
 	renderedValue?: any;
-	config?: { [key: string]: any };
+	config?: {
+		type?: TEditorType;
+		template?: any;
+		cell?: any;
+	};
 	options?: IColumn["options"];
+	type: TEditorType;
 };
 
 export type TScrollConfig = {
@@ -329,6 +345,8 @@ export interface IHeaderFilter {
 		options?: IOption[];
 		handler?: TFilterHandler;
 		placeholder?: string;
+		clear?: boolean;
+		[key: string]: any;
 	};
 }
 export interface IFilterValues {

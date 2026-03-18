@@ -1,7 +1,8 @@
 <script>
 	import { onMount } from "svelte";
+	import { clickOutside } from "@svar-ui/lib-dom";
 
-	let { actions, editor } = $props();
+	let { editor, onsave, onapply } = $props();
 
 	let value = $state(editor.value || "");
 
@@ -10,15 +11,16 @@
 
 	function updateValue() {
 		value = node.value;
-		actions.updateValue(node.value);
+		onapply(node.value);
 	}
 
 	function closeAndSave({ key }) {
-		if (key === "Enter") actions.save();
+		if (key === "Enter") onsave();
 	}
 </script>
 
 <input
+	use:clickOutside={() => onsave(true)}
 	class="wx-text"
 	oninput={updateValue}
 	onkeydown={closeAndSave}

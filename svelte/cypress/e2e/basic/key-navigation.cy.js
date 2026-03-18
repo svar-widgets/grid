@@ -39,9 +39,14 @@ describe("Keyboard navigation works", () => {
 					});
 
 					cy.get(".wx-header input").first().clear();
-
 					cy.get(".wx-header .wx-richselect").click();
-					cy.get(".wx-header .wx-dropdown .wx-item").eq(2).click();
+				});
+
+			cy.get(".wx-popup .wx-item").eq(2).click();
+
+			cy.wxT("table")
+				.first()
+				.within(() => {
 					cy.wxT("table-rows").should("have.length", 1);
 					cy.wxT("table-row", 3)
 						.wxT("table-cell", 1)
@@ -50,9 +55,14 @@ describe("Keyboard navigation works", () => {
 					cy.wxT("table-row", 3).should("have.class", "wx-selected");
 					cy.keyDown("arrowUp");
 					cy.wxT("table-row", 3).should("have.class", "wx-selected");
-
 					cy.get(".wx-header .wx-richselect").click();
-					cy.get(".wx-header .wx-dropdown .wx-item").eq(1).click();
+				});
+
+			cy.get(".wx-popup .wx-item").eq(1).click();
+
+			cy.wxT("table")
+				.first()
+				.within(() => {
 					cy.get(".wx-header input").first().type("m");
 
 					cy.wxT("table-row", 7)

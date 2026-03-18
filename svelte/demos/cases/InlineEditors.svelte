@@ -1,7 +1,6 @@
 <script>
 	import { Grid } from "../../src";
 	import { getData } from "../data";
-
 	const { allData: data, countries, users } = getData();
 
 	const columns = [
@@ -35,6 +34,15 @@
 			width: 180,
 			editor: "richselect",
 			options: users,
+		},
+		{
+			id: "destinations",
+			header: 'Destinations - "multiselect"',
+			editor: {
+				type: "multiselect",
+			},
+			options: countries,
+			width: 250,
 		},
 	];
 </script>

@@ -1,11 +1,17 @@
 <script>
-	import { Grid } from "../../src";
+	import { Grid, registerInlineEditor } from "../../src";
 	import { getData } from "../data";
 	import SelectEditorCell from "../custom/SelectEditorCell.svelte";
 	import EditorDateCell from "../custom/EditorDateCell.svelte";
 	import EditorSelectCell from "../custom/EditorSelectCell.svelte";
+	import EditorDestinationsCell from "../custom/EditorDestinationsCell.svelte";
+	import DestinationCell from "../custom/DestinationCell.svelte";
+	import ColorEditor from "../custom/ColorEditor.svelte";
+	import ColorCell from "../custom/ColorCell.svelte";
 
 	const { allData: data, countries, users } = getData();
+
+	registerInlineEditor("color", ColorEditor);
 
 	const columns = [
 		{ id: "id", width: 50 },
@@ -41,7 +47,51 @@
 			options: users,
 			cell: SelectEditorCell,
 		},
+		{
+			id: "destinations",
+			header: 'Destinations - "multiselect"',
+			editor: {
+				type: "multiselect",
+				config: { cell: EditorDestinationsCell },
+			},
+			options: countries,
+			width: 280,
+			cell: DestinationCell,
+		},
+		/*{
+			id: "destinations-template",
+			header: 'Destinations - "multiselect" with template',
+			editor: {
+				type: "multiselect",
+				config: {
+					template: value => {
+						if (Array.isArray(value)) {
+							return value.map(v => `${v.flag}`).join(" ");
+						}
+						return `${value.label} ${value.flag}`;
+					},
+				},
+			},
+			options: countries,
+			width: 300,
+			template: value => {
+				return value
+					.map(v => countries.find(c => c.id === v)?.flag)
+					.join(" ");
+			},
+		},*/
+		{
+			id: "color",
+			header: 'Color - custom "color"',
+			editor: "color",
+			width: 180,
+			cell: ColorCell,
+		},
 	];
+
+	data.forEach(row => {
+		row["destinations-template"] = [...row.destinations];
+	});
 </script>
 
 <div style="padding: 20px;">

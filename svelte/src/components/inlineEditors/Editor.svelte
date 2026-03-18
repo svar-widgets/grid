@@ -1,7 +1,6 @@
 <script>
 	import { getContext } from "svelte";
 	import { getStyle } from "../../helpers/columnWidth";
-	import { clickOutside } from "@svar-ui/lib-dom";
 	import { editors } from "./editors";
 
 	let { column, row } = $props();
@@ -35,7 +34,13 @@
 	}
 
 	function keyHandler(ev) {
-		if (ev.key === "Enter" && $editor) cancel();
+		if (ev.key === "Enter" && $editor) {
+			if (column.editor.type === "multiselect") {
+				updateValue($editor.value);
+			} else {
+				cancel();
+			}
+		}
 	}
 
 	let style = $derived(
@@ -71,11 +76,12 @@
 	onclick={ev => ev.stopPropagation()}
 	ondblclick={ev => ev.stopPropagation()}
 	onkeydown={keyHandler}
-	use:clickOutside={() => save(true)}
 >
 	<SvelteComponent
 		editor={$editor}
-		actions={{ save, cancel, updateValue }}
+		onsave={save}
+		onapply={updateValue}
+		oncancel={cancel}
 		onaction={({ action, data }) => api.exec(action, data)}
 	/>
 </div>

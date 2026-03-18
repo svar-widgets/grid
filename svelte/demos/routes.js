@@ -14,6 +14,7 @@ import ExternalEditorTasklist from "./cases/ExternalEditorTasklist.svelte";
 import FillspaceColumns from "./cases/FillspaceColumns.svelte";
 import FilterBar from "./cases/FilterBar.svelte";
 import FilterBuilder from "./cases/FilterBuilder.svelte";
+import FilterQuery from "./cases/FilterQuery.svelte";
 import FilterSimpleFilterBuilder from "./cases/FilterSimpleFilterBuilder.svelte";
 import Filters from "./cases/Filters.svelte";
 import FiltersCustom from "./cases/FiltersCustom.svelte";
@@ -212,6 +213,12 @@ export const links = [
 		"Filter data with FilterBuilder",
 		FilterBuilder,
 		"FilterBuilder",
+	],
+	[
+		"/filterquery/:skin",
+		"Filter data with FilterQuery",
+		FilterQuery,
+		"FilterQuery",
 	],
 	[
 		"/filtered-data/:skin",

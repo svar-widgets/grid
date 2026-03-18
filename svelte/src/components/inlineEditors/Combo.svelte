@@ -1,8 +1,9 @@
 <script>
 	import { onMount } from "svelte";
 	import { SuggestDropdown } from "@svar-ui/svelte-core";
+	import { clickOutside } from "@svar-ui/lib-dom";
 
-	let { actions, editor, onaction } = $props();
+	let { editor, onaction, onsave, onapply } = $props();
 
 	let { value, renderedValue: text, options: filterOptions } = $state(editor);
 	let { template, cell } = $state(editor?.config || {});
@@ -10,8 +11,8 @@
 	let index = $derived(filterOptions.findIndex(a => a.id === value));
 
 	function updateValue({ id }) {
-		actions.updateValue(id);
-		actions.save();
+		onapply(id);
+		onsave();
 	}
 
 	let navigate;
@@ -46,6 +47,7 @@
 	bind:value={text}
 	oninput={input}
 	onkeydown={e => keydown(e, index)}
+	use:clickOutside={() => onsave(true)}
 />
 <SuggestDropdown items={filterOptions} onready={ready} onselect={updateValue}>
 	{#snippet children({ option })}

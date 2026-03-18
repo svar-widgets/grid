@@ -8,6 +8,7 @@ export { assignChecks } from "./helpers/assignChecks";
 export { defaultToolbarButtons } from "./helpers/toolbarButtons";
 export { defaultMenuOptions } from "./helpers/menuOptions";
 export { handleAction } from "./helpers/actionHandlers";
+export { createFilter } from "./filters";
 
 export {
 	getPrintColumns,

@@ -6,7 +6,7 @@
 
 <div align="center">
 
-:globe_with_meridians: [Website](https://svar.dev/svelte/datagrid/) • :bulb: [Getting Started](https://docs.svar.dev/svelte/grid/getting_started/) • :eyes: [Demos](https://docs.svar.dev/svelte/grid/samples/#/base/willow)
+[Website](https://svar.dev/svelte/datagrid/) • [Getting Started](https://docs.svar.dev/svelte/grid/getting_started/) • [Demos](https://docs.svar.dev/svelte/grid/samples/#/base/willow)
 
 </div>
 
@@ -18,7 +18,7 @@
 
 </div>
 
-**SVAR Svelte DataGrid** is a powerful and flexible Svelte component for building high-performance, feature-rich data grids. Designed to handle large datasets efficiently, it supports virtual scrolling, inline editing, sorting, filtering, and full customization to fit complex project needs.
+**SVAR Svelte DataGrid** is a high-performance Svelte data grid component for building complex, interactive tables with large datasets. It supports virtual scrolling, in-cell editing, advanced filtering, and responsive mode out of the box. Comes with full Typescript support and a flexible API.
 
 <div align="center">
   <img src="https://cdn.svar.dev/public/react-grid.png" alt="SVAR Svelte DataGrid - Screenshot" width="700">
@@ -26,25 +26,31 @@
 
 ### :sparkles: Key Features
 
+SVAR Svelte DataGrid provides a rich set of features and multiple ways for customization:
+
 -   High performance (virtual scrolling and dynamic loading)
 -   In-cell editing with different cell editors (datepicker, combo, select, rich select, etc.)
+-   External editor for grid data
 -   Custom HTML for cells
 -   Sorting by multiple columns
--   Filtering
+-   Advanced filtering (including natural language)
 -   Paging
--   Accessibility: compatibility with [WAI-ARIA](https://www.w3.org/WAI/standards-guidelines/aria/) standard
 -   Frozen columns
 -   Expandable/collapsible columns
 -   Row reordering with drag-and-drop
 -   Customizable tooltips for grid cells
 -   Context menu
--   External editor for grid data
+-   Built-in toolbar
 -   Tree-like structure
--   Print support
+-   Print support, export to CSV
+-   Undo/redo
 -   Keyboard navigation
+-   Accessibility: compatibility with [WAI-ARIA](https://www.w3.org/WAI/standards-guidelines/aria/) standard
 -   RestDataProvider for easy backend data binding
--   Dark and light skins
+-   Dark and light skins, customizable with CSS (no Tailwind dependency)
 -   Full TypeScript support
+
+[Check the demos](https://docs.svar.dev/svelte/grid/samples/#/base/willow) to see how these features work.
 
 ### :wrench: Svelte 4 and Svelte 5 versions
 
@@ -64,7 +70,7 @@ npm install wx-svelte-grid@1.3.3
 
 ### :hammer_and_wrench: How to Use
 
-To use SVAR DataGrid, simply import the package and include the component in your Svelte file:
+To use SVAR Svelte DataGrid, simply import the package and include the component in your Svelte file:
 
 ```svelte
 <script>
@@ -100,14 +106,14 @@ To use SVAR DataGrid, simply import the package and include the component in you
 
 For further instructions, see the detailed [how-to-start guide](https://docs.svar.dev/svelte/grid/getting_started).
 
-### :computer: How to Modify
+### How to Modify
 
 Typically, you don't need to modify the code. However, if you wish to do so, follow these steps:
 
 1. Run `yarn` to install dependencies. Note that this project is a monorepo using `yarn` workspaces, so npm will not work
 2. Start the project in development mode with `yarn start`
 
-### :white_check_mark: Run Tests
+### Run Tests
 
 To run the test:
 
@@ -120,6 +126,10 @@ To run the test:
     yarn test:cypress
     ```
 
-### :speech_balloon: Need Help?
+### Need Help?
 
 [Post an Issue](https://github.com/svar-widgets/grid/issues/) or use our [community forum](https://forum.svar.dev).
+
+### ⭐ Show Your Support
+
+If SVAR Svelte DataGrid helps your project, give us a star on GitHub! It helps more developers discover this component and keeps our team motivated to ship new features.

@@ -21,9 +21,11 @@ import type {
 	TColumnType,
 	TSortValue,
 	IDataHash,
-	IFilterValues,
 	IPrintConfig,
 	ISearchValue,
+	TEditorConfig,
+	TEditorType,
+	IFilterValues,
 } from "./types";
 import { sortByMany } from "./sort";
 import {
@@ -32,12 +34,12 @@ import {
 	getHeaderColWidth,
 	suggestSkin,
 } from "./sizes";
-import { getFilterHandler } from "./filters";
+import { createFilter, getFilterHandler } from "./filters";
 
 export default class DataStore extends Store<IData> {
 	public in: EventBus<TMethodsConfig, keyof TMethodsConfig>;
 	private _router: DataRouter<IData, IDataConfig, TMethodsConfig>;
-	private _branches: Record<string | number, IRow>;
+	private _branches: Partial<Record<TID, IRow>>;
 	private _xlsxWorker: any;
 	private _historyManager: HistoryManager;
 
@@ -172,6 +174,9 @@ export default class DataStore extends Store<IData> {
 						id,
 						value: getValue(row, col) ?? "",
 						renderedValue: getRenderValue(row, col),
+						type:
+							(columnEditor as TEditorConfig).type ||
+							(columnEditor as TEditorType),
 					};
 
 					if (
@@ -194,6 +199,10 @@ export default class DataStore extends Store<IData> {
 			const editor = this.getState().editor;
 			if (editor) {
 				editor.value = value;
+				const col = this.getColumn(editor.column);
+				const row = { ...this.getRow(editor.id) };
+				setValue(row, col, value);
+				editor.renderedValue = getRenderValue(row, col);
 				this.setState({ editor });
 			}
 		});
@@ -459,7 +468,7 @@ export default class DataStore extends Store<IData> {
 			}
 
 			const state = this.getState();
-			const { data, tree } = state;
+			const { data, tree, _columns } = state;
 			let filterValues = state.filterValues;
 
 			const update: Partial<IData> = {};
@@ -471,7 +480,7 @@ export default class DataStore extends Store<IData> {
 				update.filterValues = filterValues;
 			}
 
-			const filterFn = filter ?? this.createFilter(filterValues);
+			const filterFn = filter ?? createFilter(filterValues, _columns);
 
 			let filterIds: TID[] = [];
 			if (tree) {
@@ -773,7 +782,9 @@ export default class DataStore extends Store<IData> {
 					case "escape": {
 						const { editor } = this.getState();
 						if (editor) {
-							this.in.exec("close-editor", { ignore: true });
+							this.in.exec("close-editor", {
+								ignore: editor.type != "multiselect",
+							});
 							this.in.exec("focus-cell", {
 								row: editor.id,
 								column: editor.column,
@@ -1539,7 +1550,7 @@ export default class DataStore extends Store<IData> {
 		};
 	}
 
-	searchRows(search: string, columns?: Record<string | number, boolean>) {
+	searchRows(search: string, columns?: Partial<Record<TID, boolean>>) {
 		search = search.trim().toLowerCase();
 		const rows: ISearchValue["rows"] = {};
 
@@ -1552,7 +1563,7 @@ export default class DataStore extends Store<IData> {
 			: allColumns;
 
 		flatData.forEach(row => {
-			const columnsMatches: Record<string | number, boolean> = {};
+			const columnsMatches: Partial<Record<TID, boolean>> = {};
 
 			columnsToSearch.forEach(column => {
 				const cellValue = getRenderValue(row, column);
@@ -1669,7 +1680,7 @@ export type IDataMethodsConfig = CombineTypes<
 		};
 		["search-rows"]: {
 			search: string;
-			columns?: Record<string | number, boolean>;
+			columns?: Partial<Record<TID, boolean>>;
 		};
 		["open-editor"]: {
 			id: TID;

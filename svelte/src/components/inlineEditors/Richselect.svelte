@@ -1,8 +1,9 @@
 <script>
 	import { onMount } from "svelte";
 	import { SuggestDropdown } from "@svar-ui/svelte-core";
+	import { clickOutside } from "@svar-ui/lib-dom";
 
-	let { actions, editor, onaction } = $props();
+	let { editor, onaction, onsave, onapply, oncancel } = $props();
 
 	let data = $state(editor.options.find(opt => opt.id === editor.value));
 	let { value, options } = $state(editor);
@@ -11,8 +12,8 @@
 	let index = $derived(options.findIndex(a => a.id === value));
 
 	function updateValue({ id }) {
-		actions.updateValue(id);
-		actions.save();
+		onapply(id);
+		onsave();
 	}
 
 	let navigate;
@@ -40,11 +41,12 @@
 	bind:this={node}
 	class="wx-value"
 	tabindex="0"
-	onclick={() => actions.cancel()}
+	onclick={oncancel}
 	onkeydown={ev => {
 		keydown(ev, index);
 		ev.preventDefault();
 	}}
+	use:clickOutside={() => onsave(true)}
 >
 	{#if template}
 		{template(data)}

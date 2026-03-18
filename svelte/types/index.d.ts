@@ -10,6 +10,7 @@ import type {
 	TMethodsConfig,
 	IConfig,
 	TEditorType,
+	TEditorConfig,
 	IColumnEditor,
 	IHeaderCell,
 } from "@svar-ui/grid-store";
@@ -130,6 +131,20 @@ export declare const WillowDark: Component<{
 	fonts?: boolean;
 	children?: () => any;
 }>;
+
+export declare function registerInlineEditor(
+	type: string,
+	component: Component<{
+		editor: TEditorConfig;
+		onsave?: (ignoreFocus: boolean) => void;
+		oncancel?: () => void;
+		onapply?: (value: any) => void;
+		onaction?: (ev: {
+			action: string;
+			data?: { [key: string]: any };
+		}) => void;
+	}>
+): void;
 
 /* get component events from store actions*/
 type RemoveHyphen<S extends string> = S extends `${infer Head}-${infer Tail}`

@@ -1,9 +1,10 @@
 <script>
 	import { onMount } from "svelte";
+	import { clickOutside } from "@svar-ui/lib-dom";
 
 	import { Calendar, Dropdown } from "@svar-ui/svelte-core";
 
-	let { actions, editor, onaction } = $props();
+	let { editor, onaction, onsave, onapply, oncancel } = $props();
 
 	let value = $state(editor.value || new Date());
 
@@ -11,8 +12,8 @@
 	let cell = $state(editor.config?.cell);
 
 	function updateValue({ value }) {
-		actions.updateValue(value);
-		actions.save();
+		onapply(value);
+		onsave();
 	}
 
 	let node;
@@ -31,7 +32,7 @@
 	class="wx-value"
 	bind:this={node}
 	tabindex="0"
-	onclick={() => actions.cancel()}
+	onclick={oncancel}
 	onkeydown={ev => ev.preventDefault()}
 >
 	{#if template}
@@ -42,7 +43,13 @@
 	{:else}<span class="wx-text">{editor.renderedValue}</span>{/if}
 </div>
 <Dropdown width={"auto"}>
-	<Calendar {value} onchange={updateValue} buttons={editor.config?.buttons} />
+	<div use:clickOutside={() => onsave(true)}>
+		<Calendar
+			{value}
+			onchange={updateValue}
+			buttons={editor.config?.buttons}
+		/>
+	</div>
 </Dropdown>
 
 <style>

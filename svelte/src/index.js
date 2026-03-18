@@ -18,6 +18,8 @@ import { setEnv } from "@svar-ui/lib-dom";
 import { env } from "@svar-ui/lib-svelte";
 setEnv(env);
 
+export { registerInlineEditor } from "./components/inlineEditors/editors";
+
 export {
 	Grid,
 	HeaderMenu,

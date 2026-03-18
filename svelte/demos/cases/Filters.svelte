@@ -5,6 +5,15 @@
 
 	const { allData, data, countries, users } = getData();
 
+	const dateFormat = new Intl.DateTimeFormat("en-US", {
+		month: "short",
+		day: "numeric",
+		year: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+		hour12: false,
+	});
+
 	const columns = [
 		{ id: "id", width: 50 },
 		{
@@ -35,6 +44,12 @@
 				},
 			},
 			options: countries,
+		},
+		{
+			id: "date",
+			header: { filter: "datepicker" },
+			template: obj => dateFormat.format(obj),
+			width: 180,
 		},
 		{
 			id: "stars",
@@ -105,8 +120,9 @@
 		},
 		{
 			id: "date",
-			template: obj => obj.toDateString(),
-			header: "Joined",
+			width: 180,
+			template: obj => dateFormat.format(obj),
+			header: [{ text: "Joined", rowspan: 2 }, { filter: "datepicker" }],
 		},
 		{
 			id: "user",

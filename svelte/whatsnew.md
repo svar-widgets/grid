@@ -1,3 +1,19 @@
+## 2.6.0
+
+### New features
+
+-   Multiselect inline editor
+-   Ability to register custom inline editors
+
+### Updates
+
+-   Integration with FilterQuery
+
+### Fixes
+
+-   Dropdown editors are cut off in small tables
+-   DataGrid fails to initialize in SvelteKit with serverside rendering
+
 ## 2.5.1
 
 ### Fixes

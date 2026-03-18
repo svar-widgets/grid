@@ -5,7 +5,7 @@ import { uid } from "@svar-ui/lib-state";
 function rawGetter(key: string): ValueGetter {
 	return obj => obj[key];
 }
-function rawSetter(key: string): ValueSetter {
+function rawSetter<T = Value>(key: string): ValueSetter<T> {
 	return (obj, v) => (obj[key] = v);
 }
 
@@ -13,8 +13,8 @@ export function getValue(row: IRow, col: IColumn): any {
 	return (col.getter || rawGetter(col.id))(row);
 }
 
-export function setValue(row: IRow, col: IColumn, v: Value): any {
-	return (col.setter || rawSetter(col.id))(row, v);
+export function setValue<T = Value>(row: IRow, col: IColumn, v: T): any {
+	return (col.setter || rawSetter<T>(col.id))(row, v);
 }
 
 export function getEditorConfig(columns: IColumn[]) {

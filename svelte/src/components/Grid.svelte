@@ -39,6 +39,7 @@
 		sortMarks = {},
 		undo = false,
 		hotkeys = null,
+		filterValues = {},
 		...restProps
 	} = $props();
 
@@ -147,7 +148,7 @@
 	let _skin = $derived(getContext("wx-theme"));
 	let init_once = true;
 
-	$effect.pre(() => {
+	const reinitStore = () => {
 		dataStore.init({
 			data,
 			columns: finalColumns,
@@ -157,6 +158,7 @@
 			dynamic,
 			tree,
 			sortMarks,
+			filterValues,
 			select,
 			undo,
 			reorder,
@@ -167,7 +169,10 @@
 			init(api);
 			init_once = false;
 		}
-	});
+	};
+
+	reinitStore();
+	$effect(reinitStore);
 </script>
 
 <Locale words={en} optional={true}>
