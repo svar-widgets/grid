@@ -26,7 +26,7 @@
 <div class="value" bind:this={node} tabindex="0" onclick={oncancel}>
 	{value}
 </div>
-<Dropdown width={"auto"}>
+<Dropdown width={"auto"} trackScroll={true} {oncancel}>
 	<div use:clickOutside={() => onsave(true)}>
 		<ColorBoard {value} onchange={updateValue} button={true} />
 	</div>

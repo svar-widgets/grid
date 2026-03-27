@@ -70,14 +70,16 @@
 	];
 </script>
 
-<Grid
-	sizes={{ rowHeight: 73 }}
-	{data}
-	{columns}
-	select={false}
-	tree={true}
-	{columnStyle}
-/>
+<div class="demo">
+	<Grid
+		sizes={{ rowHeight: 73 }}
+		{data}
+		{columns}
+		select={false}
+		tree={true}
+		{columnStyle}
+	/>
+</div>
 
 <style>
 	:global(.demo .wx-cell) {

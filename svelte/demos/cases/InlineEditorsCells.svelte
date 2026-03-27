@@ -20,7 +20,9 @@
 			header: 'Country - "combo"',
 			editor: {
 				type: "combo",
-				config: { cell: EditorSelectCell },
+				config: {
+					cell: EditorSelectCell,
+				},
 			},
 			options: countries,
 			cell: SelectEditorCell,
@@ -32,7 +34,9 @@
 			width: 180,
 			editor: {
 				type: "datepicker",
-				config: { cell: EditorDateCell },
+				config: {
+					cell: EditorDateCell,
+				},
 			},
 			template: v => (v ? v.toLocaleDateString() : ""),
 		},
@@ -42,7 +46,9 @@
 			width: 180,
 			editor: {
 				type: "richselect",
-				config: { cell: EditorSelectCell },
+				config: {
+					cell: EditorSelectCell,
+				},
 			},
 			options: users,
 			cell: SelectEditorCell,
@@ -52,10 +58,13 @@
 			header: 'Destinations - "multiselect"',
 			editor: {
 				type: "multiselect",
-				config: { cell: EditorDestinationsCell },
+				config: {
+					cell: EditorDestinationsCell,
+					dropdown: { width: "auto" },
+				},
 			},
 			options: countries,
-			width: 280,
+			width: 130,
 			cell: DestinationCell,
 		},
 		/*{
@@ -96,7 +105,7 @@
 
 <div style="padding: 20px;">
 	<h4>Editable cells: inline editors with custom cells</h4>
-	<div>
+	<div style="height: 500px;">
 		<Grid {data} {columns} />
 	</div>
 </div>

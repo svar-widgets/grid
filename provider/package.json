@@ -1,6 +1,6 @@
 {
 	"name": "@svar-ui/grid-data-provider",
-	"version": "2.6.0",
+	"version": "2.6.1",
 	"type": "module",
 	"main": "dist/index.js",
 	"module": "dist/index.js",
@@ -17,6 +17,6 @@
 		"dist"
 	],
 	"dependencies": {
-		"@svar-ui/lib-data-provider": "1.7.1"
+		"@svar-ui/lib-data-provider": "1.7.2"
 	}
 }

@@ -7,7 +7,8 @@
 
 	let data = $state(editor.options.find(opt => opt.id === editor.value));
 	let { value, options } = $state(editor);
-	let { template, cell } = $state(editor?.config || {});
+	let { template, cell, dropdown = {} } = $state(editor?.config || {});
+	const dropdownOptions = $derived({ trackScroll: true, ...dropdown });
 
 	let index = $derived(options.findIndex(a => a.id === value));
 
@@ -55,7 +56,13 @@
 		<SvelteComponent {data} {onaction} />
 	{:else}<span class="wx-text">{editor.renderedValue}</span>{/if}
 </div>
-<SuggestDropdown items={options} onready={ready} onselect={updateValue}>
+<SuggestDropdown
+	items={options}
+	onready={ready}
+	onselect={updateValue}
+	{...dropdownOptions}
+	{oncancel}
+>
 	{#snippet children({ option })}
 		{#if template}
 			{template(option)}

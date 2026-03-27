@@ -1,3 +1,13 @@
+## 2.6.1
+
+### Fixes
+
+-   Impossible to configure inline editor dropdown
+-   Inline editor dropdown is detached during scroll
+-   Editor state object is mutated instead of being reset
+-   DataProvider adds trailing slash to getData url
+-   Incorrect height of sidebar Editor
+
 ## 2.6.0
 
 ### New features
@@ -13,6 +23,7 @@
 
 -   Dropdown editors are cut off in small tables
 -   DataGrid fails to initialize in SvelteKit with serverside rendering
+-   Error in fetching Typescript definitions from store
 
 ## 2.5.1
 

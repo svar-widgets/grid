@@ -3,10 +3,13 @@
 	import { SuggestDropdown } from "@svar-ui/svelte-core";
 	import { clickOutside } from "@svar-ui/lib-dom";
 
-	let { editor, onaction, onsave, onapply } = $props();
+	let { editor, onaction, onsave, onapply, oncancel } = $props();
 
 	let { value, renderedValue: text, options: filterOptions } = $state(editor);
-	let { template, cell } = $state(editor?.config || {});
+
+	let { template, cell, dropdown = {} } = $state(editor?.config || {});
+
+	const dropdownOptions = $derived({ trackScroll: true, ...dropdown });
 
 	let index = $derived(filterOptions.findIndex(a => a.id === value));
 
@@ -49,7 +52,13 @@
 	onkeydown={e => keydown(e, index)}
 	use:clickOutside={() => onsave(true)}
 />
-<SuggestDropdown items={filterOptions} onready={ready} onselect={updateValue}>
+<SuggestDropdown
+	items={filterOptions}
+	onready={ready}
+	onselect={updateValue}
+	{...dropdownOptions}
+	{oncancel}
+>
 	{#snippet children({ option })}
 		{#if template}
 			{template(option)}

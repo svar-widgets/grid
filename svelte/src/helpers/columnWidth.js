@@ -18,7 +18,12 @@ export function getCssName(column, cell, columnStyle) {
 
 	if (column.fixed) {
 		for (const pos in column.fixed) {
-			css += column.fixed[pos] === -1 ? "wx-shadow " : "wx-fixed ";
+			let isShadow = column.fixed[pos] === -1;
+			if (!isShadow && column.fixed.leftSize && cell.colspan) {
+				const spanIndex = cell.colspan + column._colindex - 1;
+				isShadow = spanIndex === column.fixed.leftSize;
+			}
+			css += isShadow ? "wx-shadow " : "wx-fixed ";
 		}
 	}
 	css += cell.rowspan > 1 ? "wx-rowspan " : "";

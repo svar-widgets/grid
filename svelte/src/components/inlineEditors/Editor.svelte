@@ -93,7 +93,7 @@
 		background-color: var(--wx-background);
 		color: var(--wx-color-font);
 		position: relative;
-		z-index: 3;
+		z-index: 2;
 	}
 	.wx-cell :global(.wx-dropdown) {
 		border: var(--wx-table-editor-dropdown-border);

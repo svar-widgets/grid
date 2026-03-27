@@ -7,9 +7,12 @@
 	let { editor, onaction, onsave, onapply, oncancel } = $props();
 
 	let value = $state(editor.value || new Date());
-
-	let template = $state(editor.config?.template);
-	let cell = $state(editor.config?.cell);
+	let { template, cell, dropdown = {} } = $state(editor?.config || {});
+	const dropdownOptions = $derived({
+		trackScroll: true,
+		width: "auto",
+		...dropdown,
+	});
 
 	function updateValue({ value }) {
 		onapply(value);
@@ -42,7 +45,7 @@
 		<SvelteComponent data={editor.value} {onaction} />
 	{:else}<span class="wx-text">{editor.renderedValue}</span>{/if}
 </div>
-<Dropdown width={"auto"}>
+<Dropdown {...dropdownOptions} {oncancel}>
 	<div use:clickOutside={() => onsave(true)}>
 		<Calendar
 			{value}

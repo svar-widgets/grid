@@ -9,9 +9,15 @@
 	const options = $derived(editor?.options ?? []);
 	let value = $derived(editor?.value || []);
 	let renderedValue = $derived(editor?.renderedValue);
+
 	let index = $derived.by(() => {
 		const firstSelected = options.find(opt => value.includes(opt.id));
 		return firstSelected ? options.indexOf(firstSelected) : -1;
+	});
+
+	const dropdownOptions = $derived.by(() => {
+		const dropdown = config?.dropdown || {};
+		return { trackScroll: true, ...dropdown };
 	});
 
 	function updateValue({ id }) {
@@ -69,6 +75,8 @@
 	onselect={updateValue}
 	checkboxes={true}
 	multiselect={true}
+	{...dropdownOptions}
+	{oncancel}
 	{value}
 >
 	{#snippet children({ option })}

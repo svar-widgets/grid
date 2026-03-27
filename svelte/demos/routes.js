@@ -59,7 +59,6 @@ import ExternalToolbar from "./cases/ExternalToolbar.svelte";
 import CustomRowHeight from "./cases/CustomRowHeight.svelte";
 import ExportCSV from "./cases/ExportCSV.svelte";
 
-
 export const links = [
 	["/base/:skin", "Basic DataGrid", BasicInit, "BasicInit"],
 	[

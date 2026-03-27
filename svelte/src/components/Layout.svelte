@@ -120,12 +120,11 @@
 				.filter(c => !c.hidden)
 				.map(a => ({ ...a }));
 			columns.forEach(a => {
-				a.fixed = { left: 1 };
+				a.fixed = { left: 1, leftSize: $split.left };
 				a.left = width;
 				width += a.width;
 			});
-			if (columns.length)
-				columns[columns.length - 1].fixed = { left: -1 };
+			if (columns.length) columns[columns.length - 1].fixed.left = -1;
 		}
 
 		return { columns, width };

@@ -196,8 +196,9 @@ export default class DataStore extends Store<IData> {
 			}
 		);
 		inBus.on("editor", ({ value }: IDataMethodsConfig["editor"]) => {
-			const editor = this.getState().editor;
+			let editor = this.getState().editor;
 			if (editor) {
+				editor = { ...editor };
 				editor.value = value;
 				const col = this.getColumn(editor.column);
 				const row = { ...this.getRow(editor.id) };
