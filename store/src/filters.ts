@@ -21,6 +21,11 @@ export const filtersHandlers: { [key: string]: TFilterHandler } = {
 		if (!b) return true;
 		return a && isSameDate(a, b);
 	},
+	multiselect: (a: Array<string | number>, b: Array<string | number>) => {
+		if (!b || b?.length === 0) return true;
+		if (Array.isArray(a)) return a?.some(item => b.includes(item));
+		return a && b.includes(a);
+	},
 };
 
 export function getFilterHandler(type: TFilterType): TFilterHandler {

@@ -11,5 +11,6 @@ export default {
 		"Move down": "下移",
 		Undo: "撤銷",
 		Redo: "重做",
+		selected: "已选",
 	},
 };

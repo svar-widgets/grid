@@ -958,6 +958,13 @@ export default class DataStore extends Store<IData> {
 			});
 		});
 
+		inBus.on("scroll-to", (ev: IDataMethodsConfig["scroll-to"]) => {
+			const update: Partial<IDataConfig> = {};
+			if (ev.top !== undefined) update.scrollTop = ev.top;
+			if (ev.left !== undefined) update.scrollLeft = ev.left;
+			if (Object.keys(update).length) this.setState(update);
+		});
+
 		inBus.on("print", (ev: IDataMethodsConfig["print"]) => {
 			const config = normalizePrintConfig(ev);
 			this.setState({ _print: config });
@@ -1000,6 +1007,8 @@ export default class DataStore extends Store<IData> {
 			data: [],
 			filterValues: {},
 			scroll: null,
+			scrollLeft: 0,
+			scrollTop: 0,
 			editor: null,
 			focusCell: null,
 			_print: null,
@@ -1731,6 +1740,10 @@ export type IDataMethodsConfig = CombineTypes<
 		["scroll"]: {
 			row?: TID;
 			column?: TID;
+		};
+		["scroll-to"]: {
+			top?: number;
+			left?: number;
 		};
 		["hotkey"]: {
 			key: string;

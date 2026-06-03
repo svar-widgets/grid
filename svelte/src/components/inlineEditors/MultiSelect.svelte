@@ -1,121 +1,59 @@
 <script>
-	import { SuggestDropdown } from "@svar-ui/svelte-core";
 	import { clickOutside } from "@svar-ui/lib-dom";
-	import { onMount } from "svelte";
+	import MultiSelect from "../MultiSelect.svelte";
 
 	let { editor, onaction, onsave, onapply } = $props();
-	let { config } = $state(editor);
 
+	const config = $state(editor?.config || {});
 	const options = $derived(editor?.options ?? []);
-	let value = $derived(editor?.value || []);
-	let renderedValue = $derived(editor?.renderedValue);
+	const value = $derived(editor?.value || []);
+	const text = $derived(editor?.renderedValue);
 
-	let index = $derived.by(() => {
-		const firstSelected = options.find(opt => value.includes(opt.id));
-		return firstSelected ? options.indexOf(firstSelected) : -1;
+	const dropdownOptions = $derived({
+		trackScroll: true,
+		...(config.dropdown || {}),
 	});
 
-	const dropdownOptions = $derived.by(() => {
-		const dropdown = config?.dropdown || {};
-		return { trackScroll: true, ...dropdown };
-	});
-
-	function updateValue({ id }) {
-		onapply(id);
-		node.focus();
+	function updateValue({ value }) {
+		onapply(value);
 	}
-
-	let navigate;
-	let keydown = $state();
-
-	function ready(ev) {
-		navigate = ev.navigate;
-		keydown = ev.keydown;
-		navigate(index);
-	}
-
-	let node = $state();
-	onMount(() => {
-		node.focus();
-		if (window && window.getSelection) {
-			window.getSelection().removeAllRanges();
-		}
-	});
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
-	bind:this={node}
 	class="wx-value"
-	tabindex="0"
-	onclick={() => onsave()}
-	onkeydown={ev => {
-		keydown(ev, index);
-		ev.preventDefault();
-	}}
+	onclick={() => onsave(true)}
 	use:clickOutside={() => onsave(true)}
 >
-	{#if config?.template}
-		{config.template(value?.map(id => options.find(opt => opt.id === id)))}
-	{:else if config?.cell}
-		{@const SvelteComponent = config.cell}
-		<SvelteComponent
-			data={value.map(id => options.find(opt => opt.id === id))}
-		/>
-	{:else}
-		<span class="wx-text">{renderedValue}</span>
-	{/if}
+	<MultiSelect
+		{value}
+		{options}
+		{text}
+		template={config.template}
+		cell={config.cell}
+		clear={config.clear}
+		dropdown={dropdownOptions}
+		autoOpen
+		onchange={updateValue}
+		{onaction}
+	/>
 </div>
 
-<SuggestDropdown
-	items={options}
-	onready={ready}
-	onselect={updateValue}
-	checkboxes={true}
-	multiselect={true}
-	{...dropdownOptions}
-	oncancel={() => onsave()}
-	{value}
->
-	{#snippet children({ option })}
-		<div class="wx-option">
-			{#if config?.template}
-				{config.template(option)}
-			{:else if config?.cell}
-				{@const SvelteComponent = config.cell}
-				<SvelteComponent data={option} {onaction} />
-			{:else}
-				{option.label}
-			{/if}
-		</div>
-	{/snippet}
-</SuggestDropdown>
-
 <style>
-	.wx-option {
-		display: flex;
-		direction: row;
-		align-items: center;
-		justify-content: flex-start;
-		gap: 8px;
-	}
-	.wx-text {
-		width: 100%;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
 	.wx-value {
 		width: 100%;
 		height: 100%;
-		padding: 8px;
-		overflow: hidden;
-		outline: none;
+		background: var(--wx-background);
+	}
+	.wx-value :global(.wx-multiselect) {
+		width: 100%;
+		height: 100%;
 		border: 1px solid var(--wx-color-primary);
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		border-radius: 0;
+		background: var(--wx-background);
+	}
+	.wx-value :global(.wx-multiselect:focus) {
+		border: 1px solid var(--wx-color-primary);
 	}
 </style>

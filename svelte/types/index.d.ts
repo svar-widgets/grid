@@ -1,6 +1,7 @@
 import type { Component, ComponentProps } from "svelte";
 import { ContextMenu as BaseContextMenu } from "@svar-ui/svelte-menu";
 import { Toolbar as BaseToolbar } from "@svar-ui/svelte-toolbar";
+import { Tooltip as BaseTooltip } from "@svar-ui/svelte-core";
 
 import type {
 	IColumn,
@@ -34,19 +35,28 @@ export type TEditorHandlerConfig = (
 	column?: IColumn
 ) => TEditorType | IColumnEditorConfig | null;
 
+export type IInnerApi = Pick<
+	IApi,
+	"exec" | "getState" | "getReactiveState" | "getRow"
+>;
+
 export interface ICellProps {
-	api: IApi;
+	api: IInnerApi;
 	row: IRow;
 	column: IColumn;
 	onaction: (ev: { action?: any; data?: { [key: string]: any } }) => void;
 }
 
+export interface IHeaderCellProps {
+	api: IInnerApi;
+	row: number;
+	column: IColumn;
+	cell: Omit<IHeaderCell, "cell">;
+	onaction: (ev: { action?: any; data?: { [key: string]: any } }) => void;
+}
+
 export interface IHeaderCellConfig extends IHeaderCell {
-	cell?: Component<
-		ICellProps & {
-			cell: Omit<IHeaderCell, "cell">;
-		}
-	>;
+	cell?: Component<IHeaderCellProps>;
 }
 
 export type TColumnHeaderConfig =
@@ -111,11 +121,17 @@ export declare const Toolbar: Component<
 	}
 >;
 
-export declare const Tooltip: Component<{
-	content?: Component;
-	api?: IApi;
-	children?: () => any;
-}>;
+export declare const Tooltip: Component<
+	Omit<ComponentProps<typeof BaseTooltip>, "content"> & {
+		content?: Component<{
+			data: {
+				row: IRow;
+				column: IColumn;
+			};
+		}>;
+		api?: IApi;
+	}
+>;
 
 export declare const Material: Component<{
 	fonts?: boolean;

@@ -838,11 +838,11 @@ export function getData() {
 	];
 
 	const users = [
-		{ id: 1, label: "Alex" },
-		{ id: 2, label: "John" },
-		{ id: 3, label: "Bob" },
-		{ id: 4, label: "Mary" },
-		{ id: 5, label: "Kate" },
+		{ id: 1, label: "Alex", color: "#4CAF50" },
+		{ id: 2, label: "John", color: "#2196F3" },
+		{ id: 3, label: "Bob", color: "#FF9800" },
+		{ id: 4, label: "Mary", color: "#6F57EF" },
+		{ id: 5, label: "Kate", color: "#9C2780" },
 	];
 
 	const collapsibleColumns = mode => {

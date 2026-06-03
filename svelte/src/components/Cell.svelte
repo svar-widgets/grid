@@ -1,5 +1,5 @@
 <script>
-	import { onDestroy, getContext, untrack } from "svelte";
+	import { getContext, untrack } from "svelte";
 	import { getStyle } from "../helpers/columnWidth";
 	import { getRenderValue } from "@svar-ui/grid-store";
 	import { setID } from "@svar-ui/lib-dom";
@@ -71,13 +71,6 @@
 			});
 		}
 	}
-
-	onDestroy(() => {
-		if (focusable && $focusCell) {
-			api.exec("focus-cell", { eventSource: "destroy" });
-			focusable = false;
-		}
-	});
 
 	function highlightText(text) {
 		const regex = new RegExp(`(${$search.value.trim()})`, "gi");

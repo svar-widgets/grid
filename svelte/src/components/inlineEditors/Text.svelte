@@ -5,6 +5,7 @@
 	let { editor, onsave, onapply } = $props();
 
 	let value = $state(editor.value || "");
+	let { type = "text" } = $derived(editor?.config || {});
 
 	let node = $state();
 	onMount(() => node.focus());
@@ -25,7 +26,7 @@
 	oninput={updateValue}
 	onkeydown={closeAndSave}
 	bind:this={node}
-	type="text"
+	{type}
 	{value}
 />
 

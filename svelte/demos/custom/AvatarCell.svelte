@@ -1,54 +1,47 @@
 <script>
-	let { row } = $props();
+	import { Avatar } from "@svar-ui/svelte-core";
+
+	let { row, data, column } = $props();
+	const userData = $derived.by(() => {
+		if (data) return data;
+		const users = column.options;
+		const options = row["assigned"]?.map(id =>
+			users.find(user => user.id === id)
+		);
+		if (options?.length === 1) {
+			return options[0];
+		}
+		return options;
+	});
+
+	const names = $derived.by(() => {
+		if (Array.isArray(userData) && userData.length) {
+			return userData.map(user => user.name).join(", ");
+		}
+		return "";
+	});
 </script>
 
 <div class="container">
-	<div class="avatar">
-		<div class="user-avatar">
-			{#if row.avatar}
-				<img class="user-photo" alt="" src={row.avatar} />
+	{#key userData}
+		{#if Array.isArray(userData)}
+			{#if userData.length < 3}
+				{names}
+			{:else}
+				<Avatar value={userData} size={22} />
 			{/if}
-		</div>
-	</div>
-	<div class="info">
-		<div class="name">{row.lastName}</div>
-		<div class="mail">{row.email || ""}</div>
-	</div>
+		{:else}
+			<Avatar value={userData} size={28} />
+			<div>{userData?.name ?? ""}</div>
+		{/if}
+	{/key}
 </div>
 
 <style>
 	.container {
+		width: 100%;
 		display: flex;
 		align-items: center;
-		height: 56px;
-		padding: 0 12px;
-	}
-
-	.avatar {
-		width: 70px;
-	}
-
-	.name {
-		flex: 1;
-	}
-
-	.mail {
-		flex: 1;
-	}
-
-	.user-avatar {
-		width: 40px;
-		height: 40px;
-		border-radius: 50%;
-		background-color: #dfe2e6;
-		text-align: center;
-	}
-
-	.user-photo {
-		display: block;
-		width: 100%;
-		height: 100%;
-		border-radius: 50%;
-		background-color: #dfe2e6;
+		gap: 4px;
 	}
 </style>

@@ -14,7 +14,7 @@ export function getRenderValue(row: IRow, col: IColumn): string {
 	if (col.template) {
 		v = col.template(v, row, col);
 	} else if (col.optionsMap) {
-		if (Array.isArray(v)) v = v.map(x => col.optionsMap.get(x));
+		if (Array.isArray(v)) v = v.map(x => col.optionsMap.get(x)).join(", ");
 		else v = col.optionsMap.get(v);
 	}
 

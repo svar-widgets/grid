@@ -2,7 +2,14 @@ import type { TScrollConfig } from "./types";
 
 export function scrollTo(
 	node: HTMLElement,
-	config: { scroll: any; getHeight: any; getWidth: any; getScrollMargin: any }
+	config: {
+		scroll: any;
+		scrollLeft?: any;
+		scrollTop?: any;
+		getHeight: any;
+		getWidth: any;
+		getScrollMargin: any;
+	}
 ) {
 	let prev: TScrollConfig = null;
 	config.scroll.subscribe((v: TScrollConfig) => {
@@ -30,5 +37,16 @@ export function scrollTo(
 				node.scrollLeft = left - bWidth + width + margin;
 			}
 		}
+	});
+
+	config.scrollLeft?.subscribe?.((v: number) => {
+		requestAnimationFrame(() => {
+			if (Math.abs(node.scrollLeft - v) > 1) node.scrollLeft = v;
+		});
+	});
+	config.scrollTop?.subscribe?.((v: number) => {
+		requestAnimationFrame(() => {
+			if (Math.abs(node.scrollTop - v) > 1) node.scrollTop = v;
+		});
 	});
 }

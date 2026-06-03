@@ -97,7 +97,6 @@
 		getReactiveState: dataStore.getReactive.bind(dataStore),
 		exec: firstInRoute.exec.bind(firstInRoute),
 		getRow: dataStore.getRow.bind(dataStore),
-		getRowIndex: dataStore.getRowIndex.bind(dataStore),
 	});
 	// auto config columns
 	const finalColumns = $derived.by(() => {

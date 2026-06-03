@@ -39,8 +39,9 @@
 
 <div style="padding: 20px;">
 	<h4>Default text tooltips for specific columns</h4>
+	<p>The tooltip is only shown for cells with overflow</p>
 	<div>
-		<Tooltip {api}>
+		<Tooltip overflow {api}>
 			<Grid {data} columns={columnsTooltip} bind:this={api} />
 		</Tooltip>
 	</div>

@@ -11,5 +11,6 @@ export default {
 		"Move down": "Move down",
 		Undo: "Undo",
 		Redo: "Redo",
+		selected: "selected",
 	},
 };

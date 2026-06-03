@@ -25,7 +25,7 @@ export interface IMethodsHash {
 }
 
 export type TSelect = boolean;
-export type TFilterType = "text" | "richselect" | "datepicker";
+export type TFilterType = "text" | "richselect" | "datepicker" | "multiselect";
 export type TEditorType =
 	| "text"
 	| "combo"
@@ -39,7 +39,9 @@ export interface IColumnEditor {
 		template?: (v: any) => string;
 		cell?: any;
 		options?: IOption[];
-		buttons?: ["clear" | "today"];
+		buttons?: boolean | ("clear" | "today")[];
+		dropdown?: IDataHash<any>;
+		clear?: boolean;
 	};
 }
 export type TEditorHandler = (
@@ -82,6 +84,8 @@ export interface IDataConfig extends IProConfig {
 	_rowHeightFromData: boolean;
 	columns?: IColumn[];
 	scroll?: TScrollConfig;
+	scrollLeft?: number;
+	scrollTop?: number;
 	editor?: TEditorConfig;
 	focusCell?: {
 		row: TID;
@@ -143,7 +147,7 @@ export interface IColumn {
 	sort?: boolean | TSortFunction;
 	left?: number;
 	right?: number;
-	fixed?: number | { left?: number; right?: number };
+	fixed?: { left?: number; right?: number };
 	editor?: TEditorType | IColumnEditor | TEditorHandler;
 	setter?: ValueSetter;
 	getter?: ValueGetter;
@@ -156,6 +160,7 @@ export interface IColumn {
 	cell?: any;
 	css?: string;
 	template?: (value: any, row: IRow, col: IColumn) => string;
+	tooltip?: boolean | ((row: IRow) => string);
 	treetoggle?: boolean;
 	draggable?: boolean | ((row: IRow, column: IColumn) => boolean);
 }
@@ -224,11 +229,7 @@ export type TEditorConfig = {
 	column: TID;
 	value?: Value | Array<Value>;
 	renderedValue?: any;
-	config?: {
-		type?: TEditorType;
-		template?: any;
-		cell?: any;
-	};
+	config?: IColumnEditor["config"];
 	options?: IColumn["options"];
 	type: TEditorType;
 };
@@ -342,6 +343,7 @@ export interface IHeaderFilter {
 	type: TFilterType;
 	config?: {
 		template?: (opt: IOption) => string;
+		cell?: any;
 		options?: IOption[];
 		handler?: TFilterHandler;
 		placeholder?: string;

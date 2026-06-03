@@ -4,7 +4,7 @@
 	import { getData } from "../data";
 
 	import CheckboxCell from "../custom/CheckboxCell.svelte";
-	import AvatarCell from "../custom/AvatarCell.svelte";
+	import UserCell from "../custom/UserCell.svelte";
 	import HeaderTextCell from "../custom/HeaderTextCell.svelte";
 	import FooterTextCell from "../custom/FooterTextCell.svelte";
 
@@ -29,7 +29,7 @@
 			cell: CheckboxCell,
 			width: 36,
 		},
-		{ id: "avatar", cell: AvatarCell, width: 350 },
+		{ id: "avatar", cell: UserCell, width: 350 },
 	];
 
 	function action(action, ev) {

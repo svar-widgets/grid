@@ -127,7 +127,7 @@
 			? "0"
 			: undefined}
 		role="columnheader"
-		aria-colindex={cell._colindex}
+		aria-colindex={column._colindex}
 		aria-colspan={cell.colspan > 1 ? cell.colspan : undefined}
 		aria-rowspan={cell.rowspan > 1 ? cell.rowspan : undefined}
 		aria-sort={!sortMark?.order || cell.filter

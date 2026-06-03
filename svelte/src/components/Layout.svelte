@@ -1,5 +1,5 @@
 <script>
-	import { getContext, tick, onMount } from "svelte";
+	import { getContext, tick, onMount, untrack } from "svelte";
 	import { onresize } from "../helpers/actions/onresize";
 	import { reorder as drag, getOffset } from "../helpers/actions/reorder";
 	import {
@@ -53,6 +53,8 @@
 		select,
 		editor,
 		scroll,
+		scrollLeft,
+		scrollTop,
 		tree,
 		focusCell,
 		_print,
@@ -65,8 +67,7 @@
 	let SCROLLSIZE = $state(0);
 	onMount(() => (SCROLLSIZE = getScrollSize()));
 
-	let scrollLeft = $state(0),
-		scrollTop = $state(0);
+	let bodyClientHeight = $state(0);
 	const hasAny = $derived.by(() => {
 		return $_columns.some(col => !col.hidden && col.flexgrow);
 	});
@@ -168,8 +169,8 @@
 		let data, header, footer;
 
 		// get visible columns
-		const left = scrollLeft;
-		const right = scrollLeft + clientWidth;
+		const left = $scrollLeft;
+		const right = $scrollLeft + clientWidth;
 
 		let start = 0;
 		let end = 0;
@@ -247,24 +248,35 @@
 	});
 	// $inspect(renderColumns, "renderColumns");
 
+	const headerHeight = $derived(header ? $_sizes.headerHeight : 0);
+	const footerHeight = $derived(footer ? $_sizes.footerHeight : 0);
+
+	const hasHScroll = $derived(
+		clientWidth && clientHeight ? fullWidth >= clientWidth : false
+	);
+	let hasVScroll = $state(false);
+
+	function setVScroll() {
+		hasVScroll =
+			clientWidth && clientHeight
+				? fullHeight + headerHeight + footerHeight >=
+					clientHeight - (fullWidth >= clientWidth ? SCROLLSIZE : 0)
+				: false;
+	}
+
+	$effect(() => {
+		bodyClientHeight;
+		untrack(() => requestAnimationFrame(setVScroll));
+	});
+	$effect(() => {
+		clientHeight;
+		untrack(setVScroll);
+	});
+
 	const contentWidth = $derived(
 		hasAny && fullWidth <= clientWidth
 			? clientWidth - (hasVScroll ? SCROLLSIZE : 0)
 			: fullWidth
-	);
-	// $inspect(contentWidth, "contentWidth");
-
-	const headerHeight = $derived(header ? $_sizes.headerHeight : 0);
-	const footerHeight = $derived(footer ? $_sizes.footerHeight : 0);
-
-	const hasVScroll = $derived(
-		clientWidth && clientHeight
-			? fullHeight + headerHeight + footerHeight >=
-					clientHeight - (fullWidth >= clientWidth ? SCROLLSIZE : 0)
-			: false
-	);
-	const hasHScroll = $derived(
-		clientWidth && clientHeight ? fullWidth >= clientWidth : false
 	);
 
 	// set global width
@@ -297,14 +309,14 @@
 		let start = 0,
 			deltaTop = 0;
 		if (autoRowHeight) {
-			let st = scrollTop;
+			let st = $scrollTop;
 			while (st > 0) {
 				st -= rowHeights[start] || defaultRowHeight;
 				start++;
 			}
 
 			// space to first rendered row
-			deltaTop = scrollTop - st;
+			deltaTop = $scrollTop - st;
 			for (let i = Math.max(0, start - EXTRAROWS - 1); i < start; i++)
 				deltaTop -= rowHeights[start - i] || defaultRowHeight;
 
@@ -315,7 +327,7 @@
 				let topHeight = 0;
 				for (let i = 0; i < $data.length; i++) {
 					const height = $data[i].rowHeight || defaultRowHeight;
-					if (topHeight + height > scrollTop) {
+					if (topHeight + height > $scrollTop) {
 						startInd = i;
 						break;
 					}
@@ -346,7 +358,7 @@
 				return { d: deltaTop, start, end };
 			}
 
-			start = Math.floor(scrollTop / defaultRowHeight);
+			start = Math.floor($scrollTop / defaultRowHeight);
 			start = Math.max(0, start - EXTRAROWS);
 			deltaTop = start * defaultRowHeight;
 		}
@@ -388,8 +400,10 @@
 	let renderEnd = $state();
 
 	function onScroll(ev) {
-		scrollTop = ev.target.scrollTop;
-		scrollLeft = ev.target.scrollLeft;
+		const top = ev.target.scrollTop;
+		const left = ev.target.scrollLeft;
+		if (top !== $scrollTop || left !== $scrollLeft)
+			api.exec("scroll-to", { top, left });
 	}
 
 	function lockSelection(ev) {
@@ -479,7 +493,7 @@
 			.forEach(element => element.setAttribute("tabindex", "-1"));
 		container.appendChild(dragNode);
 
-		const offsetX = scrollLeft - renderColumns.d;
+		const offsetX = $scrollLeft - renderColumns.d;
 		const vScrollSize = hasVScroll ? SCROLLSIZE : 0;
 
 		container.style.width =
@@ -531,7 +545,7 @@
 					? dragNode?.offsetHeight
 					: $_sizes.rowHeight;
 
-				if (scrollTop === 0 || pos.y > min + rowHeight - 1) {
+				if ($scrollTop === 0 || pos.y > min + rowHeight - 1) {
 					const targetRect = targetRow.getBoundingClientRect();
 					const dragNodeOffset = getOffset(dragNode);
 
@@ -540,8 +554,10 @@
 
 					const dir = dragNodePos > targetNodePos ? -1 : 1;
 					const initialMode = dir === 1 ? "after" : "before";
+					const flat = api.getState().flatData;
 					const diff = Math.abs(
-						api.getRowIndex(from) - api.getRowIndex(to)
+						flat.findIndex(r => r.id === from) -
+							flat.findIndex(r => r.id === to)
 					);
 
 					const mode =
@@ -657,6 +673,20 @@
 
 	$effect(() => dataRows && autoRowHeight && adjustHeight());
 
+	$effect(() => {
+		if ($focusCell) {
+			const rowExists = dataRows.some(row => row.id === $focusCell.row);
+			const cellExists =
+				rowExists &&
+				renderColumns.data.some(
+					col => col.id === $focusCell.column && !col.collapsed
+				);
+			if (!cellExists) {
+				api.exec("focus-cell", { eventSource: "destroy" });
+			}
+		}
+	});
+
 	/* focus is a focusable cell which either belongs to visible selection 
 	   or is the first visible cell in grid, which maybe scrolled up due to EXTRAROWS 
 	   If select is false, focusCell can be outside selection*/
@@ -731,6 +761,8 @@
 			onscroll={onScroll}
 			use:scrollTo={{
 				scroll,
+				scrollLeft,
+				scrollTop,
 				getWidth: () => clientWidth - (hasVScroll ? SCROLLSIZE : 0),
 				getHeight: () => visibleRowsHeight,
 				getScrollMargin: () => leftColumns.width + rightColumns.width,
@@ -756,6 +788,7 @@
 					$focusCell &&
 					api.exec("focus-cell", { eventSource: "click" })}
 				use:delegateClick={bodyClickHandlers}
+				bind:clientHeight={bodyClientHeight}
 			>
 				{#if overlay}
 					<Overlay {overlay} />
