@@ -2,8 +2,8 @@
 	import { getData } from "../data";
 	import { Grid, ContextMenu, HeaderMenu } from "../../src";
 	import { Locale, Segmented } from "@svar-ui/svelte-core";
-	import { en, cn } from "@svar-ui/grid-locales";
-	import { en as enCore, cn as cnCore } from "@svar-ui/core-locales";
+	import { en, cn, pt } from "@svar-ui/grid-locales";
+	import { en as enCore, cn as cnCore, pt as ptCore } from "@svar-ui/core-locales";
 
 	const { allData: data, countries, users } = getData();
 	let table = $state();
@@ -54,6 +54,7 @@
 		options={[
 			{ id: "en", label: "English" },
 			{ id: "cn", label: "Chinese" },
+			{ id: "pt", label: "Portuguese" },
 		]}
 		bind:value={language}
 	/>
@@ -67,6 +68,14 @@
 		</Locale>
 	{:else if language == "cn"}
 		<Locale words={{ ...cn, ...cnCore }}>
+			<ContextMenu api={table}>
+				<HeaderMenu api={table}>
+					<Grid {data} {columns} {init} />
+				</HeaderMenu>
+			</ContextMenu>
+		</Locale>
+	{:else if language == "pt"}
+		<Locale words={{ ...pt, ...ptCore }}>
 			<ContextMenu api={table}>
 				<HeaderMenu api={table}>
 					<Grid {data} {columns} {init} />
