@@ -2254,4 +2254,143 @@ describe("datastore", () => {
 			expect(selectedRows).to.deep.equal([1, 2, 3, 4, 5]);
 		});
 	});
+
+	describe("column spans", () => {
+		/* eslint-disable vitest/expect-expect -- assertions are in expectHeader() */
+		function getColumns() {
+			return [
+				{ id: "id" },
+				{
+					id: "firstName",
+					header: [
+						{ text: "Main client info", colspan: 5 },
+						{ text: "User", colspan: 2 },
+						{ text: "First Name" },
+					],
+					width: 50,
+				},
+				{
+					id: "lastName",
+					header: ["", "", "Last Name"],
+					width: 60,
+				},
+				{
+					id: "email",
+					header: ["", { text: "Email", rowspan: 2 }],
+					width: 70,
+				},
+				{
+					id: "companyName",
+					header: [
+						"",
+						{ text: "Company", colspan: 2 },
+						{ text: "Name" },
+					],
+					width: 80,
+				},
+				{
+					id: "city",
+					header: ["", "", "City"],
+					width: 90,
+				},
+			];
+		}
+
+		function expectHeader(
+			id: string,
+			cells: {
+				text?: string;
+				colspan?: number;
+				width?: number;
+				_hidden?: boolean;
+			}[]
+		) {
+			const column = store.getState()._columns.find(c => c.id === id)!;
+			cells.forEach(({ text, colspan, width, _hidden }, i) => {
+				if (_hidden) return;
+				expect(column.header[i].text).to.eq(text);
+				if (colspan) expect(column.header[i].colspan).to.eq(colspan);
+				expect(column.header[i].width).to.eq(width);
+			});
+		}
+
+		test("normalize columns with colspans after hiding columns", () => {
+			resetState({ ...getData(), columns: getColumns() });
+
+			store.in.exec("hide-column", { id: "firstName", mode: true });
+			expectHeader("lastName", [
+				{ text: "Main client info", colspan: 4, width: 300 },
+				{ text: "User", colspan: 1, width: 60 },
+				{ text: "Last Name", width: 60 },
+			]);
+
+			store.in.exec("hide-column", { id: "lastName", mode: true });
+			expectHeader("email", [
+				{ text: "Main client info", colspan: 3, width: 240 },
+				{ text: "Email", width: 70 },
+				{ _hidden: true },
+			]);
+
+			store.in.exec("hide-column", { id: "companyName", mode: true });
+			expectHeader("email", [
+				{ text: "Main client info", colspan: 2, width: 160 },
+				{ text: "Email", width: 70 },
+				{ _hidden: true },
+			]);
+			expectHeader("city", [
+				{ _hidden: true },
+				{ text: "Company", colspan: 1, width: 90 },
+				{ text: "City", width: 90 },
+			]);
+
+			store.in.exec("hide-column", { id: "city", mode: true });
+			expectHeader("email", [
+				{ text: "Main client info", colspan: 1, width: 70 },
+				{ text: "Email", width: 70 },
+				{ _hidden: true },
+			]);
+		});
+
+		test("normalize columns with colspans after showing columns", () => {
+			resetState({ ...getData(), columns: getColumns() });
+
+			store.in.exec("hide-column", { id: "firstName", mode: true });
+			store.in.exec("hide-column", { id: "lastName", mode: true });
+			store.in.exec("hide-column", { id: "companyName", mode: true });
+			store.in.exec("hide-column", { id: "city", mode: true });
+			store.in.exec("hide-column", { id: "city", mode: false });
+
+			expectHeader("email", [
+				{ text: "Main client info", colspan: 2, width: 160 },
+				{ text: "Email", width: 70 },
+				{ _hidden: true },
+			]);
+			expectHeader("city", [
+				{ _hidden: true },
+				{ text: "Company", colspan: 1, width: 90 },
+				{ text: "City", width: 90 },
+			]);
+
+			store.in.exec("hide-column", { id: "lastName", mode: false });
+			expectHeader("lastName", [
+				{ text: "Main client info", colspan: 3, width: 220 },
+				{ text: "User", colspan: 1, width: 60 },
+				{ text: "Last Name", width: 60 },
+			]);
+
+			store.in.exec("hide-column", { id: "firstName", mode: false });
+			expectHeader("firstName", [
+				{ text: "Main client info", colspan: 4, width: 270 },
+				{ text: "User", colspan: 2, width: 110 },
+				{ text: "First Name", width: 50 },
+			]);
+
+			store.in.exec("hide-column", { id: "companyName", mode: false });
+			expectHeader("firstName", [
+				{ text: "Main client info", colspan: 5, width: 350 },
+				{ text: "User", colspan: 2, width: 110 },
+				{ text: "First Name", width: 50 },
+			]);
+		});
+	});
 });

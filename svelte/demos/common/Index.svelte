@@ -100,12 +100,16 @@
 				</div>
 			</div>
 			<div class="box-links">
-				{#each links as data (data[0])}
-					<Link
-						{data}
-						{skin}
-						onclick={() => isMobileView && (show = false)}
-					/>
+				{#each links as data, i (Array.isArray(data) ? data[0] : `group-${i}`)}
+					{#if Array.isArray(data)}
+						<Link
+							{data}
+							{skin}
+							onclick={() => isMobileView && (show = false)}
+						/>
+					{:else}
+						<div class="group-title">{data.group}</div>
+					{/if}
 				{/each}
 			</div>
 		</div>
@@ -510,6 +514,21 @@
 		display: flex;
 		flex-direction: column;
 		gap: 6px;
+	}
+
+	.group-title {
+		letter-spacing: 0.6px;
+		text-transform: uppercase;
+		color: var(--wx-color-font-alt);
+		padding: 20px 16px 2px;
+		font-size: 12px;
+		font-weight: 600;
+		border-top: var(--wx-border);
+	}
+
+	.box-links > .group-title:first-child {
+		margin-top: 0;
+		border-top: none;
 	}
 
 	.hint {

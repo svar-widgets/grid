@@ -31,7 +31,6 @@ const cases = [
 	"/treetable/:skin",
 	"/export/:skin",
 	"/export-custom-styles/:skin",
-	"/api/:skin",
 	//"/events/:skin",
 	"/scroll/:skin",
 ];

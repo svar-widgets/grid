@@ -358,7 +358,8 @@ export default class DataStore extends Store<IData> {
 			} else this.setState({ focusCell: null });
 		});
 		inBus.on("resize-column", (ev: IDataMethodsConfig["resize-column"]) => {
-			const { id, auto, maxRows, inProgress } = ev;
+			const { id, auto, maxRows, inProgress, flexgrowFallback } = ev;
+
 			if (inProgress === false) {
 				// event called with inProgress=false is purely informational (indicates that the resize is over)
 				return;
@@ -386,6 +387,10 @@ export default class DataStore extends Store<IData> {
 			}
 
 			column.width = Math.max(17, width);
+			if (flexgrowFallback && column.flexgrow) {
+				const fill = columns.find(c => c.id === flexgrowFallback);
+				if (fill && !fill.flexgrow) fill.flexgrow = 1;
+			}
 			delete column.flexgrow;
 			this.setState({ columns });
 		});
@@ -1426,6 +1431,27 @@ export default class DataStore extends Store<IData> {
 				if (i + row.rowspan != rowsCount) row.height--; // -1px because of row border-bottom
 			}
 
+			if (col.hidden && row.colspan > 1) {
+				const spanEnd = index + row.colspan;
+				let currIndex = index + 1;
+				let nextColumn = columns[currIndex];
+				let colspan = row.colspan;
+
+				while (currIndex < spanEnd && nextColumn?.hidden) {
+					currIndex++;
+					colspan--;
+					nextColumn = columns[currIndex];
+				}
+
+				if (nextColumn && !nextColumn.hidden && colspan > 1) {
+					nextColumn[type][i] = {
+						...row,
+						id: nextColumn.id,
+						width: nextColumn.width || sizes.columnWidth,
+						colspan: colspan - 1,
+					};
+				}
+			}
 			// set widths for header cells
 			if (row.colspan) {
 				let width = col.width;
@@ -1675,6 +1701,7 @@ export type IDataMethodsConfig = CombineTypes<
 			auto?: boolean | "data" | "header";
 			maxRows?: number;
 			inProgress?: boolean;
+			flexgrowFallback?: TID;
 			eventSource?: string;
 		};
 		["hide-column"]: {

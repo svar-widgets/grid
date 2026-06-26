@@ -11,6 +11,7 @@
 		type = "header",
 		columnStyle,
 		bodyHeight,
+		...restProps
 	} = $props();
 
 	const api = getContext("grid-store");
@@ -23,12 +24,16 @@
 			const rowsCount = columns[0][type].length;
 			for (let ri = 0; ri < rowsCount; ri++) {
 				let inSpan = 0;
+				let left = 0;
 				res.push([]);
 				columns.forEach((col, ci) => {
 					const cell = { ...col[type][ri] };
 					if (!inSpan) {
+						cell.left = left;
 						res[ri].push(cell);
 					}
+
+					left += col.width;
 
 					if (cell.colspan > 1) {
 						inSpan = cell.colspan - 1;
@@ -94,14 +99,11 @@
 						{bodyHeight}
 						sortRow={isSort(cell, i, column)}
 						{hasSplit}
+						{deltaLeft}
+						{...restProps}
 					/>
 				{:else}
-					<FooterCell
-						{cell}
-						{columnStyle}
-						column={getColumn(cell.id)}
-						row={i}
-					/>
+					<FooterCell {cell} {columnStyle} {column} row={i} />
 				{/if}
 			{/each}
 		</div>

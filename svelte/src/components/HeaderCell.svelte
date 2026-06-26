@@ -14,10 +14,14 @@
 		columnStyle,
 		bodyHeight,
 		hasSplit,
+		deltaLeft,
+		leftColumnsWidth,
+		rightColumnsWidth,
+		viewportWidth,
 	} = $props();
 
 	const api = getContext("grid-store");
-	const { sortMarks } = api.getReactiveState();
+	const { sortMarks, scrollLeft } = api.getReactiveState();
 
 	let start;
 
@@ -67,12 +71,51 @@
 		if (ev.key === "Enter" && !cell.filter) sort(ev);
 	}
 
-	let isCollapsed = $derived(cell.collapsed && column.collapsed);
-	let overlay = $derived(
-		isCollapsed && !hasSplit && cell.collapsible !== "header"
+	let isCollapsed = $derived(cell.collapsed && column?.collapsed);
+	const isCenterColumn = $derived(
+		hasSplit && (column?.fixed === 0 || !column?.fixed)
 	);
+
+	const centerBounds = $derived.by(() => {
+		if (!hasSplit || !isCenterColumn) return { visible: false, clip: "" };
+
+		const width = cell.width || column.width;
+		const x = deltaLeft + cell.left - $scrollLeft;
+		const centerRight = viewportWidth - rightColumnsWidth;
+
+		if (x + width <= leftColumnsWidth || x >= centerRight) {
+			return { visible: false, clip: "" };
+		}
+
+		const hiddenLeft = Math.max(0, leftColumnsWidth - x);
+		const hiddenRight = Math.max(0, x + width - centerRight);
+
+		return {
+			visible: true,
+			clip:
+				hiddenLeft || hiddenRight
+					? `clip-path:inset(0px ${hiddenRight}px 0px ${hiddenLeft}px);`
+					: "",
+		};
+	});
+
+	// 1) no split: all collapsed columns render with content
+	// 2) split + fixed: fixed columns render with content
+	// 3) split + center: only when visible in center area (clip if partially hidden)
+	const showCollapsedContent = $derived(
+		!hasSplit || !isCenterColumn || centerBounds.visible
+	);
+
+	const collapsedClip = $derived(
+		hasSplit && isCenterColumn && centerBounds.visible
+			? centerBounds.clip
+			: ""
+	);
+
 	let collapsedTextStyle = $derived(
-		overlay ? `top:-${bodyHeight / 2}px;position:absolute;` : ""
+		showCollapsedContent
+			? `top:-${bodyHeight / 2}px;position:absolute;`
+			: ""
 	);
 
 	let style = $derived(
@@ -82,8 +125,8 @@
 			column.fixed,
 			column.left,
 			cell.right ?? column.right,
-			cell.height + (isCollapsed && overlay ? bodyHeight : 0)
-		)
+			cell.height + (isCollapsed && showCollapsedContent ? bodyHeight : 0)
+		) + collapsedClip
 	);
 
 	const css = $derived(getCssName(column, cell, columnStyle));
@@ -98,21 +141,30 @@
 {#if isCollapsed}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div
-		class="wx-cell {css} {cell.css || ''} wx-collapsed"
-		{style}
-		role="button"
-		aria-label={`Expand column ${cell.text || ""}`}
-		aria-expanded={!cell.collapsed}
-		tabindex="0"
-		onkeydown={toggleCollapseColumn}
-		onclick={collapse}
-		data-header-id={setID(column.id)}
-	>
-		<div class="wx-text" style={collapsedTextStyle}>
-			{cell.text || ""}
+	{#if showCollapsedContent}
+		<div
+			class="wx-cell {css} {cell.css || ''} wx-collapsed"
+			{style}
+			role="button"
+			aria-label={`Expand column ${cell.text || ""}`}
+			aria-expanded={!cell.collapsed}
+			tabindex="0"
+			onkeydown={toggleCollapseColumn}
+			onclick={collapse}
+			data-header-id={setID(column.id)}
+		>
+			<div class="wx-text" style={collapsedTextStyle}>
+				{cell.text || ""}
+			</div>
 		</div>
-	</div>
+	{:else}
+		<div
+			class="wx-cell {css} {cell.css || ''} wx-collapsed"
+			{style}
+			aria-hidden="true"
+			data-header-id={setID(column.id)}
+		></div>
+	{/if}
 {:else}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -293,7 +345,7 @@
 		background-color: transparent;
 		opacity: 0;
 		cursor: ew-resize;
-		z-index: 8;
+		z-index: 5;
 	}
 	.wx-grip div {
 		margin-left: 5px;
@@ -335,7 +387,7 @@
 		left: 9px;
 	}
 
-	.wx-cell:has(.wx-grip:hover) {
+	.wx-cell:has(.wx-grip:hover:not(:active)) {
 		z-index: 9;
 	}
 

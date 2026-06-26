@@ -1,3 +1,14 @@
+## 2.7.1
+
+### Fixes
+
+-   Header colspans are clipped when start column is hidden
+-   Grid cell focus is lost during key navigation
+-   Resize marker goes above the fixed column
+-   Horizontal scroll is corrupt if at least one column is flexible
+-   Vertical header cell is missing when collapsing a pinned column
+-   The "resize-column" handler sets fixed width with no ability to retain flexible behaviour
+
 ## 2.7.0
 
 ### New features

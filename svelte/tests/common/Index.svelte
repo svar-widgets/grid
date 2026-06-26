@@ -21,7 +21,7 @@
 		}),
 		"/routes": wrap({
 			component: ListRoutes,
-			props: { routes: links.map(x => x[0]) },
+			props: { routes: links.filter(Array.isArray).map(x => x[0]) },
 		}),
 	});
 
@@ -38,6 +38,7 @@
 
 	const allLinks = [...localLinks, ...links];
 	allLinks.forEach(a => {
+		if (!Array.isArray(a)) return;
 		const [path, , component] = a;
 		routes[path] = wrap({
 			component,

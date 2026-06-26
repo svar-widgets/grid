@@ -217,7 +217,8 @@
 		const df = footerPos.delta;
 		const csF = footerPos.index;
 
-		if (hasAny && fullWidth > clientWidth) {
+		const renderAll = hasAny && fullWidth > clientWidth;
+		if (renderAll) {
 			data =
 				header =
 				footer =
@@ -244,12 +245,16 @@
 			];
 		}
 
-		return { data, header, footer, d, df, dh };
+		return renderAll
+			? { data, header, footer, d: 0, df: 0, dh: 0 }
+			: { data, header, footer, d, df, dh };
 	});
 	// $inspect(renderColumns, "renderColumns");
 
 	const headerHeight = $derived(header ? $_sizes.headerHeight : 0);
-	const footerHeight = $derived(footer ? $_sizes.footerHeight : 0);
+	const footerHeight = $derived(
+		footer && $data.length ? $_sizes.footerHeight : 0
+	);
 
 	const hasHScroll = $derived(
 		clientWidth && clientHeight ? fullWidth >= clientWidth : false
@@ -290,6 +295,12 @@
 				: -1
 	);
 	// $inspect(globalWidth, "globalWidth");
+
+	const bodyContentHeight = $derived(
+		footerHeight
+			? Math.min(bodyClientHeight + 1, visibleRowsHeight - +footer)
+			: visibleRowsHeight
+	);
 
 	// hom many rows visible
 	const visibleRowsHeight = $derived(
@@ -650,7 +661,14 @@
 		return width;
 	}
 
-	const style = $derived(globalWidth > 0 ? `width:${globalWidth}px;` : "");
+	// with at least one flexible column, size the box to 100% to match the container
+	const style = $derived(
+		hasAny && fullWidth <= clientWidth
+			? "width:100%;"
+			: globalWidth > 0
+				? `width:${globalWidth}px;`
+				: ""
+	);
 
 	let dataEl;
 	let rowHeights = [];
@@ -674,17 +692,23 @@
 	$effect(() => dataRows && autoRowHeight && adjustHeight());
 
 	$effect(() => {
-		if ($focusCell) {
-			const rowExists = dataRows.some(row => row.id === $focusCell.row);
-			const cellExists =
-				rowExists &&
-				renderColumns.data.some(
-					col => col.id === $focusCell.column && !col.collapsed
+		renderColumns;
+		dataRows;
+		untrack(() => {
+			if ($focusCell) {
+				const rowExists = dataRows.some(
+					row => row.id === $focusCell.row
 				);
-			if (!cellExists) {
-				api.exec("focus-cell", { eventSource: "destroy" });
+				const cellExists =
+					rowExists &&
+					renderColumns.data.some(
+						col => col.id === $focusCell.column && !col.collapsed
+					);
+				if (!cellExists) {
+					api.exec("focus-cell", { eventSource: "destroy" });
+				}
 			}
-		}
+		});
 	});
 
 	/* focus is a focusable cell which either belongs to visible selection 
@@ -718,6 +742,11 @@
 			}
 		} else focus = null;
 	});
+
+	const viewportWidth = $derived(
+		(globalWidth > 0 ? globalWidth : clientWidth) -
+			(hasVScroll ? SCROLLSIZE : 0)
+	);
 </script>
 
 <div
@@ -772,10 +801,13 @@
 				<div class="wx-header-wrapper">
 					<HeaderFooter
 						{contentWidth}
+						{viewportWidth}
 						deltaLeft={renderColumns.dh}
 						columns={renderColumns.header}
 						{columnStyle}
-						bodyHeight={visibleRowsHeight - +footer}
+						bodyHeight={bodyContentHeight}
+						leftColumnsWidth={leftColumns.width}
+						rightColumnsWidth={rightColumns.width}
 					/>
 				</div>
 			{/if}
