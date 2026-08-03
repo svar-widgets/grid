@@ -6,6 +6,8 @@ import ContextMenu from "./cases/ContextMenu.svelte";
 import CustomContextMenu from "./cases/CustomContextMenu.svelte";
 import CustomCells from "./cases/CustomCells.svelte";
 import CustomEmbedingActions from "./cases/CustomEmbedingActions.svelte";
+import DragFromGrid from "./cases/DragFromGrid.svelte";
+import DragToGrid from "./cases/DragToGrid.svelte";
 import DynamicData from "./cases/DynamicData.svelte";
 import EventHandling from "./cases/EventHandling.svelte";
 import ExternalEditor from "./cases/ExternalEditor.svelte";
@@ -163,6 +165,18 @@ export const links = [
 		"MultilineRows",
 	],
 	["/reordering/:skin", "Reordering rows", Reordering, "Reordering"],
+	[
+		"/drag-to-grid/:skin",
+		"Creating rows from drag-n-drop",
+		DragToGrid,
+		"DragToGrid",
+	],
+	[
+		"/drag-from-grid/:skin",
+		"Dragging rows outside DataGrid",
+		DragFromGrid,
+		"DragFromGrid",
+	],
 	["/treetable/:skin", "Tree rows", TreeTable, "TreeTable"],
 
 	{ group: "Data operations" },

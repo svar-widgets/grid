@@ -1,7 +1,6 @@
 <script>
 	import { onMount } from "svelte";
 	import { SuggestDropdown } from "@svar-ui/svelte-core";
-	import { clickOutside } from "@svar-ui/lib-dom";
 
 	let { editor, onaction, onsave, onapply, oncancel } = $props();
 
@@ -50,14 +49,13 @@
 	bind:value={text}
 	oninput={input}
 	onkeydown={e => keydown(e, index)}
-	use:clickOutside={() => onsave(true)}
 />
 <SuggestDropdown
 	items={filterOptions}
 	onready={ready}
 	onselect={updateValue}
 	{...dropdownOptions}
-	{oncancel}
+	oncancel={() => oncancel(true)}
 >
 	{#snippet children({ option })}
 		{#if template}

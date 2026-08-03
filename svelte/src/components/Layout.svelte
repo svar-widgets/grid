@@ -30,6 +30,7 @@
 		overlay,
 		multiselect,
 		onreorder,
+		draggableRows,
 		rowStyle,
 		columnStyle,
 		cellStyle,
@@ -75,30 +76,19 @@
 	const defaultRowHeight = $derived($_sizes.rowHeight);
 	let tableNode;
 
+	// draggableRows: boolean for all rows, or a (row) => boolean predicate
+	const isRowDraggable = row =>
+		typeof draggableRows === "function"
+			? draggableRows(row)
+			: draggableRows;
+
 	// reorder
 	let dragItem = $state(null),
 		dragNode = $state(null);
 
-	const fullHeight = $derived.by(() => {
-		const count = $dynamic ? $dynamic.rowCount : $data.length;
-
-		if (autoRowHeight) {
-			return (
-				renderedHeight +
-				renderRows.d +
-				(count - renderEnd) * defaultRowHeight
-			);
-		}
-		if (!$_rowHeightFromData) {
-			return count * defaultRowHeight;
-		}
-
-		let totalHeight = 0;
-		for (let i = 0; i < count; i++)
-			totalHeight += $data[i].rowHeight || defaultRowHeight;
-
-		return totalHeight;
-	});
+	let rowHeights = [];
+	let renderedHeight = $state(0);
+	let renderEnd = $state(0);
 
 	const fullWidth = $derived(
 		$_columns.reduce((acc, col) => {
@@ -259,6 +249,18 @@
 	const hasHScroll = $derived(
 		clientWidth && clientHeight ? fullWidth >= clientWidth : false
 	);
+
+	const visibleRowsHeight = $derived(
+		clientHeight -
+			headerHeight -
+			footerHeight -
+			(hasHScroll ? SCROLLSIZE : 0)
+	);
+
+	const visibleRows = $derived(
+		Math.ceil(visibleRowsHeight / defaultRowHeight) + 1
+	);
+
 	let hasVScroll = $state(false);
 
 	function setVScroll() {
@@ -300,18 +302,6 @@
 		footerHeight
 			? Math.min(bodyClientHeight + 1, visibleRowsHeight - +footer)
 			: visibleRowsHeight
-	);
-
-	// hom many rows visible
-	const visibleRowsHeight = $derived(
-		clientHeight -
-			headerHeight -
-			footerHeight -
-			(hasHScroll ? SCROLLSIZE : 0)
-	);
-
-	const visibleRows = $derived(
-		Math.ceil(visibleRowsHeight / defaultRowHeight) + 1
 	);
 
 	// request data if necessary
@@ -408,7 +398,27 @@
 	);
 
 	let renderStart = $derived(renderRows.start);
-	let renderEnd = $state();
+
+	const fullHeight = $derived.by(() => {
+		const count = $dynamic ? $dynamic.rowCount : $data.length;
+
+		if (autoRowHeight) {
+			return (
+				renderedHeight +
+				renderRows.d +
+				(count - renderEnd) * defaultRowHeight
+			);
+		}
+		if (!$_rowHeightFromData) {
+			return count * defaultRowHeight;
+		}
+
+		let totalHeight = 0;
+		for (let i = 0; i < count; i++)
+			totalHeight += $data[i].rowHeight || defaultRowHeight;
+
+		return totalHeight;
+	});
 
 	function onScroll(ev) {
 		const top = ev.target.scrollTop;
@@ -671,8 +681,6 @@
 	);
 
 	let dataEl;
-	let rowHeights = [];
-	let renderedHeight = $state(0);
 	function adjustHeight() {
 		// make sure the UI is updated before syncing the state
 		tick().then(() => {
@@ -839,6 +847,7 @@
 								(rowStyle ? " " + rowStyle(row) : "")}
 							data-id={setID(row.id)}
 							data-context-id={setID(row.id)}
+							draggable={isRowDraggable(row) ? "true" : null}
 							class:wx-selected={isSelected}
 							class:wx-inactive={dragItem === row.id}
 							style={`${autoRowHeight ? "min-height" : "height"}:${row.rowHeight || defaultRowHeight}px;`}

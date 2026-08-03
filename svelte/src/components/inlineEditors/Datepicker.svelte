@@ -1,6 +1,5 @@
 <script>
 	import { onMount } from "svelte";
-	import { clickOutside } from "@svar-ui/lib-dom";
 
 	import { Calendar, Dropdown } from "@svar-ui/svelte-core";
 
@@ -45,14 +44,8 @@
 		<SvelteComponent data={editor.value} {onaction} />
 	{:else}<span class="wx-text">{editor.renderedValue}</span>{/if}
 </div>
-<Dropdown {...dropdownOptions} {oncancel}>
-	<div use:clickOutside={() => onsave(true)}>
-		<Calendar
-			{value}
-			onchange={updateValue}
-			buttons={editor.config?.buttons}
-		/>
-	</div>
+<Dropdown {...dropdownOptions} oncancel={() => oncancel(true)}>
+	<Calendar {value} onchange={updateValue} buttons={editor.config?.buttons} />
 </Dropdown>
 
 <style>

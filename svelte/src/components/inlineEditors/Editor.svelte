@@ -2,6 +2,8 @@
 	import { getContext } from "svelte";
 	import { getStyle } from "../../helpers/columnWidth";
 	import { editors } from "./editors";
+	import { getValue } from "@svar-ui/grid-store";
+	import { isSame } from "@svar-ui/lib-state";
 
 	let { column, row } = $props();
 
@@ -9,14 +11,14 @@
 	const { editor } = api.getReactiveState();
 
 	function save(ignoreFocus) {
-		const cell = ignoreFocus
-			? null
-			: { row: $editor.id, column: $editor.column };
-		closeEditor(false, cell);
+		const cell = getCell(ignoreFocus);
+		const isSameValue = isSame(getValue(row, column), $editor.value);
+		closeEditor(isSameValue, cell);
 	}
 
-	function cancel() {
-		closeEditor(true, { row: $editor.id, column: $editor.column });
+	function cancel(ignoreFocus) {
+		const cell = getCell(ignoreFocus);
+		closeEditor(true, cell);
 	}
 
 	function updateValue(value) {
@@ -31,6 +33,10 @@
 				eventSource: "click",
 			});
 		}
+	}
+
+	function getCell(ignoreFocus) {
+		return ignoreFocus ? null : { row: $editor.id, column: $editor.column };
 	}
 
 	function keyHandler(ev) {

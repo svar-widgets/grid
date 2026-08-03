@@ -99,6 +99,10 @@ export function reorder(node, config) {
 		end();
 	}
 
+	function handleDragStart(ev) {
+		if (config?.getReorder()) return preventDefault(ev);
+	}
+
 	function handleMouseDown(ev) {
 		if (!config?.getReorder()) return;
 		if (ev.button !== 0) return;
@@ -202,13 +206,13 @@ export function reorder(node, config) {
 		if (full) {
 			node.removeEventListener("mousedown", handleMouseDown);
 			node.removeEventListener("touchstart", handleTouchStart);
-			node.removeEventListener("dragstart", preventDefault);
+			node.removeEventListener("dragstart", handleDragStart);
 		}
 	}
 
 	node.addEventListener("mousedown", handleMouseDown);
 	node.addEventListener("touchstart", handleTouchStart);
-	node.addEventListener("dragstart", preventDefault);
+	node.addEventListener("dragstart", handleDragStart);
 
 	return {
 		destroy() {

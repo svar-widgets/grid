@@ -679,11 +679,6 @@
   resolved "https://registry.yarnpkg.com/@svar-ui/comments-locales/-/comments-locales-2.6.0.tgz#b73ba5aa6eb8e81f222bafd9b04065f43a2f88e5"
   integrity sha512-ctpmaE0BN2sXRc9MuCMzIut/2Piudnsxno7RoadJ8uIe3bZGRRSZfDW+kJ5pWgYmgdofLlWawTr3PCNjxt7R3w==
 
-"@svar-ui/core-locales@2.5.0":
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/@svar-ui/core-locales/-/core-locales-2.5.0.tgz#d88ed7d2aa955bb4190f7e8fb9ff3bd92c71fc02"
-  integrity sha512-vL8y8B1/YeHd89cd6x5jzSWLxYxNICXZY2Gx4+Op26L8N8IhCR26r8fpuptugodKLIQkyua3fh27ZB+5sJSXHg==
-
 "@svar-ui/core-locales@2.6.0":
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/@svar-ui/core-locales/-/core-locales-2.6.0.tgz#fb7467d45cf47baadb990e3a91498d0e62d36533"
@@ -758,15 +753,6 @@
     "@svar-ui/lib-state" "1.9.7"
     "@svar-ui/svelte-core" "2.6.0"
     "@svar-ui/svelte-menu" "2.6.0"
-
-"@svar-ui/svelte-core@2.5.0":
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/@svar-ui/svelte-core/-/svelte-core-2.5.0.tgz#06c4c7c58b94a2eb3ca7e91f24ccbe7895f7ba1c"
-  integrity sha512-POqG2dL6SeGcrFTYSxWWbbAdHoW9I6sdA7T9pld8/GnRn0X2sYnQBBvIPCMo5wC/zvEHVOpKGRiLZn6evTNQJw==
-  dependencies:
-    "@svar-ui/core-locales" "2.5.0"
-    "@svar-ui/lib-dom" "0.12.1"
-    "@svar-ui/lib-svelte" "0.5.2"
 
 "@svar-ui/svelte-core@2.6.0":
   version "2.6.0"

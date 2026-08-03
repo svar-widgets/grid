@@ -1,3 +1,14 @@
+## 2.7.2
+
+### Updates
+
+-   Ability to use native HTML5 drag-n-drop with grid rows
+
+### Fixes
+
+-   Inconsistent focus behavior and redundant "update-cell" event on inline editors
+-   Error with `autoRowHeight` when the DataGrid runs in a SvelteKit app
+
 ## 2.7.1
 
 ### Fixes

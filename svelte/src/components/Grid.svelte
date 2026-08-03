@@ -28,6 +28,7 @@
 		dynamic = null,
 		overlay = null,
 		reorder = false,
+		draggableRows = false,
 		onreorder = null,
 		autoRowHeight = false,
 		sizes = {},
@@ -183,6 +184,7 @@
 		{columnStyle}
 		{cellStyle}
 		{onreorder}
+		{draggableRows}
 		{multiselect}
 		{autoRowHeight}
 		{clientWidth}

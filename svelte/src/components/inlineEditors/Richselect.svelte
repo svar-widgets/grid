@@ -61,7 +61,6 @@
 	onready={ready}
 	onselect={updateValue}
 	{...dropdownOptions}
-	{oncancel}
 >
 	{#snippet children({ option })}
 		{#if template}
