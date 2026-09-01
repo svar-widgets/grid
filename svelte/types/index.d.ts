@@ -85,6 +85,7 @@ export declare const Grid: Component<
 		header?: boolean;
 		footer?: boolean;
 		reorder?: boolean;
+		draggableRows?: boolean | ((row: IRow) => boolean);
 		autoRowHeight?: boolean;
 		responsive?: {
 			[key: string]: {

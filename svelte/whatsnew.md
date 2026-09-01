@@ -1,3 +1,9 @@
+## 2.7.3
+
+### Fixes
+
+-   Missing Typescript declaration
+
 ## 2.7.2
 
 ### Updates

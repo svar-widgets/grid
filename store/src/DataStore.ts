@@ -355,7 +355,7 @@ export default class DataStore extends Store<IData> {
 						this.in.exec("scroll", { row, column });
 					} else this.in.exec("scroll", { row });
 				}
-			} else this.setState({ focusCell: null });
+			} else if (!row && !column) this.setState({ focusCell: null });
 		});
 		inBus.on("resize-column", (ev: IDataMethodsConfig["resize-column"]) => {
 			const { id, auto, maxRows, inProgress, flexgrowFallback } = ev;

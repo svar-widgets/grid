@@ -451,7 +451,7 @@
 		click: (id, ev) => {
 			if (postDrag) return;
 			const column = locateID(ev, "data-col-id");
-			if ($focusCell?.id !== id)
+			if ($focusCell?.row !== id || $focusCell?.column !== column)
 				api.exec("focus-cell", {
 					row: id,
 					column,
