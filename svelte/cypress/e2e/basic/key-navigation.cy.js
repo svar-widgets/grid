@@ -47,14 +47,16 @@ describe("Keyboard navigation works", () => {
 			cy.wxT("table")
 				.first()
 				.within(() => {
-					cy.wxT("table-rows").should("have.length", 1);
+					cy.wxT("table-rows").should("have.length", 2);
 					cy.wxT("table-row", 3)
 						.wxT("table-cell", 1)
 						.click({ force: true });
-					cy.keyDown("arrowDown");
-					cy.wxT("table-row", 3).should("have.class", "wx-selected");
 					cy.keyDown("arrowUp");
 					cy.wxT("table-row", 3).should("have.class", "wx-selected");
+					cy.keyDown("arrowDown");
+					cy.wxT("table-row", 5).should("have.class", "wx-selected");
+					cy.keyDown("arrowDown");
+					cy.wxT("table-row", 5).should("have.class", "wx-selected");
 					cy.get(".wx-header .wx-richselect").click();
 				});
 
@@ -63,12 +65,12 @@ describe("Keyboard navigation works", () => {
 			cy.wxT("table")
 				.first()
 				.within(() => {
-					cy.get(".wx-header input").first().type("m");
+					cy.get(".wx-header input").first().type("a");
 
-					cy.wxT("table-row", 7)
+					cy.wxT("table-row", 4)
 						.wxT("table-cell", 1)
 						.click({ force: true });
-					[8, 14, 16].forEach(id => {
+					[12, 14, 20].forEach(id => {
 						cy.keyDown("arrowDown");
 						cy.wxT("table-row", id).should(
 							"have.class",

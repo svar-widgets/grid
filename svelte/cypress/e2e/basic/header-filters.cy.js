@@ -4,28 +4,28 @@ describe.only("Header filters functionality", () => {
 		cy.wait(1000);
 		cy.shot(`header-filters`);
 
-		cy.get(".wx-header input").first().type("er");
-		cy.get(".wx-header input").first().should("have.value", "er");
-		cy.wxT("table").eq(0).find(".wx-row").should("have.length", 4);
+		cy.get(".wx-header input").first().type("la");
+		cy.get(".wx-header input").first().should("have.value", "la");
+		cy.wxT("table").eq(0).find(".wx-row").should("have.length", 3);
 
 		cy.shot(`header-filters-filtered-data-text`);
 
 		cy.get(".wx-header .wx-richselect").first().click();
 		cy.get(".wx-popup .wx-item").eq(1).click();
-		cy.get(".wx-header input").first().should("have.value", "er");
+		cy.get(".wx-header input").first().should("have.value", "la");
 		cy.get(".wx-header .wx-richselect .wx-label")
 			.first()
 			.should("have.text", "Brasil");
 		cy.wxT("table").eq(0).find(".wx-row").should("have.length", 2);
 
-		cy.get(".wx-header input").eq(1).type("le");
+		cy.get(".wx-header input").eq(1).type("an");
 		cy.wxT("table").eq(0).find(".wx-row").should("have.length", 1);
 
 		cy.shot(`header-filters-filtered-data-all`);
 
 		cy.get(".wx-header input").eq(1).type("w");
-		cy.get(".wx-header input").first().should("have.value", "er");
-		cy.get(".wx-header input").eq(1).should("have.value", "lew");
+		cy.get(".wx-header input").first().should("have.value", "la");
+		cy.get(".wx-header input").eq(1).should("have.value", "anw");
 		cy.wxT("table").eq(0).find(".wx-row").should("have.length", 0);
 
 		// clear filters
@@ -47,7 +47,7 @@ describe.only("Header filters functionality", () => {
 		cy.get(".wx-header .wx-richselect .wx-label")
 			.first()
 			.should("have.text", "Germany");
-		cy.wxT("table").eq(0).find(".wx-row").should("have.length", 2);
+		cy.wxT("table").eq(0).find(".wx-row").should("have.length", 4);
 
 		cy.shot(`header-filters-filtered-data-richselect`);
 	});

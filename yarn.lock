@@ -714,19 +714,19 @@
   dependencies:
     "@svar-ui/lib-state" "1.9.6"
 
-"@svar-ui/lib-data-provider@1.7.2":
-  version "1.7.2"
-  resolved "https://registry.yarnpkg.com/@svar-ui/lib-data-provider/-/lib-data-provider-1.7.2.tgz#e17163e333977f43673419122b18289a5d309eac"
-  integrity sha512-Od93Iiy0vBwVzgJm25WdizH3d4Xlli/HAA2kqoUj1pzeZ2SWBeFzvE59iihQz8NuIlfAtQJ6MMe168458T+2lQ==
-  dependencies:
-    "@svar-ui/lib-state" "1.9.6"
-
 "@svar-ui/lib-data-provider@1.7.3":
   version "1.7.3"
   resolved "https://registry.yarnpkg.com/@svar-ui/lib-data-provider/-/lib-data-provider-1.7.3.tgz#a616866493ea1c3dccba858d1f1b84a0007ad030"
   integrity sha512-+UAM1VybQco5N52iv6rVcDwOJ5G1qE+V+nvaoBHx41H05w4TZTFJL+UnRy99NDLrVbLoCWhoH3L8vyNmZVjTvw==
   dependencies:
     "@svar-ui/lib-state" "1.9.6"
+
+"@svar-ui/lib-data-provider@1.7.4":
+  version "1.7.4"
+  resolved "https://registry.yarnpkg.com/@svar-ui/lib-data-provider/-/lib-data-provider-1.7.4.tgz#eafbaeb4726694534e67129d10127f0d136339fa"
+  integrity sha512-aDNMqd4kKK7aGTkF6F2zrjchaE3cjVKAYNCzm2fsLXKiGLn6gpxUAXGgsEuPrgop5wvOfJVJGr7cO/3dEsdHpA==
+  dependencies:
+    "@svar-ui/lib-state" "1.10.1"
 
 "@svar-ui/lib-dom@0.12.1":
   version "0.12.1"
@@ -743,12 +743,17 @@
   resolved "https://registry.yarnpkg.com/@svar-ui/lib-dom/-/lib-dom-0.14.0.tgz#150fb2dfa27213a211c89a57cf0ad1ecee266e66"
   integrity sha512-9uao5ebcQmuW0RoMu1LCesPsZ7i6G3xIvYAQzX/aeg662Yy/ETsNVy1pXoSa2q5v6ccAMjVxFrFCYReK7fzaJQ==
 
+"@svar-ui/lib-state@1.10.1", "@svar-ui/lib-state@^1.9.6":
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/@svar-ui/lib-state/-/lib-state-1.10.1.tgz#c8a98007e43ac6feccdc96638719b706abb20570"
+  integrity sha512-Gdxm1F0dv6jhy5SM473spM9TX8qH8ZycTRggawHpJikdSME3FN7v6b+ER202PjGB4VnWWlqFRHZqkVWsSyZ8Wg==
+
 "@svar-ui/lib-state@1.9.6":
   version "1.9.6"
   resolved "https://registry.yarnpkg.com/@svar-ui/lib-state/-/lib-state-1.9.6.tgz#b2359f2a212565eaa72d6a15fc4d27aadd42a070"
   integrity sha512-twoHa8wZvzdxtES68s6Wnp4Xi1WivScNaFFK6sJ6WDgqVYOzJw0ZhVVrdwHQgieLITTKl/DYh/U3nuqtMetKYw==
 
-"@svar-ui/lib-state@1.9.7", "@svar-ui/lib-state@^1.9.6":
+"@svar-ui/lib-state@1.9.7":
   version "1.9.7"
   resolved "https://registry.yarnpkg.com/@svar-ui/lib-state/-/lib-state-1.9.7.tgz#4f60647d3f4b8a56e4c41436db33a08fb0e0485c"
   integrity sha512-nxRdk+54m1RJjGT2yDH7NjxAM5KECxA39kdTZezEIj1ixykyefssB9BrgxKy2jIseYxJMtd6lPZvQ3SZXuvn2g==

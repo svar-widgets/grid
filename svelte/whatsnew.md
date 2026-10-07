@@ -1,3 +1,9 @@
+## 2.7.4
+
+### Updates
+
+-   Use latest lib-state and lib-data-provider
+
 ## 2.7.3
 
 ### Fixes
