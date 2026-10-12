@@ -1,3 +1,10 @@
+## 2.7.5
+
+### Fixes
+
+-   Cells with object values render as "[object Object]" instead of blank
+-   Prohibited `aria-label` on the column resize grip
+
 ## 2.7.4
 
 ### Updates

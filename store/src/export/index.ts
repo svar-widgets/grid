@@ -18,5 +18,23 @@ export function getRenderValue(row: IRow, col: IColumn): string {
 		else v = col.optionsMap.get(v);
 	}
 
-	return typeof v === "undefined" ? "" : v + "";
+	return renderText(v);
+}
+
+// An object is blank only when v + "" would be "[object …]" or would throw.
+function renderText(v: unknown): string {
+	if (typeof v === "undefined") return "";
+	if (v === null || typeof v !== "object") return (v as any) + "";
+
+	try {
+		const toString = (v as { toString?: unknown }).toString;
+		if (
+			typeof toString !== "function" ||
+			toString === Object.prototype.toString
+		)
+			return "";
+		return (v as any) + "";
+	} catch {
+		return "";
+	}
 }

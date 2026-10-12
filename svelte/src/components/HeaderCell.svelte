@@ -225,7 +225,6 @@
 			<div
 				class="wx-grip"
 				role="presentation"
-				aria-label="Resize column"
 				use:resize={{ down, move, up }}
 				onclick={ev => ev.stopPropagation()}
 			>
