@@ -1,0 +1,18 @@
+{
+	"name": "@svar-ui/grid-locales",
+	"version": "2.7.6",
+	"description": "Locales for SVAR DataGrid widget",
+	"keywords": [
+		"grid",
+		"locales",
+		"wx"
+	],
+	"license": "MIT",
+	"author": "",
+	"type": "module",
+	"main": "index.js",
+	"types": "index.d.ts",
+	"scripts": {
+		"build": "true"
+	}
+}

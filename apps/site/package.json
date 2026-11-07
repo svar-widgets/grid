@@ -1,0 +1,29 @@
+{
+	"name": "@svar-ui/svelte-grid-site",
+	"version": "2.7.6",
+	"private": true,
+	"homepage": "https://svar.dev/svelte/datagrid/",
+	"bugs": {
+		"url": "https://forum.svar.dev"
+	},
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/svar-widgets/grid.git"
+	},
+	"type": "module",
+	"scripts": {
+		"check": "svelte-check --tsconfig ./tsconfig.json",
+		"build": "vp build",
+		"start": "vp dev --open"
+	},
+	"dependencies": {
+		"@svar-ui/svelte-core": "catalog:",
+		"@svar-ui/svelte-grid": "workspace:*"
+	},
+	"devDependencies": {
+		"@sveltejs/vite-plugin-svelte": "catalog:",
+		"svelte": "catalog:",
+		"svelte-check": "catalog:"
+	}
+}

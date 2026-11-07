@@ -1,5 +1,5 @@
 <div align="center">
-	
+
 # SVAR Svelte DataGrid | Data Table
 
 </div>
@@ -28,27 +28,27 @@
 
 SVAR Svelte DataGrid provides a rich set of features and multiple ways for customization:
 
--   High performance (virtual scrolling and dynamic loading)
--   In-cell editing with different cell editors (datepicker, combo, select, rich select, etc.)
--   External editor for grid data
--   Custom HTML for cells
--   Sorting by multiple columns
--   Advanced filtering (including natural language)
--   Paging
--   Frozen columns
--   Expandable/collapsible columns
--   Row reordering with drag-and-drop
--   Customizable tooltips for grid cells
--   Context menu
--   Built-in toolbar
--   Tree-like structure
--   Print support, export to CSV
--   Undo/redo
--   Keyboard navigation
--   Accessibility: compatibility with [WAI-ARIA](https://www.w3.org/WAI/standards-guidelines/aria/) standard
--   RestDataProvider for easy backend data binding
--   Dark and light skins, customizable with CSS (no Tailwind dependency)
--   Full TypeScript support
+- High performance (virtual scrolling and dynamic loading)
+- In-cell editing with different cell editors (datepicker, combo, select, rich select, etc.)
+- External editor for grid data
+- Custom HTML for cells
+- Sorting by multiple columns
+- Advanced filtering (including natural language)
+- Paging
+- Frozen columns
+- Expandable/collapsible columns
+- Row reordering with drag-and-drop
+- Customizable tooltips for grid cells
+- Context menu
+- Built-in toolbar
+- Tree-like structure
+- Print support, export to CSV
+- Undo/redo
+- Keyboard navigation
+- Accessibility: compatibility with [WAI-ARIA](https://www.w3.org/WAI/standards-guidelines/aria/) standard
+- RestDataProvider for easy backend data binding
+- Dark and light skins, customizable with CSS (no Tailwind dependency)
+- Full TypeScript support
 
 [Check the demos](https://docs.svar.dev/svelte/grid/samples/#/base/willow) to see how these features work.
 
@@ -110,21 +110,10 @@ For further instructions, see the detailed [how-to-start guide](https://docs.sva
 
 Typically, you don't need to modify the code. However, if you wish to do so, follow these steps:
 
-1. Run `yarn` to install dependencies. Note that this project is a monorepo using `yarn` workspaces, so npm will not work
-2. Start the project in development mode with `yarn start`
-
-### Run Tests
-
-To run the test:
-
-1. Start the test examples with:
-    ```sh
-    yarn start:tests
-    ```
-2. In a separate console, run the end-to-end tests with:
-    ```sh
-    yarn test:cypress
-    ```
+1. Install [vite-plus](https://vite.plus) (`curl -fsSL https://vite.plus | bash` on Mac/Linux, `irm https://vite.plus/ps1 | iex` on Windows). The project uses `pnpm` workspaces under the hood, so plain `npm` will not work.
+2. Run `vp i` from the project root to install dependencies.
+3. Run `vp run build` to build all packages.
+4. Start the demo app in development mode with `vp run start`.
 
 ### Need Help?
 
